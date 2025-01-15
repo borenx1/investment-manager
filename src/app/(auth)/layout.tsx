@@ -6,6 +6,7 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
+import DarkModeToggle from '@/components/DarkModeToggle';
 
 export default function AuthLayout({
   children,
@@ -14,7 +15,7 @@ export default function AuthLayout({
 }>) {
   return (
     <>
-      <header className="flex items-center px-4 py-2 shadow-sm sm:px-16">
+      <header className="flex items-center border-b px-4 py-2 sm:px-16">
         <div className="text-lg sm:text-xl">
           <Link href="/">Investment Manager</Link>
         </div>
@@ -26,6 +27,11 @@ export default function AuthLayout({
                   Login
                 </NavigationMenuLink>
               </Link>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+          <NavigationMenuList className="ml-2">
+            <NavigationMenuItem>
+              <DarkModeToggle />
             </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>
