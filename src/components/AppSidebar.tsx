@@ -9,6 +9,8 @@ import {
   Settings,
   User,
 } from 'lucide-react';
+
+import { auth, signOut } from '@/auth';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,7 +29,9 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 
-export default function AppSidebar() {
+export default async function AppSidebar() {
+  const session = await auth();
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -90,7 +94,7 @@ export default function AppSidebar() {
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton>
                   <User />
-                  <span>xxxxxx@example.com</span>
+                  <span>{session?.user?.email}</span>
                   <ChevronsUpDown className="ml-auto" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
@@ -99,10 +103,19 @@ export default function AppSidebar() {
                 align="end"
                 className="w-[--radix-dropdown-menu-trigger-width]"
               >
-                <DropdownMenuItem>
-                  <LogOut />
-                  Log out
-                </DropdownMenuItem>
+                <form
+                  action={async () => {
+                    'use server';
+                    await signOut({ redirectTo: '/login' });
+                  }}
+                >
+                  <DropdownMenuItem asChild>
+                    <button type="submit" className="w-full">
+                      <LogOut />
+                      Log out
+                    </button>
+                  </DropdownMenuItem>
+                </form>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>
