@@ -30,9 +30,7 @@ export default function AuthenticatedLayout({
             </NavigationMenuList>
           </NavigationMenu>
         </header>
-        <main>
-          <div className="p-4 sm:p-8">{children}</div>
-        </main>
+        <main>{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );
