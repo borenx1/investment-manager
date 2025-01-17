@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import {
+  Banknote,
   CircleDollarSign,
   ChevronsUpDown,
-  Landmark,
   LayoutDashboard,
   LogOut,
   NotebookPen,
@@ -28,6 +28,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import AccountSwitcher from '@/components/AccountSwitcher';
 
 export default async function AppSidebar() {
   const session = await auth();
@@ -35,9 +36,7 @@ export default async function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem className="h-12" />
-        </SidebarMenu>
+        <AccountSwitcher />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -62,7 +61,7 @@ export default async function AppSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <Link href="/capital">
-                    <Landmark />
+                    <Banknote />
                     <span>Capital Changes</span>
                   </Link>
                 </SidebarMenuButton>
@@ -94,14 +93,14 @@ export default async function AppSidebar() {
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton>
                   <User />
-                  <span>{session?.user?.email}</span>
+                  <span className="truncate">{session?.user?.email}</span>
                   <ChevronsUpDown className="ml-auto" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 side="top"
                 align="end"
-                className="w-[--radix-dropdown-menu-trigger-width]"
+                className="w-[--radix-dropdown-menu-trigger-width] min-w-56"
               >
                 <form
                   action={async () => {
