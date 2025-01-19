@@ -14,7 +14,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Investment Manager',
+  title: {
+    template: '%s | Investment Manager',
+    default: 'Investment Manager',
+  },
   description: 'An app to manage your investment portfolio',
 };
 

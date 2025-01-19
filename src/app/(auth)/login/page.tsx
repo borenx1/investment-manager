@@ -1,5 +1,6 @@
 'use client';
 
+import type { Metadata } from 'next';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -16,6 +17,10 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+
+export const metadata: Metadata = {
+  title: 'Login',
+};
 
 const formSchema = z.object({
   username: z.string().nonempty('Username is required'),

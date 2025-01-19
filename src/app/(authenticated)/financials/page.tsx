@@ -1,3 +1,9 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Financials',
+};
+
 export default function FinancialsPage() {
   return (
     <div className="p-4 sm:p-8">

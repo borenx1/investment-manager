@@ -1,5 +1,11 @@
+import type { Metadata } from 'next';
+
 import { Separator } from '@/components/ui/separator';
 import PortfolioAccountSection from './PortfolioAccountSection';
+
+export const metadata: Metadata = {
+  title: 'Settings',
+};
 
 export default function SettingsPage() {
   return (
