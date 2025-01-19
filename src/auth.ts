@@ -25,5 +25,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return true;
     },
+    session({ session, token }) {
+      // Add the user ID to the session.
+      session.user.id = token.sub!;
+      return session;
+    },
   },
 });
