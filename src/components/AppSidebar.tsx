@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import {
   Banknote,
   CircleDollarSign,
@@ -29,6 +28,7 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import AccountSwitcher from '@/components/AccountSwitcher';
+import AppSidebarLink from '@/components/AppSidebarLink';
 
 export default async function AppSidebar() {
   const session = await auth();
@@ -42,46 +42,31 @@ export default async function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/">
-                    <LayoutDashboard />
-                    <span>Dashboard</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/journal">
-                    <NotebookPen />
-                    <span>Journal</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/capital">
-                    <Banknote />
-                    <span>Capital Changes</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/financials">
-                    <CircleDollarSign />
-                    <span>Financials</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/settings">
-                    <Settings />
-                    <span>Settings</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              <AppSidebarLink
+                url="/"
+                title="Dashboard"
+                icon={<LayoutDashboard />}
+              />
+              <AppSidebarLink
+                url="/journal"
+                title="Journal"
+                icon={<NotebookPen />}
+              />
+              <AppSidebarLink
+                url="/capital"
+                title="Capital Changes"
+                icon={<Banknote />}
+              />
+              <AppSidebarLink
+                url="/financials"
+                title="Financials"
+                icon={<CircleDollarSign />}
+              />
+              <AppSidebarLink
+                url="/settings"
+                title="Settings"
+                icon={<Settings />}
+              />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
