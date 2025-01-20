@@ -16,7 +16,6 @@ export async function newPortfolioAccount({ name }: { name: string }) {
 
   // TODO: Duplicate names.
   await createPortfolioAccount(userId, { name });
-  // TODO: Check if account switcher is updated.
   revalidatePath('/settings');
 }
 
