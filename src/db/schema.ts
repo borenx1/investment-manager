@@ -1,4 +1,5 @@
 import {
+  index,
   integer,
   pgTable,
   primaryKey,
@@ -43,3 +44,21 @@ export const accounts = pgTable(
     },
   ],
 );
+
+export const portfolioAccounts = pgTable(
+  'portfolio_account',
+  {
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    order: integer('order').notNull().default(0),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    modifiedAt: timestamp('modified_at').notNull().defaultNow(),
+  },
+  (table) => [index('order_idx').on(table.order)],
+);
+
+export type SelectPortfolioAccount = typeof portfolioAccounts.$inferSelect;
+export type InsertPortfolioAccount = typeof portfolioAccounts.$inferInsert;

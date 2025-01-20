@@ -1,13 +1,17 @@
 'use server';
 
-import { auth } from '@/auth';
+import { revalidatePath } from 'next/cache';
 
-export async function createPortfolioAccount({ name }: { name: string }) {
+import { auth } from '@/auth';
+import { createPortfolioAccount } from '@/db/queries';
+
+export async function newPortfolioAccount({ name }: { name: string }) {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return;
 
-  // TODO
-  console.log('Creating portfolio account', name);
-  await new Promise((resolve) => setTimeout(resolve, 2000));
+  // TODO: Duplicate names.
+  await createPortfolioAccount(userId, { name });
+  // TODO: Check if account switcher is updated.
+  revalidatePath('/settings');
 }

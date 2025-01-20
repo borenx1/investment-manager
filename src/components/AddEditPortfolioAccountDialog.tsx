@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { LoaderCircle } from 'lucide-react';
 
-import { createPortfolioAccount } from '@/lib/actions';
+import { newPortfolioAccount } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -45,8 +45,8 @@ export default function AddEditPortfolioAccountDialog({
     },
   });
   const [state, onSubmit, isPending] = useActionState(
-    async (previousState, values: z.infer<typeof formSchema>) => {
-      await createPortfolioAccount({ name: values.name });
+    async (previousState: null, values: z.infer<typeof formSchema>) => {
+      await newPortfolioAccount({ name: values.name });
       setIsOpen(false);
       form.reset();
       return null;
