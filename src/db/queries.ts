@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 
 import { db } from './';
 import {
@@ -30,4 +30,35 @@ export async function createPortfolioAccount(
     name: name.trim(),
     order,
   });
+}
+
+export async function updatePortfolioAccount(
+  userId: SelectPortfolioAccount['userId'],
+  {
+    id,
+    name,
+    order,
+  }: {
+    id: SelectPortfolioAccount['id'];
+    name?: InsertPortfolioAccount['name'];
+    order?: InsertPortfolioAccount['order'];
+  },
+) {
+  await db
+    .update(portfolioAccounts)
+    .set({ name: name?.trim(), order, modifiedAt: sql`NOW()` })
+    .where(
+      and(eq(portfolioAccounts.id, id), eq(portfolioAccounts.userId, userId)),
+    );
+}
+
+export async function deletePortfolioAccount(
+  userId: SelectPortfolioAccount['userId'],
+  id: SelectPortfolioAccount['id'],
+) {
+  await db
+    .delete(portfolioAccounts)
+    .where(
+      and(eq(portfolioAccounts.id, id), eq(portfolioAccounts.userId, userId)),
+    );
 }

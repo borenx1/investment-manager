@@ -1,12 +1,18 @@
 'use client';
 
-import { startTransition, useActionState, useRef, useState } from 'react';
+import {
+  startTransition,
+  useActionState,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { LoaderCircle } from 'lucide-react';
 
-import { newPortfolioAccount } from '@/lib/actions';
+import { editPortfolioAccount, newPortfolioAccount } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -34,32 +40,47 @@ const formSchema = z.object({
 });
 
 export default function AddEditPortfolioAccountDialog({
+  account,
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: {
+  account?: { id: number; userId: string; name: string };
+  children: React.ReactNode;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
+      name: account ? account.name : '',
     },
   });
   const [state, onSubmit, isPending] = useActionState(
     async (previousState: null, values: z.infer<typeof formSchema>) => {
-      await newPortfolioAccount({ name: values.name });
+      if (account) {
+        // Edit account.
+        await editPortfolioAccount({ id: account.id, name: values.name });
+      } else {
+        // Create new account.
+        await newPortfolioAccount({ name: values.name });
+      }
       setIsOpen(false);
-      form.reset();
       return null;
     },
     null,
   );
+
+  useEffect(() => {
+    if (isOpen) {
+      form.reset();
+    }
+  }, [isOpen, form]);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       {children}
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>New Account</DialogTitle>
+          <DialogTitle>{account ? 'Edit Account' : 'New Account'}</DialogTitle>
           <DialogDescription className="hidden" />
         </DialogHeader>
         <Form {...form}>
@@ -91,7 +112,7 @@ export default function AddEditPortfolioAccountDialog({
             onClick={() => formRef.current?.requestSubmit()}
           >
             {isPending && <LoaderCircle className="animate-spin" />}
-            Create account
+            {account ? 'Edit account' : 'Create account'}
           </Button>
         </DialogFooter>
       </DialogContent>

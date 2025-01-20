@@ -2,6 +2,18 @@ import { EllipsisVertical, Pencil, Plus, Trash2 } from 'lucide-react';
 
 import { auth } from '@/auth';
 import { getPortfolioAccounts } from '@/db/queries';
+import { removePortfolioAccount } from '@/lib/actions';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { DialogTrigger } from '@/components/ui/dialog';
 import {
@@ -42,23 +54,55 @@ export default async function PortfolioAccountSection() {
                 <TableRow key={account.id}>
                   <TableCell className="pl-4">{account.name}</TableCell>
                   <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost">
-                          <EllipsisVertical />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <Pencil />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Trash2 />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <AddEditPortfolioAccountDialog account={account}>
+                      <AlertDialog>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost">
+                              <EllipsisVertical />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DialogTrigger asChild>
+                              <DropdownMenuItem>
+                                <Pencil />
+                                Edit
+                              </DropdownMenuItem>
+                            </DialogTrigger>
+                            <AlertDialogTrigger asChild>
+                              <DropdownMenuItem>
+                                <Trash2 />
+                                Delete
+                              </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Account</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete this portfolio
+                              account?
+                              <br />
+                              {account.name}
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Back</AlertDialogCancel>
+                            <form
+                              action={async () => {
+                                'use server';
+                                await removePortfolioAccount(account.id);
+                              }}
+                            >
+                              <AlertDialogAction type="submit">
+                                Delete
+                              </AlertDialogAction>
+                            </form>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </AddEditPortfolioAccountDialog>
                   </TableCell>
                 </TableRow>
               ))}
