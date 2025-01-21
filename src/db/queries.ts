@@ -46,7 +46,7 @@ export async function updatePortfolioAccount(
 ) {
   await db
     .update(portfolioAccounts)
-    .set({ name: name?.trim(), order, modifiedAt: sql`NOW()` })
+    .set({ name: name?.trim(), order, updatedAt: sql`NOW()` })
     .where(
       and(eq(portfolioAccounts.id, id), eq(portfolioAccounts.userId, userId)),
     );

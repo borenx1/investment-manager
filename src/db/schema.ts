@@ -17,6 +17,12 @@ export const users = pgTable('user', {
   email: text('email').unique(),
   emailVerified: timestamp('emailVerified', { mode: 'date' }),
   image: text('image'),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });
 
 export const accounts = pgTable(
@@ -35,6 +41,12 @@ export const accounts = pgTable(
     scope: text('scope'),
     id_token: text('id_token'),
     session_state: text('session_state'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (account) => [
     {
@@ -54,10 +66,14 @@ export const portfolioAccounts = pgTable(
       .references(() => users.id, { onDelete: 'cascade' }),
     name: text('name').notNull(),
     order: integer('order').notNull().default(0),
-    createdAt: timestamp('created_at').notNull().defaultNow(),
-    modifiedAt: timestamp('modified_at').notNull().defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
-  (table) => [index('order_idx').on(table.order)],
+  (table) => [index().on(table.order)],
 );
 
 export type SelectPortfolioAccount = typeof portfolioAccounts.$inferSelect;
