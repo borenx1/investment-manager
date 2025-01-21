@@ -1,3 +1,4 @@
+import { ActiveAccountProvider } from '@/lib/context/ActiveAccountContext';
 import {
   SidebarInset,
   SidebarProvider,
@@ -17,21 +18,23 @@ export default function AuthenticatedLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="flex items-center border-b px-4 py-2 sm:px-16 sm:pl-4">
-          <SidebarTrigger />
-          <NavigationMenu className="ml-auto">
-            <NavigationMenuList className="ml-2">
-              <NavigationMenuItem>
-                <DarkModeToggle />
-              </NavigationMenuItem>
-            </NavigationMenuList>
-          </NavigationMenu>
-        </header>
-        <main>{children}</main>
-      </SidebarInset>
-    </SidebarProvider>
+    <ActiveAccountProvider>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <header className="flex items-center border-b px-4 py-2 sm:px-16 sm:pl-4">
+            <SidebarTrigger />
+            <NavigationMenu className="ml-auto">
+              <NavigationMenuList className="ml-2">
+                <NavigationMenuItem>
+                  <DarkModeToggle />
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
+          </header>
+          <main>{children}</main>
+        </SidebarInset>
+      </SidebarProvider>
+    </ActiveAccountProvider>
   );
 }
