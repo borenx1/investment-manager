@@ -57,14 +57,32 @@ export default function AddEditPortfolioAccountDialog({
     resolver: zodResolver(formSchema),
     defaultValues: defaultValues,
   });
-  const [state, onSubmit, isPending] = useActionState(
+  const [, onSubmit, isPending] = useActionState(
     async (previousState: null, values: z.infer<typeof formSchema>) => {
+      let error: Awaited<ReturnType<typeof newPortfolioAccount>> = null;
       if (account) {
-        // Edit account.
-        await editPortfolioAccount({ id: account.id, name: values.name });
+        error = await editPortfolioAccount({
+          id: account.id,
+          name: values.name,
+        });
       } else {
-        // Create new account.
-        await newPortfolioAccount({ name: values.name });
+        error = await newPortfolioAccount({ name: values.name });
+      }
+      if (error) {
+        switch (error.message) {
+          case 'Duplicate name': {
+            form.setError(
+              'name',
+              { message: 'Name already exists' },
+              { shouldFocus: true },
+            );
+            break;
+          }
+          default: {
+            console.error(error);
+          }
+        }
+        return null;
       }
       setIsOpen(false);
       return null;

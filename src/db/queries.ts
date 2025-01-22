@@ -20,10 +20,28 @@ export async function getPortfolioAccounts(
     .orderBy(portfolioAccounts.order, portfolioAccounts.id);
 }
 
+/**
+ * Create a new portfolio account in the database for the user.
+ * @param userId The user ID.
+ * @param param1 The new portfolio account data.
+ * @returns An error message if the account could not be created.
+ */
 export async function createPortfolioAccount(
   userId: SelectPortfolioAccount['userId'],
   { name }: { name: InsertPortfolioAccount['name'] },
 ) {
+  // Check for duplicate values.
+  const duplicateName = await db.$count(
+    portfolioAccounts,
+    and(
+      eq(portfolioAccounts.userId, userId),
+      eq(portfolioAccounts.name, name.trim()),
+    ),
+  );
+  if (duplicateName) {
+    return { message: 'Duplicate name' } as const;
+  }
+
   const currentAccounts = await getPortfolioAccounts(userId);
   const order = currentAccounts.length
     ? currentAccounts[currentAccounts.length - 1]!.order + 1
@@ -33,8 +51,15 @@ export async function createPortfolioAccount(
     name: name.trim(),
     order,
   });
+  return null;
 }
 
+/**
+ * Update a portfolio account in the database.
+ * @param userId The user ID.
+ * @param param1 The account ID and data to update.
+ * @returns An error message if the account could not be updated.
+ */
 export async function updatePortfolioAccount(
   userId: SelectPortfolioAccount['userId'],
   {
@@ -47,12 +72,28 @@ export async function updatePortfolioAccount(
     order?: InsertPortfolioAccount['order'];
   },
 ) {
+  // Check for duplicate values.
+  if (name !== undefined) {
+    const duplicateName = await db.$count(
+      portfolioAccounts,
+      and(
+        ne(portfolioAccounts.id, id),
+        eq(portfolioAccounts.userId, userId),
+        eq(portfolioAccounts.name, name.trim()),
+      ),
+    );
+    if (duplicateName) {
+      return { message: 'Duplicate name' } as const;
+    }
+  }
+
   await db
     .update(portfolioAccounts)
     .set({ name: name?.trim(), order, updatedAt: sql`NOW()` })
     .where(
       and(eq(portfolioAccounts.id, id), eq(portfolioAccounts.userId, userId)),
     );
+  return null;
 }
 
 export async function deletePortfolioAccount(

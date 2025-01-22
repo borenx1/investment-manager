@@ -12,30 +12,40 @@ import {
   updatePortfolioAccount,
 } from '@/db/queries';
 
-export async function newPortfolioAccount({ name }: { name: string }) {
+/**
+ * Create a new portfolio account for the authenticated user.
+ * @param data The new account data.
+ * @returns An error message if the account could not be created.
+ */
+export async function newPortfolioAccount(data: { name: string }) {
   const session = await auth();
   const userId = session?.user?.id;
-  if (!userId) return;
+  if (!userId) return null;
 
-  // TODO: Duplicate names.
-  await createPortfolioAccount(userId, { name });
+  const error = await createPortfolioAccount(userId, data);
+  if (error) {
+    return error;
+  }
   revalidatePath('/settings');
+  return null;
 }
 
-export async function editPortfolioAccount({
-  id,
-  name,
-}: {
-  id: number;
-  name: string;
-}) {
+/**
+ * Update a portfolio account for the authenticated user.
+ * @param data The account data to update.
+ * @returns An error message if the account could not be updated.
+ */
+export async function editPortfolioAccount(data: { id: number; name: string }) {
   const session = await auth();
   const userId = session?.user?.id;
-  if (!userId) return;
+  if (!userId) return null;
 
-  // TODO: Duplicate names.
-  await updatePortfolioAccount(userId, { id, name });
+  const error = await updatePortfolioAccount(userId, data);
+  if (error) {
+    return error;
+  }
   revalidatePath('/settings');
+  return null;
 }
 
 export async function removePortfolioAccount(id: number) {
