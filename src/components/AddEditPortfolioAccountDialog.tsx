@@ -4,6 +4,7 @@ import {
   startTransition,
   useActionState,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -43,16 +44,18 @@ export default function AddEditPortfolioAccountDialog({
   account,
   children,
 }: {
-  account?: { id: number; userId: string; name: string };
+  account?: { id: number; name: string };
   children: React.ReactNode;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  const defaultValues = useMemo(
+    () => (account ? { ...account } : { name: '' }),
+    [account],
+  );
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: account ? account.name : '',
-    },
+    defaultValues: defaultValues,
   });
   const [state, onSubmit, isPending] = useActionState(
     async (previousState: null, values: z.infer<typeof formSchema>) => {
@@ -71,9 +74,10 @@ export default function AddEditPortfolioAccountDialog({
 
   useEffect(() => {
     if (isOpen) {
-      form.reset();
+      // Have to pass default values in case account changes.
+      form.reset(defaultValues);
     }
-  }, [isOpen, form]);
+  }, [isOpen, form, defaultValues]);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
