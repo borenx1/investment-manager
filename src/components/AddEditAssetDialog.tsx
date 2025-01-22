@@ -37,13 +37,15 @@ import { Input } from '@/components/ui/input';
 const formSchema = z.object({
   name: z
     .string()
+    .trim()
     .nonempty('Name is required')
     .max(50, 'Maximum 50 characters'),
   ticker: z
     .string()
+    .trim()
     .nonempty('Ticker is required')
     .max(10, 'Maximum 10 characters'),
-  symbol: z.string().max(10, 'Maximum 10 characters'),
+  symbol: z.string().trim().max(10, 'Maximum 10 characters'),
   precision: z.coerce
     .number()
     .int()

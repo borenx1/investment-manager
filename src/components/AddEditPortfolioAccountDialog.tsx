@@ -36,6 +36,7 @@ import { Input } from '@/components/ui/input';
 const formSchema = z.object({
   name: z
     .string()
+    .trim()
     .nonempty('Account name is required')
     .max(50, 'Maximum 50 characters'),
 });
