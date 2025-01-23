@@ -79,7 +79,10 @@ export const portfolioAccounts = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (table) => [index().on(table.order)],
+  (table) => [
+    check('portfolio_account_name_check', sql`LENGTH(${table.name}) > 0`),
+    index().on(table.order),
+  ],
 );
 
 export type SelectPortfolioAccount = typeof portfolioAccounts.$inferSelect;
@@ -106,6 +109,9 @@ export const assets = pgTable(
       .defaultNow(),
   },
   (table) => [
+    check('asset_ticker_check', sql`LENGTH(${table.ticker}) > 0`),
+    check('asset_name_check', sql`LENGTH(${table.name}) > 0`),
+    check('asset_symbol_check', sql`LENGTH(${table.symbol}) > 0`),
     check('asset_precision_check', sql`${table.precision} >= 0`),
     check('asset_price_precision_check', sql`${table.pricePrecision} >= 0`),
     index().on(table.ticker),
