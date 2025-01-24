@@ -21,7 +21,8 @@ export default function AuthenticatedLayout({
     <ActiveAccountProvider>
       <SidebarProvider>
         <AppSidebar />
-        <SidebarInset>
+        {/* Flex makes min width auto, must override to 0 again to prevent overflow. */}
+        <SidebarInset className="min-w-0">
           <header className="flex items-center border-b px-4 py-2 sm:px-16 sm:pl-4">
             <SidebarTrigger />
             <NavigationMenu className="ml-auto">
