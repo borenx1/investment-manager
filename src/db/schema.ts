@@ -4,6 +4,8 @@ import {
   check,
   index,
   integer,
+  numeric,
+  pgEnum,
   pgTable,
   primaryKey,
   smallint,
@@ -122,3 +124,107 @@ export const assets = pgTable(
 
 export type SelectAsset = typeof assets.$inferSelect;
 export type InsertAsset = typeof assets.$inferInsert;
+
+export const transactions = pgTable(
+  'transaction',
+  {
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    description: text('description'),
+    date: timestamp('date', { withTimezone: false }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index().on(table.date)],
+);
+
+export type SelectTransaction = typeof transactions.$inferSelect;
+export type InsertTransaction = typeof transactions.$inferInsert;
+
+export const balances = pgTable(
+  'balance',
+  {
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    portfolioAccountId: integer('portfolio_account_id')
+      .notNull()
+      .references(() => portfolioAccounts.id, { onDelete: 'cascade' }),
+    assetId: integer('asset_id')
+      .notNull()
+      .references(() => assets.id, { onDelete: 'cascade' }),
+    balance: numeric('balance', { precision: 100, scale: 20 })
+      .notNull()
+      .default('0'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [unique().on(table.portfolioAccountId, table.assetId)],
+);
+
+export type SelectBalance = typeof balances.$inferSelect;
+export type InsertBalance = typeof balances.$inferInsert;
+
+export const ledgerTypeEnum = pgEnum('ledger_type', [
+  'asset',
+  'liability',
+  'capital',
+  'income',
+]);
+
+export const ledgers = pgTable(
+  'ledger',
+  {
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    portfolioAccountId: integer('portfolio_account_id')
+      .notNull()
+      .references(() => portfolioAccounts.id, { onDelete: 'cascade' }),
+    assetId: integer('asset_id')
+      .notNull()
+      .references(() => assets.id, { onDelete: 'cascade' }),
+    type: ledgerTypeEnum('type').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [unique().on(table.portfolioAccountId, table.assetId, table.type)],
+);
+
+export type SelectLedger = typeof ledgers.$inferSelect;
+export type InsertLedger = typeof ledgers.$inferInsert;
+
+export const ledgerEntries = pgTable(
+  'ledger_entry',
+  {
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    ledgerId: integer('ledger_id')
+      .notNull()
+      .references(() => ledgers.id, { onDelete: 'cascade' }),
+    transactionId: integer('transaction_id')
+      .notNull()
+      .references(() => transactions.id, { onDelete: 'cascade' }),
+    amount: numeric('amount', { precision: 100, scale: 20 }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index().on(table.amount)],
+);
+
+export type SelectLedgerEntry = typeof ledgerEntries.$inferSelect;
+export type InsertLedgerEntry = typeof ledgerEntries.$inferInsert;

@@ -8,6 +8,8 @@ import {
   createPortfolioAccount,
   deleteAsset,
   deletePortfolioAccount,
+  initBalanceAndLedgersWithAccount,
+  initBalanceAndLedgersWithAsset,
   updateAsset,
   updatePortfolioAccount,
 } from '@/db/queries';
@@ -22,10 +24,11 @@ export async function newPortfolioAccount(data: { name: string }) {
   const userId = session?.user?.id;
   if (!userId) return null;
 
-  const error = await createPortfolioAccount(userId, data);
-  if (error) {
-    return error;
+  const idOrError = await createPortfolioAccount(userId, data);
+  if (typeof idOrError === 'object') {
+    return idOrError;
   }
+  await initBalanceAndLedgersWithAccount(userId, idOrError);
   revalidatePath('/settings');
   return null;
 }
@@ -74,10 +77,11 @@ export async function newAsset(data: {
   const userId = session?.user?.id;
   if (!userId) return null;
 
-  const error = await createAsset(userId, data);
-  if (error) {
-    return error;
+  const idOrError = await createAsset(userId, data);
+  if (typeof idOrError === 'object') {
+    return idOrError;
   }
+  await initBalanceAndLedgersWithAsset(userId, idOrError);
   revalidatePath('/settings');
   return null;
 }

@@ -9,6 +9,7 @@ import {
   SelectAsset,
   SelectPortfolioAccount,
 } from './schema';
+import { createBalanceAndLedgers } from './unsafeQueries';
 
 export async function getPortfolioAccounts(
   userId: SelectPortfolioAccount['userId'],
@@ -24,7 +25,8 @@ export async function getPortfolioAccounts(
  * Create a new portfolio account in the database for the user.
  * @param userId The user ID.
  * @param param1 The new portfolio account data.
- * @returns An error message if the account could not be created.
+ * @returns The ID of the inserted account, or an error message if the account
+ * could not be created.
  */
 export async function createPortfolioAccount(
   userId: SelectPortfolioAccount['userId'],
@@ -46,12 +48,15 @@ export async function createPortfolioAccount(
   const order = currentAccounts.length
     ? currentAccounts[currentAccounts.length - 1]!.order + 1
     : 0;
-  await db.insert(portfolioAccounts).values({
-    userId,
-    name: name.trim(),
-    order,
-  });
-  return null;
+  const result = await db
+    .insert(portfolioAccounts)
+    .values({
+      userId,
+      name: name.trim(),
+      order,
+    })
+    .returning({ id: portfolioAccounts.id });
+  return result[0]!.id;
 }
 
 /**
@@ -119,7 +124,8 @@ export async function getAssets(userId: SelectAsset['userId']) {
  * Create a new asset in the database for the user.
  * @param userId The user ID.
  * @param param1 The new asset data.
- * @returns An error message if the asset could not be created.
+ * @returns The ID of the inserted asset, or an error message if the asset
+ * could not be created.
  */
 export async function createAsset(
   userId: SelectAsset['userId'],
@@ -168,16 +174,19 @@ export async function createAsset(
     }
   }
 
-  await db.insert(assets).values({
-    userId,
-    ticker,
-    name,
-    symbol,
-    precision,
-    pricePrecision,
-    isCurrency,
-  });
-  return null;
+  const result = await db
+    .insert(assets)
+    .values({
+      userId,
+      ticker,
+      name,
+      symbol,
+      precision,
+      pricePrecision,
+      isCurrency,
+    })
+    .returning({ id: assets.id });
+  return result[0]!.id;
 }
 
 /**
@@ -269,4 +278,67 @@ export async function deleteAsset(
   await db
     .delete(assets)
     .where(and(eq(assets.id, id), eq(assets.userId, userId)));
+}
+
+/**
+ * Create the initial balance and ledger databases for the given portfolio
+ * account and all the user's assets if they do not exist already.
+ * @param userId The user ID.
+ * @param portfolioAccountId The portfolio account ID.
+ */
+export async function initBalanceAndLedgersWithAccount(
+  userId: SelectPortfolioAccount['userId'],
+  portfolioAccountId: SelectPortfolioAccount['id'],
+) {
+  // First check that the account belongs to the user.
+  const isPortfolioAccountOwned = await db.$count(
+    portfolioAccounts,
+    and(
+      eq(portfolioAccounts.id, portfolioAccountId),
+      eq(portfolioAccounts.userId, userId),
+    ),
+  );
+  if (!isPortfolioAccountOwned) {
+    throw new Error('Portfolio account does not belong to the user');
+  }
+
+  // Get all the user's assets.
+  const assetIds = await db
+    .select({ id: assets.id })
+    .from(assets)
+    .where(eq(assets.userId, userId));
+
+  // Initiate the balance and ledgers.
+  await Promise.allSettled(
+    assetIds.map(({ id: assetId }) =>
+      createBalanceAndLedgers(portfolioAccountId, assetId),
+    ),
+  );
+}
+
+export async function initBalanceAndLedgersWithAsset(
+  userId: SelectAsset['userId'],
+  assetId: SelectAsset['id'],
+) {
+  // First check that the asset belongs to the user.
+  const isAssetOwned = await db.$count(
+    assets,
+    and(eq(assets.id, assetId), eq(assets.userId, userId)),
+  );
+  if (!isAssetOwned) {
+    throw new Error('Asset does not belong to the user');
+  }
+
+  // Get all the user's portfolio accounts.
+  const portfolioAccountIds = await db
+    .select({ id: portfolioAccounts.id })
+    .from(portfolioAccounts)
+    .where(eq(portfolioAccounts.userId, userId));
+
+  // Initiate the balance and ledgers.
+  await Promise.allSettled(
+    portfolioAccountIds.map(({ id: portfolioAccountId }) =>
+      createBalanceAndLedgers(portfolioAccountId, assetId),
+    ),
+  );
 }
