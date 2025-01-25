@@ -6,11 +6,14 @@
  * to the same user.
  */
 
+import { and, eq } from 'drizzle-orm';
+
 import { db } from './';
 import {
   balances,
   ledgers,
   SelectAsset,
+  SelectLedger,
   SelectPortfolioAccount,
 } from './schema';
 
@@ -53,4 +56,42 @@ export async function createBalanceAndLedgers(
       console.error(result.reason);
     }
   });
+}
+
+/**
+ * Get the ledger for the given portfolio account, asset, and type. Create one
+ * if it does not exist already. DOES NOT CHECK IF THE ACCOUNT AND ASSET BELONG
+ * TO THE SAME USER.
+ * @param portfolioAccountId The portfolio account ID.
+ * @param assetId The asset ID.
+ * @param type The ledger type.
+ * @returns The ledger object.
+ */
+export async function getLedgerGuaranteed(
+  portfolioAccountId: SelectLedger['portfolioAccountId'],
+  assetId: SelectLedger['assetId'],
+  type: SelectLedger['type'],
+) {
+  const result = await db.transaction(async (tx) => {
+    const ledger = await tx
+      .select()
+      .from(ledgers)
+      .where(
+        and(
+          eq(ledgers.portfolioAccountId, portfolioAccountId),
+          eq(ledgers.assetId, assetId),
+          eq(ledgers.type, type),
+        ),
+      )
+      .limit(1);
+    if (ledger.length) {
+      return ledger[0]!;
+    }
+    const newLedger = await tx
+      .insert(ledgers)
+      .values({ portfolioAccountId, assetId, type })
+      .returning();
+    return newLedger[0]!;
+  });
+  return result;
 }

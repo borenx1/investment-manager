@@ -228,3 +228,43 @@ export const ledgerEntries = pgTable(
 
 export type SelectLedgerEntry = typeof ledgerEntries.$inferSelect;
 export type InsertLedgerEntry = typeof ledgerEntries.$inferInsert;
+
+export const capitalTransactions = pgTable(
+  'capital_transaction',
+  {
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    transactionId: integer('transaction_id')
+      .notNull()
+      .references(() => transactions.id, { onDelete: 'cascade' }),
+    assetEntryId: integer('asset_entry_id')
+      .notNull()
+      .references(() => ledgerEntries.id, { onDelete: 'cascade' }),
+    capitalEntryId: integer('capital_entry_id')
+      .notNull()
+      .references(() => ledgerEntries.id, { onDelete: 'cascade' }),
+    feeAssetEntryId: integer('fee_asset_entry_id').references(
+      () => ledgerEntries.id,
+      { onDelete: 'cascade' },
+    ),
+    feeIncomeEntryId: integer('fee_income_entry_id').references(
+      () => ledgerEntries.id,
+      { onDelete: 'cascade' },
+    ),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    unique().on(table.transactionId),
+    unique().on(table.assetEntryId),
+    unique().on(table.capitalEntryId),
+    unique().on(table.feeAssetEntryId),
+    unique().on(table.feeIncomeEntryId),
+  ],
+);
+
+export type SelectCapitalTransaction = typeof capitalTransactions.$inferSelect;
+export type InsertCapitalTransaction = typeof capitalTransactions.$inferInsert;

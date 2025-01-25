@@ -5,8 +5,10 @@ import { revalidatePath } from 'next/cache';
 import { auth } from '@/auth';
 import {
   createAsset,
+  createCapitalTransaction,
   createPortfolioAccount,
   deleteAsset,
+  deleteCapitalTransaction,
   deletePortfolioAccount,
   initBalanceAndLedgersWithAccount,
   initBalanceAndLedgersWithAsset,
@@ -119,4 +121,35 @@ export async function removeAsset(id: number) {
 
   await deleteAsset(userId, id);
   revalidatePath('/settings');
+}
+
+/**
+ * Create a new capital transaction for the authenticated user.
+ * @param data The new capital transaction data.
+ * @returns The IDs of the created rows.
+ */
+export async function newCapitalTransaction(data: {
+  portfolioAccountId: number;
+  assetId: number;
+  date: Date;
+  amount: number;
+  fee: number | null;
+  description: string | null;
+}) {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return null;
+
+  const ids = await createCapitalTransaction(userId, data);
+  revalidatePath('/capital');
+  return ids;
+}
+
+export async function removeCapitalTransaction(id: number) {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return;
+
+  await deleteCapitalTransaction(userId, id);
+  revalidatePath('/capital');
 }
