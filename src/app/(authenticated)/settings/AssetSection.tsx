@@ -80,6 +80,7 @@ export default async function AssetSection() {
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost">
+                              <span className="sr-only">Open menu</span>
                               <EllipsisVertical />
                             </Button>
                           </DropdownMenuTrigger>
