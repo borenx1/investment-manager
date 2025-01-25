@@ -183,7 +183,7 @@ export default function AddEditAssetDialog({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name*</FormLabel>
+                  <FormLabel>Name *</FormLabel>
                   <FormControl>
                     <Input {...field} disabled={isPending} />
                   </FormControl>
@@ -197,7 +197,7 @@ export default function AddEditAssetDialog({
                 name="ticker"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Ticker*</FormLabel>
+                    <FormLabel>Ticker *</FormLabel>
                     <FormControl>
                       <Input {...field} disabled={isPending} />
                     </FormControl>
@@ -234,7 +234,7 @@ export default function AddEditAssetDialog({
                           disabled={isPending}
                         />
                       </FormControl>
-                      <FormLabel className="flex-grow">Currency</FormLabel>
+                      <FormLabel className="grow">Currency</FormLabel>
                     </div>
                     <FormMessage />
                   </FormItem>
@@ -245,7 +245,7 @@ export default function AddEditAssetDialog({
                 name="precision"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Precision*</FormLabel>
+                    <FormLabel>Precision *</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -264,7 +264,7 @@ export default function AddEditAssetDialog({
                 name="pricePrecision"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Price precision*</FormLabel>
+                    <FormLabel>Price precision *</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
