@@ -14,8 +14,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Calendar as CalendarIcon, LoaderCircle } from 'lucide-react';
 
-import { newCapitalTransaction } from '@/lib/actions';
-import { getCurrentDate } from '@/lib/utils';
+import { editCapitalTransaction, newCapitalTransaction } from '@/lib/actions';
+import { convertUTCDate, getCurrentDate } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import {
@@ -50,6 +50,20 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 
+export type Transaction = {
+  capitalTransaction: { id: number };
+  transaction: {
+    id: number;
+    title: string;
+    description: string | null;
+    date: Date;
+  };
+  assetEntry: { amount: string };
+  feeIncomeEntry: { amount: string } | null;
+  portfolioAccount: { id: number; name: string };
+  asset: { id: number; ticker: string; precision: number };
+};
+
 const formSchema = z.object({
   date: z.date({ message: 'Select a date' }),
   portfolioAccountId: z.coerce
@@ -72,9 +86,7 @@ export default function AddEditCapitalTransactionDialog({
 }: {
   portfolioAccounts: { id: number; name: string }[];
   assets: { id: number; ticker: string; precision: number }[];
-  transaction?: {
-    id: number;
-  };
+  transaction?: Transaction;
   children: React.ReactNode;
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -82,7 +94,20 @@ export default function AddEditCapitalTransactionDialog({
   const defaultValues = useMemo(
     () =>
       transaction
-        ? {}
+        ? {
+            date: convertUTCDate(transaction.transaction.date),
+            portfolioAccountId: transaction.portfolioAccount.id,
+            assetId: transaction.asset.id,
+            amount: Math.abs(parseFloat(transaction.assetEntry.amount)),
+            type:
+              parseFloat(transaction.assetEntry.amount) >= 0
+                ? ('contribution' as const)
+                : ('drawings' as const),
+            fee: transaction.feeIncomeEntry
+              ? parseFloat(transaction.feeIncomeEntry.amount)
+              : 0,
+            description: transaction.transaction.description || '',
+          }
         : {
             date: getCurrentDate(),
             portfolioAccountId: portfolioAccounts[0]?.id,
@@ -105,19 +130,22 @@ export default function AddEditCapitalTransactionDialog({
   );
   const [, onSubmit, isPending] = useActionState(
     async (previousState: null, values: z.infer<typeof formSchema>) => {
+      const data = {
+        portfolioAccountId: values.portfolioAccountId,
+        assetId: values.assetId,
+        // Day-picker date is local, convert to UTC 00:00:00 time.
+        date: new Date(`${format(values.date, 'yyyy-MM-dd')} Z`),
+        amount: values.type === 'contribution' ? values.amount : -values.amount,
+        fee: values.fee || null,
+        description: values.description || null,
+      };
       if (transaction) {
-        // TODO
-      } else {
-        await newCapitalTransaction({
-          portfolioAccountId: values.portfolioAccountId,
-          assetId: values.assetId,
-          // Day-picker date is local, convert to UTC 00:00:00 time.
-          date: new Date(`${format(values.date, 'yyyy-MM-dd')} Z`),
-          amount:
-            values.type === 'contribution' ? values.amount : -values.amount,
-          fee: values.fee || null,
-          description: values.description || null,
+        await editCapitalTransaction({
+          id: transaction.capitalTransaction.id,
+          ...data,
         });
+      } else {
+        await newCapitalTransaction(data);
       }
       setIsOpen(false);
       return null;

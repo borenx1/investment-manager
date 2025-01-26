@@ -447,6 +447,73 @@ export async function getCapitalTransactions(
   }[];
 }
 
+export async function getCapitalTransaction(
+  userId: SelectTransaction['userId'],
+  id: SelectCapitalTransaction['id'],
+) {
+  const assetEntries = aliasedTable(ledgerEntries, 'assetEntry');
+  const capitalEntries = aliasedTable(ledgerEntries, 'capitalEntry');
+  const feeAssetEntries = aliasedTable(ledgerEntries, 'feeAssetEntry');
+  const feeIncomeEntries = aliasedTable(ledgerEntries, 'feeIncomeEntry');
+
+  // Assume the ledgers all belong to the same account and asset, so only need
+  // one ledger join.
+  const result = await db
+    .select({
+      capitalTransaction: capitalTransactions,
+      transaction: transactions,
+      assetEntry: assetEntries,
+      capitalEntry: capitalEntries,
+      feeAssetEntry: feeAssetEntries,
+      feeIncomeEntry: feeIncomeEntries,
+      ledger: ledgers,
+      portfolioAccount: portfolioAccounts,
+      asset: assets,
+    })
+    .from(capitalTransactions)
+    .innerJoin(
+      transactions,
+      eq(capitalTransactions.transactionId, transactions.id),
+    )
+    .innerJoin(
+      assetEntries,
+      eq(capitalTransactions.assetEntryId, assetEntries.id),
+    )
+    .innerJoin(
+      capitalEntries,
+      eq(capitalTransactions.capitalEntryId, capitalEntries.id),
+    )
+    .leftJoin(
+      feeAssetEntries,
+      eq(capitalTransactions.feeAssetEntryId, feeAssetEntries.id),
+    )
+    .leftJoin(
+      feeIncomeEntries,
+      eq(capitalTransactions.feeIncomeEntryId, feeIncomeEntries.id),
+    )
+    .innerJoin(ledgers, eq(assetEntries.ledgerId, ledgers.id))
+    .innerJoin(
+      portfolioAccounts,
+      eq(ledgers.portfolioAccountId, portfolioAccounts.id),
+    )
+    .innerJoin(assets, eq(ledgers.assetId, assets.id))
+    .where(and(eq(capitalTransactions.id, id), eq(transactions.userId, userId)))
+    .limit(1);
+  return result.length
+    ? (result[0]! as {
+        capitalTransaction: SelectCapitalTransaction;
+        transaction: SelectTransaction;
+        assetEntry: SelectLedgerEntry;
+        capitalEntry: SelectLedgerEntry;
+        feeAssetEntry: SelectLedgerEntry | null;
+        feeIncomeEntry: SelectLedgerEntry | null;
+        ledger: SelectLedger;
+        portfolioAccount: SelectPortfolioAccount;
+        asset: SelectAsset;
+      })
+    : null;
+}
+
 /**
  * Create a new capital transaction in the database for the user.
  * @param userId The user ID.
@@ -507,7 +574,7 @@ export async function createCapitalTransaction(
       .values({
         userId,
         date,
-        title: amount >= 0 ? 'Capital contributions' : 'Drawings',
+        title: amount >= 0 ? 'Contributions' : 'Drawings',
         description,
       })
       .returning({ id: transactions.id });
@@ -568,6 +635,196 @@ export async function createCapitalTransaction(
       transactionId: transactionId[0]!.id,
       assetEntryId: assetEntryId[0]!.id,
       capitalEntryId: capitalEntryId[0]!.id,
+      feeAssetEntryId,
+      feeIncomeEntryId,
+    };
+  });
+  return result;
+}
+
+/**
+ * Update a capital transaction in the database.
+ * @param userId The user ID.
+ * @param param1 The capital transaction ID and data to update.
+ * @returns The IDs of the updated or inserted rows.
+ */
+export async function updateCapitalTransaction(
+  userId: SelectTransaction['userId'],
+  {
+    id,
+    portfolioAccountId,
+    assetId,
+    date,
+    amount,
+    fee,
+    description,
+  }: {
+    id: SelectCapitalTransaction['id'];
+    portfolioAccountId: SelectPortfolioAccount['id'];
+    assetId: SelectAsset['id'];
+    date: InsertTransaction['date'];
+    amount: number;
+    fee: number | null;
+    description: InsertTransaction['description'];
+  },
+) {
+  const assetAmountString = String(amount);
+  const capitalAmountString = String(-amount);
+  // Assume `fee` is positive.
+  const assetFeeString = fee ? String(-fee) : null;
+  const incomeFeeString = fee ? String(fee) : null;
+  description = description?.trim() || null;
+
+  const original = await getCapitalTransaction(userId, id);
+  if (!original) {
+    throw new Error('Capital transaction does not belong to the user');
+  }
+  // Check that the account and asset belong to the user.
+  if (portfolioAccountId !== original.ledger.portfolioAccountId) {
+    const isPortfolioAccountOwned = await isPortfolioAccountBelongToUser(
+      userId,
+      portfolioAccountId,
+    );
+    if (!isPortfolioAccountOwned) {
+      throw new Error('Portfolio account does not belong to the user');
+    }
+  }
+  if (assetId !== original.ledger.assetId) {
+    const isAssetOwned = await isAssetBelongToUser(userId, assetId);
+    if (!isAssetOwned) {
+      throw new Error('Asset does not belong to the user');
+    }
+  }
+
+  const isSameLedger =
+    original.ledger.portfolioAccountId === portfolioAccountId &&
+    original.ledger.assetId === assetId;
+  const result = await db.transaction(async (tx) => {
+    await tx
+      .update(transactions)
+      .set({
+        date,
+        title: amount >= 0 ? 'Contributions' : 'Drawings',
+        description,
+        updatedAt: sql`NOW()`,
+      })
+      .where(eq(transactions.id, original.transaction.id));
+
+    const assetLedgerId = isSameLedger
+      ? original.assetEntry.ledgerId
+      : (await getLedgerGuaranteed(portfolioAccountId, assetId, 'asset')).id;
+    const capitalLedgerId = isSameLedger
+      ? original.capitalEntry.ledgerId
+      : (await getLedgerGuaranteed(portfolioAccountId, assetId, 'capital')).id;
+    await tx
+      .update(ledgerEntries)
+      .set({
+        ledgerId: assetLedgerId,
+        amount: assetAmountString,
+        updatedAt: sql`NOW()`,
+      })
+      .where(eq(ledgerEntries.id, original.capitalTransaction.assetEntryId));
+    await tx
+      .update(ledgerEntries)
+      .set({
+        ledgerId: capitalLedgerId,
+        amount: capitalAmountString,
+        updatedAt: sql`NOW()`,
+      })
+      .where(eq(ledgerEntries.id, original.capitalTransaction.capitalEntryId));
+
+    let feeAssetEntryId: number | null =
+      original.capitalTransaction.feeAssetEntryId;
+    let feeIncomeEntryId: number | null =
+      original.capitalTransaction.feeIncomeEntryId;
+    if (assetFeeString && incomeFeeString) {
+      const incomeLedgerId =
+        isSameLedger && original.feeIncomeEntry?.ledgerId
+          ? original.feeIncomeEntry.ledgerId
+          : (await getLedgerGuaranteed(portfolioAccountId, assetId, 'income'))
+              .id;
+      if (original.capitalTransaction.feeAssetEntryId) {
+        // If fee changes, update the fee entry.
+        await tx
+          .update(ledgerEntries)
+          .set({
+            ledgerId: assetLedgerId,
+            amount: assetFeeString,
+            updatedAt: sql`NOW()`,
+          })
+          .where(
+            eq(ledgerEntries.id, original.capitalTransaction.feeAssetEntryId),
+          );
+      } else {
+        // If fee is added, insert a fee entry.
+        const feeAssetEntryResult = await tx
+          .insert(ledgerEntries)
+          .values({
+            ledgerId: assetLedgerId,
+            transactionId: original.transaction.id,
+            amount: assetFeeString,
+          })
+          .returning({ id: ledgerEntries.id });
+        feeAssetEntryId = feeAssetEntryResult[0]!.id;
+      }
+      if (original.capitalTransaction.feeIncomeEntryId) {
+        // If fee changes, update the fee entry.
+        await tx
+          .update(ledgerEntries)
+          .set({
+            ledgerId: incomeLedgerId,
+            amount: incomeFeeString,
+            updatedAt: sql`NOW()`,
+          })
+          .where(
+            eq(ledgerEntries.id, original.capitalTransaction.feeIncomeEntryId),
+          );
+      } else {
+        // If fee is added, insert a fee entry.
+        const feeIncomeEntryResult = await tx
+          .insert(ledgerEntries)
+          .values({
+            ledgerId: incomeLedgerId,
+            transactionId: original.transaction.id,
+            amount: incomeFeeString,
+          })
+          .returning({ id: ledgerEntries.id });
+        feeIncomeEntryId = feeIncomeEntryResult[0]!.id;
+      }
+    } else {
+      if (original.capitalTransaction.feeAssetEntryId) {
+        // If fee is deleted, delete the fee entry.
+        await tx
+          .delete(ledgerEntries)
+          .where(
+            eq(ledgerEntries.id, original.capitalTransaction.feeAssetEntryId),
+          );
+        feeAssetEntryId = null;
+      }
+      if (original.capitalTransaction.feeIncomeEntryId) {
+        // If fee is deleted, delete the fee entry.
+        await tx
+          .delete(ledgerEntries)
+          .where(
+            eq(ledgerEntries.id, original.capitalTransaction.feeIncomeEntryId),
+          );
+        feeIncomeEntryId = null;
+      }
+    }
+
+    await tx
+      .update(capitalTransactions)
+      .set({
+        feeAssetEntryId,
+        feeIncomeEntryId,
+        updatedAt: sql`NOW()`,
+      })
+      .where(eq(capitalTransactions.id, id));
+
+    return {
+      transactionId: original.transaction.id,
+      assetEntryId: original.capitalTransaction.assetEntryId,
+      capitalEntryId: original.capitalTransaction.capitalEntryId,
       feeAssetEntryId,
       feeIncomeEntryId,
     };

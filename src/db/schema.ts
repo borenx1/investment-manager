@@ -244,11 +244,11 @@ export const capitalTransactions = pgTable(
       .references(() => ledgerEntries.id, { onDelete: 'cascade' }),
     feeAssetEntryId: integer('fee_asset_entry_id').references(
       () => ledgerEntries.id,
-      { onDelete: 'cascade' },
+      { onDelete: 'set null' },
     ),
     feeIncomeEntryId: integer('fee_income_entry_id').references(
       () => ledgerEntries.id,
-      { onDelete: 'cascade' },
+      { onDelete: 'set null' },
     ),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()

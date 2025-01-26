@@ -39,7 +39,11 @@ export default async function CapitalPage() {
         </DialogTrigger>
       </AddEditCapitalTransactionDialog>
 
-      <CapitalDataTable data={transactions} />
+      <CapitalDataTable
+        data={transactions}
+        portfolioAccounts={portfolioAccounts}
+        assets={assets}
+      />
     </div>
   );
 }

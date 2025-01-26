@@ -13,6 +13,7 @@ import {
   initBalanceAndLedgersWithAccount,
   initBalanceAndLedgersWithAsset,
   updateAsset,
+  updateCapitalTransaction,
   updatePortfolioAccount,
 } from '@/db/queries';
 
@@ -141,6 +142,29 @@ export async function newCapitalTransaction(data: {
   if (!userId) return null;
 
   const ids = await createCapitalTransaction(userId, data);
+  revalidatePath('/capital');
+  return ids;
+}
+
+/**
+ * Update a capital transaction for the authenticated user.
+ * @param data The capital transaction data to update.
+ * @returns The IDs of the updated or created rows.
+ */
+export async function editCapitalTransaction(data: {
+  id: number;
+  portfolioAccountId: number;
+  assetId: number;
+  date: Date;
+  amount: number;
+  fee: number | null;
+  description: string | null;
+}) {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return null;
+
+  const ids = await updateCapitalTransaction(userId, data);
   revalidatePath('/capital');
   return ids;
 }
