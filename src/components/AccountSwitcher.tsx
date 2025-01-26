@@ -65,7 +65,7 @@ export default function AccountSwitcher({
             <DropdownMenuContent
               side="bottom"
               align="end"
-              className="w-[--radix-dropdown-menu-trigger-width] min-w-56"
+              className="w-(--radix-dropdown-menu-trigger-width) min-w-56"
             >
               <DropdownMenuGroup>
                 <DropdownMenuItem onClick={() => selectAccount(null)}>

@@ -105,7 +105,7 @@ export default async function AppSidebar() {
               <DropdownMenuContent
                 side="top"
                 align="end"
-                className="w-[--radix-dropdown-menu-trigger-width] min-w-56"
+                className="w-(--radix-dropdown-menu-trigger-width) min-w-56"
               >
                 <form
                   action={async () => {
