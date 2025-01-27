@@ -6,13 +6,15 @@
  * to the same user.
  */
 
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 
 import { db } from './';
 import {
   balances,
+  ledgerEntries,
   ledgers,
   SelectAsset,
+  SelectBalance,
   SelectLedger,
   SelectPortfolioAccount,
 } from './schema';
@@ -59,6 +61,41 @@ export async function createBalanceAndLedgers(
 }
 
 /**
+ * Get the balance for the given portfolio account and asset. Create one if it
+ * does not exist already. DOES NOT CHECK IF THE ACCOUNT AND ASSET BELONG TO
+ * THE SAME USER.
+ * @param portfolioAccountId The portfolio account ID.
+ * @param assetId The asset ID.
+ * @returns The balance object.
+ */
+export async function getBalanceGuaranteed(
+  portfolioAccountId: SelectBalance['portfolioAccountId'],
+  assetId: SelectBalance['assetId'],
+) {
+  const result = await db.transaction(async (tx) => {
+    const balance = await tx
+      .select()
+      .from(balances)
+      .where(
+        and(
+          eq(balances.portfolioAccountId, portfolioAccountId),
+          eq(balances.assetId, assetId),
+        ),
+      )
+      .limit(1);
+    if (balance.length) {
+      return balance[0]!;
+    }
+    const newBalance = await tx
+      .insert(balances)
+      .values({ portfolioAccountId, assetId })
+      .returning();
+    return newBalance[0]!;
+  });
+  return result;
+}
+
+/**
  * Get the ledger for the given portfolio account, asset, and type. Create one
  * if it does not exist already. DOES NOT CHECK IF THE ACCOUNT AND ASSET BELONG
  * TO THE SAME USER.
@@ -94,4 +131,48 @@ export async function getLedgerGuaranteed(
     return newLedger[0]!;
   });
   return result;
+}
+
+/**
+ * Calculate and set the balance for a given portfolio account and asset. Looks
+ * through the asset ledger entries and sums the amounts. DOES NOT CHECK IF THE
+ * ACCOUNT AND ASSET BELONG TO THE SAME USER.
+ * @param portfolioAccountId The portfolio account ID.
+ * @param assetId The asset ID.
+ * @returns The balance object.
+ */
+export async function calculateBalance(
+  portfolioAccountId: SelectBalance['portfolioAccountId'],
+  assetId: SelectBalance['assetId'],
+) {
+  const assetSum = db.$with('asset_sum').as(
+    db
+      .select({
+        sum: sql<string>`COALESCE(SUM(${ledgerEntries.amount}), 0)`.as('sum'),
+      })
+      .from(ledgerEntries)
+      .innerJoin(ledgers, eq(ledgerEntries.ledgerId, ledgers.id))
+      .where(
+        and(
+          eq(ledgers.portfolioAccountId, portfolioAccountId),
+          eq(ledgers.assetId, assetId),
+          eq(ledgers.type, 'asset'),
+        ),
+      ),
+  );
+  const result = await db
+    .with(assetSum)
+    .insert(balances)
+    .values({
+      portfolioAccountId,
+      assetId,
+      balance: sql`(select * from ${assetSum})`,
+    })
+    .onConflictDoUpdate({
+      target: [balances.portfolioAccountId, balances.assetId],
+      set: { balance: sql`(select * from ${assetSum})`, updatedAt: sql`NOW()` },
+    })
+    .returning();
+
+  return result[0]!;
 }

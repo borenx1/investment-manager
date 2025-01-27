@@ -3,6 +3,7 @@ import { aliasedTable, and, desc, eq, ne, sql } from 'drizzle-orm';
 import { db } from './';
 import {
   assets,
+  balances,
   capitalTransactions,
   InsertAsset,
   InsertPortfolioAccount,
@@ -18,7 +19,11 @@ import {
   SelectTransaction,
   transactions,
 } from './schema';
-import { createBalanceAndLedgers, getLedgerGuaranteed } from './unsafeQueries';
+import {
+  calculateBalance,
+  createBalanceAndLedgers,
+  getLedgerGuaranteed,
+} from './unsafeQueries';
 
 export async function getPortfolioAccounts(
   userId: SelectPortfolioAccount['userId'],
@@ -383,6 +388,24 @@ export async function initBalanceAndLedgersWithAsset(
   );
 }
 
+export async function getBalances(userId: SelectAsset['userId']) {
+  return await db
+    .select()
+    .from(balances)
+    .innerJoin(
+      portfolioAccounts,
+      eq(balances.portfolioAccountId, portfolioAccounts.id),
+    )
+    .innerJoin(assets, eq(balances.assetId, assets.id))
+    .where(and(eq(portfolioAccounts.userId, userId), eq(assets.userId, userId)))
+    .orderBy(
+      portfolioAccounts.order,
+      portfolioAccounts.id,
+      assets.ticker,
+      assets.id,
+    );
+}
+
 export async function getCapitalTransactions(
   userId: SelectTransaction['userId'],
 ) {
@@ -639,6 +662,9 @@ export async function createCapitalTransaction(
       feeIncomeEntryId,
     };
   });
+
+  await calculateBalance(portfolioAccountId, assetId);
+
   return result;
 }
 
@@ -829,6 +855,9 @@ export async function updateCapitalTransaction(
       feeIncomeEntryId,
     };
   });
+
+  await calculateBalance(portfolioAccountId, assetId);
+
   return result;
 }
 
@@ -836,14 +865,19 @@ export async function deleteCapitalTransaction(
   userId: SelectTransaction['userId'],
   id: SelectCapitalTransaction['id'],
 ) {
-  await db.transaction(async (tx) => {
+  const result = await db.transaction(async (tx) => {
     const result = await tx
-      .select()
+      .select({ transaction: transactions, ledger: ledgers })
       .from(capitalTransactions)
       .innerJoin(
         transactions,
         eq(capitalTransactions.transactionId, transactions.id),
       )
+      .innerJoin(
+        ledgerEntries,
+        eq(capitalTransactions.assetEntryId, ledgerEntries.id),
+      )
+      .innerJoin(ledgers, eq(ledgerEntries.ledgerId, ledgers.id))
       .where(
         and(eq(capitalTransactions.id, id), eq(transactions.userId, userId)),
       )
@@ -852,7 +886,7 @@ export async function deleteCapitalTransaction(
       return;
     }
 
-    const { transaction } = result[0]!;
+    const { transaction, ledger } = result[0]!;
     // capital_transaction, ledger_entry will be deleted by cascade.
     await tx
       .delete(transactions)
@@ -862,5 +896,10 @@ export async function deleteCapitalTransaction(
           eq(transactions.userId, userId),
         ),
       );
+    return ledger;
   });
+
+  if (result) {
+    await calculateBalance(result.portfolioAccountId, result.assetId);
+  }
 }
