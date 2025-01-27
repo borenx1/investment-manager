@@ -3,6 +3,7 @@ import { createStore } from 'zustand/vanilla';
 import type { SelectPortfolioAccount, SelectAsset } from '@/db/schema';
 
 export type ResourceState = {
+  isResourcesLoaded: boolean;
   portfolioAccounts: SelectPortfolioAccount[];
   isPortfolioAccountsLoaded: boolean;
   assets: SelectAsset[];
@@ -27,6 +28,7 @@ export type ResourceStore = ResourceState & ResourceActions;
 
 function getInitialState(): ResourceState {
   return {
+    isResourcesLoaded: false,
     portfolioAccounts: [],
     isPortfolioAccountsLoaded: false,
     assets: [],
@@ -43,14 +45,22 @@ export function createResourceStore() {
       set(getInitialState());
     },
     setPortfolioAccounts(portfolioAccounts) {
-      set({ portfolioAccounts, isPortfolioAccountsLoaded: true });
+      set((state) => ({
+        portfolioAccounts,
+        isPortfolioAccountsLoaded: true,
+        isResourcesLoaded: state.isAssetsLoaded,
+      }));
       const activeAccountId = get().activeAccountId;
       if (activeAccountId !== null) {
         get().setActiveAccount(activeAccountId);
       }
     },
     setAssets(assets) {
-      set({ assets, isAssetsLoaded: true });
+      set((state) => ({
+        assets,
+        isAssetsLoaded: true,
+        isResourcesLoaded: state.isPortfolioAccountsLoaded,
+      }));
     },
     setActiveAccount(accountId) {
       if (accountId === null) {
