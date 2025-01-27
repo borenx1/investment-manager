@@ -1,11 +1,8 @@
-import { Suspense } from 'react';
 import {
   Banknote,
   CircleDollarSign,
   ChevronsUpDown,
-  Landmark,
   LayoutDashboard,
-  Loader2,
   LogOut,
   NotebookPen,
   Settings,
@@ -13,7 +10,6 @@ import {
 } from 'lucide-react';
 
 import { auth, signOut } from '@/auth';
-import { getPortfolioAccounts } from '@/db/queries';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,25 +34,11 @@ export default async function AppSidebar() {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return null;
-  const portfolioAccounts = getPortfolioAccounts(userId);
 
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <Suspense
-          fallback={
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton disabled className="py-6">
-                  <Landmark />
-                  <Loader2 className="animate-spin" />
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          }
-        >
-          <AccountSwitcher accounts={portfolioAccounts} />
-        </Suspense>
+        <AccountSwitcher />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>

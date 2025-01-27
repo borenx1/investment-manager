@@ -32,7 +32,7 @@ export async function newPortfolioAccount(data: { name: string }) {
     return idOrError;
   }
   await initBalanceAndLedgersWithAccount(userId, idOrError);
-  revalidatePath('/settings');
+  revalidatePath('/', 'layout');
   return null;
 }
 
@@ -50,7 +50,7 @@ export async function editPortfolioAccount(data: { id: number; name: string }) {
   if (error) {
     return error;
   }
-  revalidatePath('/settings');
+  revalidatePath('/', 'layout');
   return null;
 }
 
@@ -60,7 +60,7 @@ export async function removePortfolioAccount(id: number) {
   if (!userId) return;
 
   await deletePortfolioAccount(userId, id);
-  revalidatePath('/settings');
+  revalidatePath('/', 'layout');
 }
 
 /**
@@ -85,7 +85,7 @@ export async function newAsset(data: {
     return idOrError;
   }
   await initBalanceAndLedgersWithAsset(userId, idOrError);
-  revalidatePath('/settings');
+  revalidatePath('/', 'layout');
   return null;
 }
 
@@ -111,7 +111,7 @@ export async function editAsset(data: {
   if (error) {
     return error;
   }
-  revalidatePath('/settings');
+  revalidatePath('/', 'layout');
   return null;
 }
 
@@ -121,7 +121,7 @@ export async function removeAsset(id: number) {
   if (!userId) return;
 
   await deleteAsset(userId, id);
-  revalidatePath('/settings');
+  revalidatePath('/', 'layout');
 }
 
 /**

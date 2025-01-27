@@ -4,7 +4,6 @@ import { format } from 'date-fns';
 import {
   ColumnDef,
   getCoreRowModel,
-  type RowData,
   useReactTable,
 } from '@tanstack/react-table';
 import { EllipsisVertical, Pencil, Trash2 } from 'lucide-react';
@@ -34,14 +33,6 @@ import {
 import AddEditCapitalTransactionDialog, {
   type Transaction,
 } from '@/components/AddEditCapitalTransactionDIalog';
-
-declare module '@tanstack/table-core' {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface TableMeta<TData extends RowData> {
-    portfolioAccounts: { id: number; name: string }[];
-    assets: { id: number; ticker: string; precision: number }[];
-  }
-}
 
 export const columns: ColumnDef<Transaction>[] = [
   {
@@ -105,7 +96,7 @@ export const columns: ColumnDef<Transaction>[] = [
   },
   {
     id: 'actions',
-    cell: ({ row, table }) => {
+    cell: ({ row }) => {
       const transaction = row.original;
       const date = transaction.transaction.date;
       const formattedAmount = formatDecimalPlaces(
@@ -114,11 +105,7 @@ export const columns: ColumnDef<Transaction>[] = [
       );
       return (
         <div className="flex items-center justify-center">
-          <AddEditCapitalTransactionDialog
-            transaction={transaction}
-            portfolioAccounts={table.options.meta?.portfolioAccounts ?? []}
-            assets={table.options.meta?.assets ?? []}
-          >
+          <AddEditCapitalTransactionDialog transaction={transaction}>
             <AlertDialog>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -174,20 +161,11 @@ export const columns: ColumnDef<Transaction>[] = [
   },
 ];
 
-export default function CapitalDataTable({
-  data,
-  portfolioAccounts,
-  assets,
-}: {
-  data: Transaction[];
-  portfolioAccounts: { id: number; name: string }[];
-  assets: { id: number; ticker: string; precision: number }[];
-}) {
+export default function CapitalDataTable({ data }: { data: Transaction[] }) {
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    meta: { portfolioAccounts, assets },
   });
 
   return (

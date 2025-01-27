@@ -1,8 +1,9 @@
+'use client';
+
 import { EllipsisVertical, Pencil, Plus, Trash2 } from 'lucide-react';
 
-import { auth } from '@/auth';
-import { getPortfolioAccounts } from '@/db/queries';
 import { removePortfolioAccount } from '@/lib/actions';
+import { useResourceStore } from '@/providers/resource-store-provider';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,11 +33,13 @@ import {
 } from '@/components/ui/table';
 import AddEditPortfolioAccountDialog from '@/components/AddEditPortfolioAccountDialog';
 
-export default async function PortfolioAccountSection() {
-  const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) return null;
-  const portfolioAccounts = await getPortfolioAccounts(userId);
+export default function PortfolioAccountSection() {
+  const portfolioAccounts = useResourceStore(
+    (state) => state.portfolioAccounts,
+  );
+  const isPortfolioAccountsLoaded = useResourceStore(
+    (state) => state.isPortfolioAccountsLoaded,
+  );
 
   return (
     <>
@@ -90,16 +93,13 @@ export default async function PortfolioAccountSection() {
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Back</AlertDialogCancel>
-                            <form
-                              action={async () => {
-                                'use server';
+                            <AlertDialogAction
+                              onClick={async () => {
                                 await removePortfolioAccount(account.id);
                               }}
                             >
-                              <AlertDialogAction type="submit">
-                                Delete
-                              </AlertDialogAction>
-                            </form>
+                              Delete
+                            </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
@@ -111,7 +111,11 @@ export default async function PortfolioAccountSection() {
           </Table>
         </div>
       ) : (
-        <div className="italic">No accounts, please create a new account</div>
+        <div className="italic">
+          {isPortfolioAccountsLoaded
+            ? 'No accounts, please create a new account'
+            : 'Loading...'}
+        </div>
       )}
       <AddEditPortfolioAccountDialog>
         <DialogTrigger asChild>

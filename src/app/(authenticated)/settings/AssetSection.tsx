@@ -1,8 +1,9 @@
+'use client';
+
 import { Check, EllipsisVertical, Pencil, Plus, Trash2 } from 'lucide-react';
 
-import { auth } from '@/auth';
-import { getAssets } from '@/db/queries';
 import { removeAsset } from '@/lib/actions';
+import { useResourceStore } from '@/providers/resource-store-provider';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,11 +33,9 @@ import {
 } from '@/components/ui/table';
 import AddEditAssetDialog from '@/components/AddEditAssetDialog';
 
-export default async function AssetSection() {
-  const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) return null;
-  const assets = await getAssets(userId);
+export default function AssetSection() {
+  const assets = useResourceStore((state) => state.assets);
+  const isAssetsLoaded = useResourceStore((state) => state.isAssetsLoaded);
 
   return (
     <>
@@ -110,16 +109,13 @@ export default async function AssetSection() {
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Back</AlertDialogCancel>
-                            <form
-                              action={async () => {
-                                'use server';
+                            <AlertDialogAction
+                              onClick={async () => {
                                 await removeAsset(asset.id);
                               }}
                             >
-                              <AlertDialogAction type="submit">
-                                Delete
-                              </AlertDialogAction>
-                            </form>
+                              Delete
+                            </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
@@ -131,7 +127,11 @@ export default async function AssetSection() {
           </Table>
         </div>
       ) : (
-        <div className="italic">No assets, please create a new asset</div>
+        <div className="italic">
+          {isAssetsLoaded
+            ? 'No assets, please create a new asset'
+            : 'Loading...'}
+        </div>
       )}
       <AddEditAssetDialog>
         <DialogTrigger asChild>

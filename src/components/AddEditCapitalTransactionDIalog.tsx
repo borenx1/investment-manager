@@ -16,6 +16,7 @@ import { Calendar as CalendarIcon, LoaderCircle } from 'lucide-react';
 
 import { editCapitalTransaction, newCapitalTransaction } from '@/lib/actions';
 import { convertUTCDate, getCurrentDate } from '@/lib/utils';
+import { useResourceStore } from '@/providers/resource-store-provider';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import {
@@ -79,17 +80,17 @@ const formSchema = z.object({
 });
 
 export default function AddEditCapitalTransactionDialog({
-  portfolioAccounts,
-  assets,
   transaction,
   children,
 }: {
-  portfolioAccounts: { id: number; name: string }[];
-  assets: { id: number; ticker: string; precision: number }[];
   transaction?: Transaction;
   children: React.ReactNode;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const portfolioAccounts = useResourceStore(
+    (state) => state.portfolioAccounts,
+  );
+  const assets = useResourceStore((state) => state.assets);
   const formRef = useRef<HTMLFormElement>(null);
   const defaultValues = useMemo(
     () =>

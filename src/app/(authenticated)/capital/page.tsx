@@ -2,11 +2,7 @@ import type { Metadata } from 'next';
 import { Plus } from 'lucide-react';
 
 import { auth } from '@/auth';
-import {
-  getAssets,
-  getCapitalTransactions,
-  getPortfolioAccounts,
-} from '@/db/queries';
+import { getCapitalTransactions } from '@/db/queries';
 import { Button } from '@/components/ui/button';
 import { DialogTrigger } from '@/components/ui/dialog';
 import AddEditCapitalTransactionDialog from '@/components/AddEditCapitalTransactionDIalog';
@@ -20,17 +16,12 @@ export default async function CapitalPage() {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return null;
-  const portfolioAccounts = await getPortfolioAccounts(userId);
-  const assets = await getAssets(userId);
   const transactions = await getCapitalTransactions(userId);
 
   return (
     <div className="p-4 sm:p-8">
       <h1 className="mb-8 font-bold">Capital Changes</h1>
-      <AddEditCapitalTransactionDialog
-        portfolioAccounts={portfolioAccounts}
-        assets={assets}
-      >
+      <AddEditCapitalTransactionDialog>
         <DialogTrigger asChild>
           <Button className="mb-8">
             <Plus />
@@ -39,11 +30,7 @@ export default async function CapitalPage() {
         </DialogTrigger>
       </AddEditCapitalTransactionDialog>
 
-      <CapitalDataTable
-        data={transactions}
-        portfolioAccounts={portfolioAccounts}
-        assets={assets}
-      />
+      <CapitalDataTable data={transactions} />
     </div>
   );
 }

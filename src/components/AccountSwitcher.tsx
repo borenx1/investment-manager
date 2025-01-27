@@ -1,9 +1,10 @@
 'use client';
 
-import { use, useEffect, useMemo } from 'react';
-import { ChevronsUpDown, Landmark, Plus } from 'lucide-react';
+import { useEffect, useMemo } from 'react';
+import { ChevronsUpDown, Landmark, Loader2, Plus } from 'lucide-react';
 
 import { useActiveAccount } from '@/lib/context/ActiveAccountContext';
+import { useResourceStore } from '@/providers/resource-store-provider';
 import { DialogTrigger } from '@/components/ui/dialog';
 import {
   DropdownMenu,
@@ -20,12 +21,13 @@ import {
 } from '@/components/ui/sidebar';
 import AddEditPortfolioAccountDialog from '@/components/AddEditPortfolioAccountDialog';
 
-export default function AccountSwitcher({
-  accounts,
-}: {
-  accounts: Promise<{ id: number; name: string }[]>;
-}) {
-  const portfolioAccounts = use(accounts);
+export default function AccountSwitcher() {
+  const portfolioAccounts = useResourceStore(
+    (state) => state.portfolioAccounts,
+  );
+  const isPortfolioAccountsLoaded = useResourceStore(
+    (state) => state.isPortfolioAccountsLoaded,
+  );
   const [activeAccountId, selectAccount] = useActiveAccount();
   const activeAccount = useMemo(() => {
     return activeAccountId !== null
@@ -47,19 +49,30 @@ export default function AccountSwitcher({
         <AddEditPortfolioAccountDialog>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <SidebarMenuButton className="py-6">
+              <SidebarMenuButton
+                disabled={!isPortfolioAccountsLoaded}
+                className="py-6"
+              >
                 <Landmark />
-                <div className="grid">
-                  <span className="truncate text-xs font-bold">Account</span>
-                  {activeAccount ? (
-                    <span className="truncate italic">
-                      {activeAccount.name}
-                    </span>
-                  ) : (
-                    <span className="truncate">All</span>
-                  )}
-                </div>
-                <ChevronsUpDown className="ml-auto" />
+                {isPortfolioAccountsLoaded ? (
+                  <>
+                    <div className="grid">
+                      <span className="truncate text-xs font-bold">
+                        Account
+                      </span>
+                      {activeAccount ? (
+                        <span className="truncate italic">
+                          {activeAccount.name}
+                        </span>
+                      ) : (
+                        <span className="truncate">All</span>
+                      )}
+                    </div>
+                    <ChevronsUpDown className="ml-auto" />
+                  </>
+                ) : (
+                  <Loader2 className="animate-spin" />
+                )}
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
