@@ -57,15 +57,16 @@ export function createResourceStore() {
         set({ activeAccountId: null, activeAccount: null });
         return;
       }
-      const accounts = get().portfolioAccounts;
-      const activeAccount = accounts.find(
-        (account) => account.id === accountId,
-      );
-      if (activeAccount) {
-        set({ activeAccountId: accountId, activeAccount });
-      } else {
-        set({ activeAccountId: null, activeAccount: null });
-      }
+      set((state) => {
+        const accounts = state.portfolioAccounts;
+        const activeAccount = accounts.find(
+          (account) => account.id === accountId,
+        );
+        if (activeAccount) {
+          return { activeAccountId: accountId, activeAccount };
+        }
+        return { activeAccountId: null, activeAccount: null };
+      });
     },
   }));
 }
