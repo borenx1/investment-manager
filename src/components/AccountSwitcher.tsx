@@ -1,9 +1,7 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
 import { ChevronsUpDown, Landmark, Loader2, Plus } from 'lucide-react';
 
-import { useActiveAccount } from '@/lib/context/ActiveAccountContext';
 import { useResourceStore } from '@/providers/resource-store-provider';
 import { DialogTrigger } from '@/components/ui/dialog';
 import {
@@ -28,20 +26,8 @@ export default function AccountSwitcher() {
   const isPortfolioAccountsLoaded = useResourceStore(
     (state) => state.isPortfolioAccountsLoaded,
   );
-  const [activeAccountId, selectAccount] = useActiveAccount();
-  const activeAccount = useMemo(() => {
-    return activeAccountId !== null
-      ? (portfolioAccounts.find((account) => account.id === activeAccountId) ??
-          null)
-      : null;
-  }, [activeAccountId, portfolioAccounts]);
-
-  // Prevent selecting an account that doesn't exist.
-  useEffect(() => {
-    if (activeAccountId !== null && !activeAccount) {
-      selectAccount(null);
-    }
-  }, [activeAccountId, activeAccount, selectAccount]);
+  const activeAccount = useResourceStore((state) => state.activeAccount);
+  const setActiveAccount = useResourceStore((state) => state.setActiveAccount);
 
   return (
     <SidebarMenu>
@@ -81,14 +67,14 @@ export default function AccountSwitcher() {
               className="w-(--radix-dropdown-menu-trigger-width) min-w-56"
             >
               <DropdownMenuGroup>
-                <DropdownMenuItem onClick={() => selectAccount(null)}>
+                <DropdownMenuItem onClick={() => setActiveAccount(null)}>
                   <Landmark />
                   All
                 </DropdownMenuItem>
                 {portfolioAccounts.map((account) => (
                   <DropdownMenuItem
                     key={account.id}
-                    onClick={() => selectAccount(account.id)}
+                    onClick={() => setActiveAccount(account.id)}
                   >
                     <div className="size-4"></div>
                     {account.name}
