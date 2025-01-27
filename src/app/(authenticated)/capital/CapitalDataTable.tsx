@@ -21,6 +21,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DataTable, DataTablePagination } from '@/components/ui/data-table';
 import { DialogTrigger } from '@/components/ui/dialog';
@@ -87,7 +88,17 @@ export const columns: ColumnDef<Transaction>[] = [
     header: 'Type',
     cell: ({ row }) => {
       const amount = parseFloat(row.original.assetEntry.amount);
-      return amount >= 0 ? <div>Contributions</div> : <div>Drawings</div>;
+      return (
+        <div className="flex items-center justify-center">
+          {amount >= 0 ? (
+            <Badge className="bg-green-700 text-green-100 hover:bg-green-700/80">
+              Contributions
+            </Badge>
+          ) : (
+            <Badge variant="destructive">Drawings</Badge>
+          )}
+        </div>
+      );
     },
   },
   {
