@@ -1,5 +1,6 @@
 'use client';
 
+import { use } from 'react';
 import { format } from 'date-fns';
 import {
   ColumnDef,
@@ -31,6 +32,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Skeleton } from '@/components/ui/skeleton';
 import AddEditCapitalTransactionDialog, {
   type Transaction,
 } from '@/components/AddEditCapitalTransactionDIalog';
@@ -172,7 +174,12 @@ export const columns: ColumnDef<Transaction>[] = [
   },
 ];
 
-export default function CapitalDataTable({ data }: { data: Transaction[] }) {
+export default function CapitalDataTable({
+  data: dataPromise,
+}: {
+  data: Promise<Transaction[]>;
+}) {
+  const data = use(dataPromise);
   const table = useReactTable({
     data,
     columns,
@@ -189,6 +196,16 @@ export default function CapitalDataTable({ data }: { data: Transaction[] }) {
         pageSizes={[10, 20, 50, 100]}
         showSelected={false}
       />
+    </div>
+  );
+}
+
+export function CapitalDataTableSkeleton() {
+  return (
+    <div className="space-y-2 overflow-hidden">
+      {[...Array(10)].map((_, i) => (
+        <Skeleton key={i} className="h-[40px]" />
+      ))}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { Plus } from 'lucide-react';
 
@@ -6,7 +7,7 @@ import { getCapitalTransactions } from '@/db/queries';
 import { Button } from '@/components/ui/button';
 import { DialogTrigger } from '@/components/ui/dialog';
 import AddEditCapitalTransactionDialog from '@/components/AddEditCapitalTransactionDIalog';
-import CapitalDataTable from './CapitalDataTable';
+import CapitalDataTable, { CapitalDataTableSkeleton } from './CapitalDataTable';
 
 export const metadata: Metadata = {
   title: 'Capital Changes',
@@ -16,7 +17,7 @@ export default async function CapitalPage() {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return null;
-  const transactions = await getCapitalTransactions(userId);
+  const transactions = getCapitalTransactions(userId);
 
   return (
     <div className="p-4 sm:p-8">
@@ -30,7 +31,9 @@ export default async function CapitalPage() {
         </DialogTrigger>
       </AddEditCapitalTransactionDialog>
 
-      <CapitalDataTable data={transactions} />
+      <Suspense fallback={<CapitalDataTableSkeleton />}>
+        <CapitalDataTable data={transactions} />
+      </Suspense>
     </div>
   );
 }
