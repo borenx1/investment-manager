@@ -44,7 +44,14 @@ export function DataTable<TData>({
           >
             {headerGroup.headers.map((header) => {
               return (
-                <TableHead key={header.id} colSpan={header.colSpan}>
+                <TableHead
+                  key={header.id}
+                  colSpan={header.colSpan}
+                  style={{
+                    minWidth: header.column.columnDef.minSize,
+                    maxWidth: header.column.columnDef.maxSize,
+                  }}
+                >
                   {header.isPlaceholder
                     ? null
                     : flexRender(
@@ -66,7 +73,13 @@ export function DataTable<TData>({
               className={gridLines ? 'divide-x' : ''}
             >
               {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id}>
+                <TableCell
+                  key={cell.id}
+                  style={{
+                    minWidth: cell.column.columnDef.minSize,
+                    maxWidth: cell.column.columnDef.maxSize,
+                  }}
+                >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>
               ))}

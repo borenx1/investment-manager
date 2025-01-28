@@ -52,7 +52,8 @@ export const columns: ColumnDef<Transaction>[] = [
   },
   {
     accessorKey: 'portfolioAccount.name',
-    header: () => <div className="min-w-[80px]">Account</div>,
+    header: 'Account',
+    minSize: 80,
   },
   {
     accessorKey: 'asset.ticker',
@@ -60,7 +61,7 @@ export const columns: ColumnDef<Transaction>[] = [
   },
   {
     accessorKey: 'assetEntry.amount',
-    header: () => <div className="min-w-[80px] text-right">Amount</div>,
+    header: () => <div className="text-right">Amount</div>,
     cell: ({ row }) => {
       const amount = parseFloat(row.original.assetEntry.amount);
       const formatted = formatDecimalPlaces(
@@ -69,10 +70,11 @@ export const columns: ColumnDef<Transaction>[] = [
       );
       return <div className="text-right font-mono">{formatted}</div>;
     },
+    minSize: 80,
   },
   {
     accessorKey: 'feeIncomeEntry.amount',
-    header: () => <div className="min-w-[80px] text-right">Fee</div>,
+    header: () => <div className="text-right">Fee</div>,
     cell: ({ row }) => {
       if (!row.original.feeIncomeEntry) {
         return '';
@@ -84,6 +86,7 @@ export const columns: ColumnDef<Transaction>[] = [
       );
       return <div className="text-right font-mono">{formatted}</div>;
     },
+    minSize: 80,
   },
   {
     id: 'type',
@@ -105,7 +108,9 @@ export const columns: ColumnDef<Transaction>[] = [
   },
   {
     accessorKey: 'transaction.description',
-    header: () => <div className="min-w-[100px]">Notes</div>,
+    header: 'Notes',
+    minSize: 150,
+    maxSize: 300,
   },
   {
     id: 'actions',
