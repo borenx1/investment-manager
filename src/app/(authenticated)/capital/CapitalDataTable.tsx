@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import {
   ColumnDef,
   getCoreRowModel,
+  getPaginationRowModel,
   useReactTable,
 } from '@tanstack/react-table';
 import { EllipsisVertical, Pencil, Trash2 } from 'lucide-react';
@@ -189,6 +190,8 @@ export default function CapitalDataTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    initialState: { pagination: { pageSize: 20 } },
   });
 
   return (
