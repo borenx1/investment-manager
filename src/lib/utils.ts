@@ -29,6 +29,15 @@ export function getCurrentDate() {
 }
 
 /**
+ * Extract the date from a date object. The time is set to 00:00:00.
+ * @param date The date to extract.
+ * @returns The new date.
+ */
+export function extractDate(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+/**
  * Convert a date to a UTC date in the local timezone. The time is set to
  * 00:00:00.
  * @param date The date to convert.

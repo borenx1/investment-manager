@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 
 import { removeCapitalTransaction } from '@/lib/actions';
-import { convertUTCDate, formatDecimalPlaces } from '@/lib/utils';
+import { convertUTCDate, extractDate, formatDecimalPlaces } from '@/lib/utils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,6 +48,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import AddEditCapitalTransactionDialog, {
   type Transaction,
 } from '@/components/AddEditCapitalTransactionDIalog';
+import DateFilter, { type DateFilterValue } from '@/components/DateFilter';
 import SelectFilter from '@/components/SelectFilter';
 
 export const columns: ColumnDef<Transaction>[] = [
@@ -61,6 +62,25 @@ export const columns: ColumnDef<Transaction>[] = [
           {format(convertUTCDate(date), 'yyyy/MM/dd')}
         </div>
       );
+    },
+    filterFn: (row, _, filterValue: DateFilterValue) => {
+      if (filterValue) {
+        const date = row.original.transaction.date;
+        const localDate = convertUTCDate(date);
+        if (filterValue.mode === 'from') {
+          return localDate >= extractDate(filterValue.date);
+        } else if (filterValue.mode === 'to') {
+          return localDate <= extractDate(filterValue.date);
+        } else if (filterValue.mode === 'range') {
+          if (filterValue.from && filterValue.to) {
+            return (
+              localDate >= extractDate(filterValue.from) &&
+              localDate <= extractDate(filterValue.to)
+            );
+          }
+        }
+      }
+      return true;
     },
   },
   {
@@ -254,6 +274,7 @@ export default function CapitalDataTable({
   const [typeFilter, setTypeFilter] = useState<(typeof typeOptions)[number][]>(
     [],
   );
+  const [dateFilter, setDateFilter] = useState<DateFilterValue>();
   const table = useReactTable({
     data,
     columns,
@@ -276,6 +297,9 @@ export default function CapitalDataTable({
       .getColumn('type')
       ?.setFilterValue(typeFilter.length ? typeFilter : undefined);
   }, [table, typeFilter]);
+  useEffect(() => {
+    table.getColumn('transaction_date')?.setFilterValue(dateFilter);
+  }, [table, dateFilter]);
 
   return (
     <div className="space-y-4">
@@ -294,12 +318,14 @@ export default function CapitalDataTable({
           values={typeFilter}
           onChange={setTypeFilter}
         />
-        {!!(assetFilter.length || typeFilter.length) && (
+        <DateFilter name="Date" value={dateFilter} onChange={setDateFilter} />
+        {!!(assetFilter.length || typeFilter.length || dateFilter) && (
           <Button
             variant="outline"
             onClick={() => {
               setAssetFilter([]);
               setTypeFilter([]);
+              setDateFilter(undefined);
             }}
           >
             Reset
