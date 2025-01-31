@@ -348,6 +348,7 @@ export default function CapitalDataTable({
 export function CapitalDataTableSkeleton() {
   return (
     <div className="space-y-2 overflow-hidden">
+      <Skeleton className="h-[40px] max-w-[400px]" />
       {[...Array(10)].map((_, i) => (
         <Skeleton key={i} className="h-[40px]" />
       ))}
