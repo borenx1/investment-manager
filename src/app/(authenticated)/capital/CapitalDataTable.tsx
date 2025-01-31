@@ -47,7 +47,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import AddEditCapitalTransactionDialog, {
   type Transaction,
-} from '@/components/AddEditCapitalTransactionDIalog';
+} from '@/components/AddEditCapitalTransactionDialog';
 import DateFilter, { type DateFilterValue } from '@/components/DateFilter';
 import SelectFilter from '@/components/SelectFilter';
 

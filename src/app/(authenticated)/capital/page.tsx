@@ -6,7 +6,7 @@ import { auth } from '@/auth';
 import { getCapitalTransactions } from '@/db/queries';
 import { Button } from '@/components/ui/button';
 import { DialogTrigger } from '@/components/ui/dialog';
-import AddEditCapitalTransactionDialog from '@/components/AddEditCapitalTransactionDIalog';
+import AddEditCapitalTransactionDialog from '@/components/AddEditCapitalTransactionDialog';
 import CapitalDataTable, { CapitalDataTableSkeleton } from './CapitalDataTable';
 
 export const metadata: Metadata = {
