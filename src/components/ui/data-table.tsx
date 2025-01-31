@@ -109,6 +109,10 @@ export function DataTablePagination<TData>({
   pageSizes?: number[];
   showSelected?: boolean;
 }) {
+  const firstRowIndex =
+    table.getState().pagination.pageIndex *
+    table.getState().pagination.pageSize;
+
   return (
     <div className="flex items-center justify-between px-2">
       {showSelected ? (
@@ -119,7 +123,7 @@ export function DataTablePagination<TData>({
       ) : (
         <div className="flex-1"></div>
       )}
-      <div className="flex items-center space-x-6 lg:space-x-8">
+      <div className="flex items-center space-x-4 lg:space-x-8">
         <div className="flex items-center space-x-2">
           <p className="text-sm font-medium">Rows per page</p>
           <Select
@@ -140,9 +144,17 @@ export function DataTablePagination<TData>({
             </SelectContent>
           </Select>
         </div>
-        <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-          Page {table.getState().pagination.pageIndex + 1} of{' '}
-          {Math.max(table.getPageCount(), 1)}
+        <div className="flex items-center justify-center text-sm font-medium">
+          {table.getRowCount() ? (
+            <>
+              {firstRowIndex + 1}-
+              {firstRowIndex + table.getPaginationRowModel().rows.length}
+              {' of '}
+              {table.getRowCount()}
+            </>
+          ) : (
+            '-'
+          )}
         </div>
         <div className="flex items-center space-x-2">
           <Button
