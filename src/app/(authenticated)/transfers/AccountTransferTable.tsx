@@ -19,17 +19,7 @@ import {
 
 import { removeAccountTransferTx } from '@/lib/actions';
 import { convertUTCDate, extractDate, formatDecimalPlaces } from '@/lib/utils';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+import { AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useResourceStore } from '@/providers/resource-store-provider';
 import { Button } from '@/components/ui/button';
 import { DataTable, DataTablePagination } from '@/components/ui/data-table';
@@ -41,6 +31,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
+import ActionAlertDialog from '@/components/ActionAlertDialog';
 import AddEditAccountTransferTxDialog, {
   type Transaction,
 } from '@/components/AddEditAccountTransferTxDialog';
@@ -166,7 +157,24 @@ export const columns: ColumnDef<Transaction>[] = [
       return (
         <div className="flex items-center justify-center">
           <AddEditAccountTransferTxDialog transaction={transaction}>
-            <AlertDialog>
+            <ActionAlertDialog
+              title="Delete Account Transfer"
+              description={
+                <>
+                  Are you sure you want to delete this account transfer
+                  transaction?
+                  <br />
+                  {`${format(convertUTCDate(date), 'yyyy/MM/dd')}: ${formattedAmount} ${transaction.asset.ticker}`}
+                </>
+              }
+              actionText="Delete"
+              cancelText="Back"
+              onAction={async () =>
+                await removeAccountTransferTx(
+                  transaction.accountTransferTransaction.id,
+                )
+              }
+            >
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost">
@@ -189,30 +197,7 @@ export const columns: ColumnDef<Transaction>[] = [
                   </AlertDialogTrigger>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Account Transfer</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to delete this account transfer
-                    transaction?
-                    <br />
-                    {`${format(convertUTCDate(date), 'yyyy/MM/dd')}: ${formattedAmount} ${transaction.asset.ticker}`}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Back</AlertDialogCancel>
-                  <form
-                    action={async () => {
-                      await removeAccountTransferTx(
-                        transaction.accountTransferTransaction.id,
-                      );
-                    }}
-                  >
-                    <AlertDialogAction type="submit">Delete</AlertDialogAction>
-                  </form>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            </ActionAlertDialog>
           </AddEditAccountTransferTxDialog>
         </div>
       );

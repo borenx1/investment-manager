@@ -22,17 +22,7 @@ import {
 
 import { removeCapitalTransaction } from '@/lib/actions';
 import { convertUTCDate, extractDate, formatDecimalPlaces } from '@/lib/utils';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+import { AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useResourceStore } from '@/providers/resource-store-provider';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -45,6 +35,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
+import ActionAlertDialog from '@/components/ActionAlertDialog';
 import AddEditCapitalTransactionDialog, {
   type Transaction,
 } from '@/components/AddEditCapitalTransactionDialog';
@@ -190,7 +181,23 @@ export const columns: ColumnDef<Transaction>[] = [
       return (
         <div className="flex items-center justify-center">
           <AddEditCapitalTransactionDialog transaction={transaction}>
-            <AlertDialog>
+            <ActionAlertDialog
+              title="Delete Capital Transaction"
+              description={
+                <>
+                  Are you sure you want to delete this capital transaction?
+                  <br />
+                  {`${format(convertUTCDate(date), 'yyyy/MM/dd')}: ${formattedAmount} ${transaction.asset.ticker}`}
+                </>
+              }
+              actionText="Delete"
+              cancelText="Back"
+              onAction={async () =>
+                await removeCapitalTransaction(
+                  transaction.capitalTransaction.id,
+                )
+              }
+            >
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost">
@@ -213,31 +220,7 @@ export const columns: ColumnDef<Transaction>[] = [
                   </AlertDialogTrigger>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    Delete Capital Transaction
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to delete this capital transaction?
-                    <br />
-                    {`${format(convertUTCDate(date), 'yyyy/MM/dd')}: ${formattedAmount} ${transaction.asset.ticker}`}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Back</AlertDialogCancel>
-                  <form
-                    action={async () => {
-                      await removeCapitalTransaction(
-                        transaction.capitalTransaction.id,
-                      );
-                    }}
-                  >
-                    <AlertDialogAction type="submit">Delete</AlertDialogAction>
-                  </form>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            </ActionAlertDialog>
           </AddEditCapitalTransactionDialog>
         </div>
       );

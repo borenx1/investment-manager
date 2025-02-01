@@ -4,17 +4,7 @@ import { EllipsisVertical, Pencil, Plus, Trash2 } from 'lucide-react';
 
 import { removePortfolioAccount } from '@/lib/actions';
 import { useResourceStore } from '@/providers/resource-store-provider';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+import { AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { DialogTrigger } from '@/components/ui/dialog';
 import {
@@ -31,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import ActionAlertDialog from '@/components/ActionAlertDialog';
 import AddEditPortfolioAccountDialog from '@/components/AddEditPortfolioAccountDialog';
 
 export default function PortfolioAccountSection() {
@@ -58,7 +49,22 @@ export default function PortfolioAccountSection() {
                   <TableCell className="pl-4">{account.name}</TableCell>
                   <TableCell>
                     <AddEditPortfolioAccountDialog account={account}>
-                      <AlertDialog>
+                      <ActionAlertDialog
+                        title="Delete Account"
+                        description={
+                          <>
+                            Are you sure you want to delete this portfolio
+                            account?
+                            <br />
+                            {account.name}
+                          </>
+                        }
+                        actionText="Delete"
+                        cancelText="Back"
+                        onAction={async () =>
+                          await removePortfolioAccount(account.id)
+                        }
+                      >
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost">
@@ -81,28 +87,7 @@ export default function PortfolioAccountSection() {
                             </AlertDialogTrigger>
                           </DropdownMenuContent>
                         </DropdownMenu>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Account</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete this portfolio
-                              account?
-                              <br />
-                              {account.name}
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Back</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={async () => {
-                                await removePortfolioAccount(account.id);
-                              }}
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      </ActionAlertDialog>
                     </AddEditPortfolioAccountDialog>
                   </TableCell>
                 </TableRow>

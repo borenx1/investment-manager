@@ -4,17 +4,7 @@ import { Check, EllipsisVertical, Pencil, Plus, Trash2 } from 'lucide-react';
 
 import { removeAsset } from '@/lib/actions';
 import { useResourceStore } from '@/providers/resource-store-provider';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+import { AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { DialogTrigger } from '@/components/ui/dialog';
 import {
@@ -31,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import ActionAlertDialog from '@/components/ActionAlertDialog';
 import AddEditAssetDialog from '@/components/AddEditAssetDialog';
 
 export default function AssetSection() {
@@ -75,7 +66,19 @@ export default function AssetSection() {
                   <TableCell className="text-center">{asset.symbol}</TableCell>
                   <TableCell>
                     <AddEditAssetDialog asset={asset}>
-                      <AlertDialog>
+                      <ActionAlertDialog
+                        title="Delete Asset"
+                        description={
+                          <>
+                            Are you sure you want to delete this asset?
+                            <br />
+                            {`(${asset.ticker}) ${asset.name}`}
+                          </>
+                        }
+                        actionText="Delete"
+                        cancelText="Back"
+                        onAction={async () => await removeAsset(asset.id)}
+                      >
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost">
@@ -98,27 +101,7 @@ export default function AssetSection() {
                             </AlertDialogTrigger>
                           </DropdownMenuContent>
                         </DropdownMenu>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Asset</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete this asset?
-                              <br />
-                              {`(${asset.ticker}) ${asset.name}`}
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Back</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={async () => {
-                                await removeAsset(asset.id);
-                              }}
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      </ActionAlertDialog>
                     </AddEditAssetDialog>
                   </TableCell>
                 </TableRow>
