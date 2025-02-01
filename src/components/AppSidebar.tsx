@@ -1,4 +1,5 @@
 import {
+  ArrowLeftRight,
   Banknote,
   CircleDollarSign,
   ChevronsUpDown,
@@ -58,6 +59,11 @@ export default async function AppSidebar() {
                 url="/capital"
                 title="Capital Changes"
                 icon={<Banknote />}
+              />
+              <AppSidebarLink
+                url="/transfers"
+                title="Account Transfers"
+                icon={<ArrowLeftRight />}
               />
               <AppSidebarLink
                 url="/financials"

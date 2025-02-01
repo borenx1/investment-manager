@@ -6,15 +6,31 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
+ * Sum two floating point numbers accurately. Requires a precision.
+ * @param num1 The first number to sum.
+ * @param num2 The second number to sum.
+ * @param precision The maximum precision required.
+ * @returns The sum of the two numbers.
+ */
+export function sumFloats(num1: number, num2: number, precision: number) {
+  return parseFloat(Number(num1 + num2).toFixed(precision));
+}
+
+/**
  * Format a number to a string with a fixed number of decimal places.
  * @param value The number to format.
  * @param decimalPlaces The number of decimal places.
+ * @param trailingZeros Whether to include trailing zeros.
  * @returns The formatted number.
  */
-export function formatDecimalPlaces(value: number, decimalPlaces: number) {
+export function formatDecimalPlaces(
+  value: number,
+  decimalPlaces: number,
+  trailingZeros: boolean = true,
+) {
   return new Intl.NumberFormat(undefined, {
     style: 'decimal',
-    minimumFractionDigits: decimalPlaces,
+    minimumFractionDigits: trailingZeros ? decimalPlaces : 0,
     maximumFractionDigits: decimalPlaces,
   }).format(value);
 }

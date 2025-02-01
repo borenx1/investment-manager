@@ -4,14 +4,17 @@ import { revalidatePath } from 'next/cache';
 
 import { auth } from '@/auth';
 import {
+  createAccountTransferTx,
   createAsset,
   createCapitalTransaction,
   createPortfolioAccount,
+  deleteAccountTransferTx,
   deleteAsset,
   deleteCapitalTransaction,
   deletePortfolioAccount,
   initBalanceAndLedgersWithAccount,
   initBalanceAndLedgersWithAsset,
+  updateAccountTransferTx,
   updateAsset,
   updateCapitalTransaction,
   updatePortfolioAccount,
@@ -176,4 +179,60 @@ export async function removeCapitalTransaction(id: number) {
 
   await deleteCapitalTransaction(userId, id);
   revalidatePath('/capital');
+}
+
+/**
+ * Create a new account transfer transaction for the authenticated user.
+ * @param data The new account transfer transaction data.
+ * @returns The IDs of the created rows.
+ */
+export async function newAccountTransferTx(data: {
+  sourcePortfolioAccountId: number;
+  targetPortfolioAccountId: number;
+  assetId: number;
+  date: Date;
+  amount: number;
+  fee: number | null;
+  description: string | null;
+}) {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return null;
+
+  const ids = await createAccountTransferTx(userId, data);
+  revalidatePath('/transfers');
+  return ids;
+}
+
+/**
+ * Update a account transfer transaction for the authenticated user.
+ * @param data The account transfer transaction data to update.
+ * @returns The IDs of the updated or created rows.
+ */
+export async function editAccountTransferTx(data: {
+  id: number;
+  sourcePortfolioAccountId: number;
+  targetPortfolioAccountId: number;
+  assetId: number;
+  date: Date;
+  amount: number;
+  fee: number | null;
+  description: string | null;
+}) {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return null;
+
+  const ids = await updateAccountTransferTx(userId, data);
+  revalidatePath('/transfers');
+  return ids;
+}
+
+export async function removeAccountTransferTx(id: number) {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return;
+
+  await deleteAccountTransferTx(userId, id);
+  revalidatePath('/transfers');
 }

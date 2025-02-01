@@ -268,3 +268,53 @@ export const capitalTransactions = pgTable(
 
 export type SelectCapitalTransaction = typeof capitalTransactions.$inferSelect;
 export type InsertCapitalTransaction = typeof capitalTransactions.$inferInsert;
+
+export const accountTransferTransactions = pgTable(
+  'account_transfer_transaction',
+  {
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    transactionId: integer('transaction_id')
+      .notNull()
+      .references(() => transactions.id, { onDelete: 'cascade' }),
+    sourceAssetEntryId: integer('source_asset_entry_id')
+      .notNull()
+      .references(() => ledgerEntries.id, { onDelete: 'cascade' }),
+    sourceCapitalEntryId: integer('source_capital_entry_id')
+      .notNull()
+      .references(() => ledgerEntries.id, { onDelete: 'cascade' }),
+    targetAssetEntryId: integer('target_asset_entry_id')
+      .notNull()
+      .references(() => ledgerEntries.id, { onDelete: 'cascade' }),
+    targetCapitalEntryId: integer('target_capital_entry_id')
+      .notNull()
+      .references(() => ledgerEntries.id, { onDelete: 'cascade' }),
+    feeAssetEntryId: integer('fee_asset_entry_id').references(
+      () => ledgerEntries.id,
+      { onDelete: 'set null' },
+    ),
+    feeIncomeEntryId: integer('fee_income_entry_id').references(
+      () => ledgerEntries.id,
+      { onDelete: 'set null' },
+    ),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    unique().on(table.transactionId),
+    unique().on(table.sourceAssetEntryId),
+    unique().on(table.sourceCapitalEntryId),
+    unique().on(table.targetAssetEntryId),
+    unique().on(table.targetCapitalEntryId),
+    unique().on(table.feeAssetEntryId),
+    unique().on(table.feeIncomeEntryId),
+  ],
+);
+
+export type SelectAccountTransferTransaction =
+  typeof accountTransferTransactions.$inferSelect;
+export type InsertAccountTransferTransaction =
+  typeof accountTransferTransactions.$inferInsert;
