@@ -15,7 +15,6 @@ import {
   SelectAccountTransferTransaction,
   SelectAsset,
   SelectCapitalTransaction,
-  SelectLedger,
   SelectLedgerEntry,
   SelectPortfolioAccount,
   SelectTransaction,
@@ -426,7 +425,6 @@ export async function getCapitalTransactions(
       capitalEntry: capitalEntries,
       feeAssetEntry: feeAssetEntries,
       feeIncomeEntry: feeIncomeEntries,
-      ledger: ledgers,
       portfolioAccount: portfolioAccounts,
       asset: assets,
     })
@@ -466,7 +464,6 @@ export async function getCapitalTransactions(
     capitalEntry: SelectLedgerEntry;
     feeAssetEntry: SelectLedgerEntry | null;
     feeIncomeEntry: SelectLedgerEntry | null;
-    ledger: SelectLedger;
     portfolioAccount: SelectPortfolioAccount;
     asset: SelectAsset;
   }[];
@@ -491,7 +488,6 @@ export async function getCapitalTransaction(
       capitalEntry: capitalEntries,
       feeAssetEntry: feeAssetEntries,
       feeIncomeEntry: feeIncomeEntries,
-      ledger: ledgers,
       portfolioAccount: portfolioAccounts,
       asset: assets,
     })
@@ -532,7 +528,6 @@ export async function getCapitalTransaction(
         capitalEntry: SelectLedgerEntry;
         feeAssetEntry: SelectLedgerEntry | null;
         feeIncomeEntry: SelectLedgerEntry | null;
-        ledger: SelectLedger;
         portfolioAccount: SelectPortfolioAccount;
         asset: SelectAsset;
       })
@@ -571,28 +566,21 @@ export async function createCapitalTransaction(
   description = description?.trim() || null;
 
   // First check that the account and asset belong to the user.
-  const isPortfolioAccountOwned = await isPortfolioAccountBelongToUser(
-    userId,
-    portfolioAccountId,
-  );
+  const [isPortfolioAccountOwned, isAssetOwned] = await Promise.all([
+    isPortfolioAccountBelongToUser(userId, portfolioAccountId),
+    isAssetBelongToUser(userId, assetId),
+  ]);
   if (!isPortfolioAccountOwned) {
     throw new Error('Portfolio account does not belong to the user');
   }
-  const isAssetOwned = await isAssetBelongToUser(userId, assetId);
   if (!isAssetOwned) {
     throw new Error('Asset does not belong to the user');
   }
 
-  const assetLedger = await getLedgerGuaranteed(
-    portfolioAccountId,
-    assetId,
-    'asset',
-  );
-  const capitalLedger = await getLedgerGuaranteed(
-    portfolioAccountId,
-    assetId,
-    'capital',
-  );
+  const [assetLedger, capitalLedger] = await Promise.all([
+    getLedgerGuaranteed(portfolioAccountId, assetId, 'asset'),
+    getLedgerGuaranteed(portfolioAccountId, assetId, 'capital'),
+  ]);
   const result = await db.transaction(async (tx) => {
     const transactionId = await tx
       .insert(transactions)
@@ -603,21 +591,20 @@ export async function createCapitalTransaction(
         description,
       })
       .returning({ id: transactions.id });
-    const assetEntryId = await tx
+    const [assetEntryId, capitalEntryId] = await tx
       .insert(ledgerEntries)
-      .values({
-        ledgerId: assetLedger.id,
-        transactionId: transactionId[0]!.id,
-        amount: assetAmountString,
-      })
-      .returning({ id: ledgerEntries.id });
-    const capitalEntryId = await tx
-      .insert(ledgerEntries)
-      .values({
-        ledgerId: capitalLedger.id,
-        transactionId: transactionId[0]!.id,
-        amount: capitalAmountString,
-      })
+      .values([
+        {
+          ledgerId: assetLedger.id,
+          transactionId: transactionId[0]!.id,
+          amount: assetAmountString,
+        },
+        {
+          ledgerId: capitalLedger.id,
+          transactionId: transactionId[0]!.id,
+          amount: capitalAmountString,
+        },
+      ])
       .returning({ id: ledgerEntries.id });
 
     let feeAssetEntryId: number | null = null;
@@ -628,38 +615,41 @@ export async function createCapitalTransaction(
         assetId,
         'income',
       );
-      const feeAssetEntryResult = await tx
+      const [feeAssetEntryResult, feeIncomeEntryResult] = await tx
         .insert(ledgerEntries)
-        .values({
-          ledgerId: assetLedger.id,
-          transactionId: transactionId[0]!.id,
-          amount: assetFeeString,
-        })
+        .values([
+          {
+            ledgerId: assetLedger.id,
+            transactionId: transactionId[0]!.id,
+            amount: assetFeeString,
+          },
+          {
+            ledgerId: incomeLedger.id,
+            transactionId: transactionId[0]!.id,
+            amount: incomeFeeString,
+          },
+        ])
         .returning({ id: ledgerEntries.id });
-      feeAssetEntryId = feeAssetEntryResult[0]!.id;
-      const feeIncomeEntryResult = await tx
-        .insert(ledgerEntries)
-        .values({
-          ledgerId: incomeLedger.id,
-          transactionId: transactionId[0]!.id,
-          amount: incomeFeeString,
-        })
-        .returning({ id: ledgerEntries.id });
-      feeIncomeEntryId = feeIncomeEntryResult[0]!.id;
+      feeAssetEntryId = feeAssetEntryResult!.id;
+      feeIncomeEntryId = feeIncomeEntryResult!.id;
     }
 
-    await tx.insert(capitalTransactions).values({
-      transactionId: transactionId[0]!.id,
-      assetEntryId: assetEntryId[0]!.id,
-      capitalEntryId: capitalEntryId[0]!.id,
-      feeAssetEntryId: feeAssetEntryId,
-      feeIncomeEntryId: feeIncomeEntryId,
-    });
+    const capitalTransactionId = await tx
+      .insert(capitalTransactions)
+      .values({
+        transactionId: transactionId[0]!.id,
+        assetEntryId: assetEntryId!.id,
+        capitalEntryId: capitalEntryId!.id,
+        feeAssetEntryId,
+        feeIncomeEntryId,
+      })
+      .returning({ id: capitalTransactions.id });
 
     return {
+      capitalTransactionId: capitalTransactionId[0]!.id,
       transactionId: transactionId[0]!.id,
-      assetEntryId: assetEntryId[0]!.id,
-      capitalEntryId: capitalEntryId[0]!.id,
+      assetEntryId: assetEntryId!.id,
+      capitalEntryId: capitalEntryId!.id,
       feeAssetEntryId,
       feeIncomeEntryId,
     };
@@ -708,25 +698,25 @@ export async function updateCapitalTransaction(
     throw new Error('Capital transaction does not belong to the user');
   }
   // Check that the account and asset belong to the user.
-  if (portfolioAccountId !== original.ledger.portfolioAccountId) {
-    const isPortfolioAccountOwned = await isPortfolioAccountBelongToUser(
-      userId,
-      portfolioAccountId,
-    );
+  if (
+    portfolioAccountId !== original.portfolioAccount.id ||
+    assetId !== original.asset.id
+  ) {
+    const [isPortfolioAccountOwned, isAssetOwned] = await Promise.all([
+      isPortfolioAccountBelongToUser(userId, portfolioAccountId),
+      isAssetBelongToUser(userId, assetId),
+    ]);
     if (!isPortfolioAccountOwned) {
       throw new Error('Portfolio account does not belong to the user');
     }
-  }
-  if (assetId !== original.ledger.assetId) {
-    const isAssetOwned = await isAssetBelongToUser(userId, assetId);
     if (!isAssetOwned) {
       throw new Error('Asset does not belong to the user');
     }
   }
 
   const isSameLedger =
-    original.ledger.portfolioAccountId === portfolioAccountId &&
-    original.ledger.assetId === assetId;
+    original.portfolioAccount.id === portfolioAccountId &&
+    original.asset.id === assetId;
   const result = await db.transaction(async (tx) => {
     await tx
       .update(transactions)
@@ -744,22 +734,26 @@ export async function updateCapitalTransaction(
     const capitalLedgerId = isSameLedger
       ? original.capitalEntry.ledgerId
       : (await getLedgerGuaranteed(portfolioAccountId, assetId, 'capital')).id;
-    await tx
-      .update(ledgerEntries)
-      .set({
-        ledgerId: assetLedgerId,
-        amount: assetAmountString,
-        updatedAt: sql`NOW()`,
-      })
-      .where(eq(ledgerEntries.id, original.capitalTransaction.assetEntryId));
-    await tx
-      .update(ledgerEntries)
-      .set({
-        ledgerId: capitalLedgerId,
-        amount: capitalAmountString,
-        updatedAt: sql`NOW()`,
-      })
-      .where(eq(ledgerEntries.id, original.capitalTransaction.capitalEntryId));
+    await Promise.all([
+      tx
+        .update(ledgerEntries)
+        .set({
+          ledgerId: assetLedgerId,
+          amount: assetAmountString,
+          updatedAt: sql`NOW()`,
+        })
+        .where(eq(ledgerEntries.id, original.capitalTransaction.assetEntryId)),
+      tx
+        .update(ledgerEntries)
+        .set({
+          ledgerId: capitalLedgerId,
+          amount: capitalAmountString,
+          updatedAt: sql`NOW()`,
+        })
+        .where(
+          eq(ledgerEntries.id, original.capitalTransaction.capitalEntryId),
+        ),
+    ]);
 
     let feeAssetEntryId: number | null =
       original.capitalTransaction.feeAssetEntryId;
@@ -850,6 +844,7 @@ export async function updateCapitalTransaction(
       .where(eq(capitalTransactions.id, id));
 
     return {
+      capitalTransactionId: id,
       transactionId: original.transaction.id,
       assetEntryId: original.capitalTransaction.assetEntryId,
       capitalEntryId: original.capitalTransaction.capitalEntryId,
@@ -1256,17 +1251,21 @@ export async function createAccountTransferTx(
       sourceFeeIncomeEntryId = sourceFeeIncomeEntryResult!.id;
     }
 
-    await tx.insert(accountTransferTransactions).values({
-      transactionId: transactionId[0]!.id,
-      sourceAssetEntryId: sourceAssetEntryId!.id,
-      sourceCapitalEntryId: sourceCapitalEntryId!.id,
-      targetAssetEntryId: targetAssetEntryId!.id,
-      targetCapitalEntryId: targetCapitalEntryId!.id,
-      feeAssetEntryId: sourceFeeAssetEntryId,
-      feeIncomeEntryId: sourceFeeIncomeEntryId,
-    });
+    const accountTransferTxId = await tx
+      .insert(accountTransferTransactions)
+      .values({
+        transactionId: transactionId[0]!.id,
+        sourceAssetEntryId: sourceAssetEntryId!.id,
+        sourceCapitalEntryId: sourceCapitalEntryId!.id,
+        targetAssetEntryId: targetAssetEntryId!.id,
+        targetCapitalEntryId: targetCapitalEntryId!.id,
+        feeAssetEntryId: sourceFeeAssetEntryId,
+        feeIncomeEntryId: sourceFeeIncomeEntryId,
+      })
+      .returning({ id: accountTransferTransactions.id });
 
     return {
+      accountTransferTransactionId: accountTransferTxId[0]!.id,
       transactionId: transactionId[0]!.id,
       sourceAssetEntryId: sourceAssetEntryId!.id,
       sourceCapitalEntryId: sourceCapitalEntryId!.id,
@@ -1553,6 +1552,7 @@ export async function updateAccountTransferTx(
       .where(eq(accountTransferTransactions.id, id));
 
     return {
+      accountTransferTransactionId: id,
       transactionId: original.transaction.id,
       sourceAssetEntryId:
         original.accountTransferTransaction.sourceAssetEntryId,
