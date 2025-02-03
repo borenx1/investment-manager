@@ -14,6 +14,7 @@ import { z } from 'zod';
 import { LoaderCircle } from 'lucide-react';
 
 import { editPortfolioAccount, newPortfolioAccount } from '@/lib/actions';
+import { portfolioAccountForm } from '@/lib/forms';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -33,13 +34,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 
-const formSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .nonempty('Account name is required')
-    .max(50, 'Maximum 50 characters'),
-});
+const formSchema = portfolioAccountForm.clientSchema;
 
 export default function AddEditPortfolioAccountDialog({
   account,
@@ -62,10 +57,7 @@ export default function AddEditPortfolioAccountDialog({
     async (previousState: null, values: z.infer<typeof formSchema>) => {
       let error: Awaited<ReturnType<typeof newPortfolioAccount>> = null;
       if (account) {
-        error = await editPortfolioAccount({
-          id: account.id,
-          name: values.name,
-        });
+        error = await editPortfolioAccount(account.id, { name: values.name });
       } else {
         error = await newPortfolioAccount({ name: values.name });
       }

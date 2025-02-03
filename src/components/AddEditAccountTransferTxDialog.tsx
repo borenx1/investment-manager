@@ -15,6 +15,7 @@ import { z } from 'zod';
 import { Calendar as CalendarIcon, LoaderCircle } from 'lucide-react';
 
 import { editAccountTransferTx, newAccountTransferTx } from '@/lib/actions';
+import { accountTransferTxForm } from '@/lib/forms';
 import {
   convertUTCDate,
   formatDecimalPlaces,
@@ -72,27 +73,7 @@ export type Transaction = {
   asset: { id: number; ticker: string; precision: number };
 };
 
-const formSchema = z
-  .object({
-    date: z.date({ message: 'Select a date' }),
-    sourceAccountId: z.coerce
-      .number({ message: 'Select a portfolio account' })
-      .int(),
-    targetAccountId: z.coerce
-      .number({ message: 'Select a portfolio account' })
-      .int(),
-    assetId: z.coerce.number({ message: 'Select an asset' }).int(),
-    amount: z.coerce
-      .number({ message: 'Amount is required' })
-      .positive('Must be a positive number'),
-    fee: z.coerce.number().nonnegative('Must be a non-negative number'),
-    isFeeInclusive: z.boolean(),
-    description: z.string().trim().max(200, 'Maximum 200 characters'),
-  })
-  .refine((form) => form.sourceAccountId !== form.targetAccountId, {
-    message: 'Source and target accounts cannot be the same',
-    path: ['targetAccountId'],
-  });
+const formSchema = accountTransferTxForm.clientSchema;
 
 export default function AddEditAccountTransferTransactionDialog({
   transaction,
@@ -112,8 +93,8 @@ export default function AddEditAccountTransferTransactionDialog({
       transaction
         ? {
             date: convertUTCDate(transaction.transaction.date),
-            sourceAccountId: transaction.sourcePortfolioAccount.id,
-            targetAccountId: transaction.targetPortfolioAccount.id,
+            sourcePortfolioAccountId: transaction.sourcePortfolioAccount.id,
+            targetPortfolioAccountId: transaction.targetPortfolioAccount.id,
             assetId: transaction.asset.id,
             amount: parseFloat(transaction.targetAssetEntry.amount),
             fee: transaction.feeIncomeEntry
@@ -124,8 +105,8 @@ export default function AddEditAccountTransferTransactionDialog({
           }
         : {
             date: getCurrentDate(),
-            sourceAccountId: portfolioAccounts[0]?.id,
-            targetAccountId:
+            sourcePortfolioAccountId: portfolioAccounts[0]?.id,
+            targetPortfolioAccountId:
               portfolioAccounts[1]?.id ?? portfolioAccounts[0]?.id,
             assetId: assets[0]?.id,
             amount: 0,
@@ -160,8 +141,8 @@ export default function AddEditAccountTransferTransactionDialog({
   const [, onSubmit, isPending] = useActionState(
     async (previousState: null, values: z.infer<typeof formSchema>) => {
       const data = {
-        sourcePortfolioAccountId: values.sourceAccountId,
-        targetPortfolioAccountId: values.targetAccountId,
+        sourcePortfolioAccountId: values.sourcePortfolioAccountId,
+        targetPortfolioAccountId: values.targetPortfolioAccountId,
         assetId: values.assetId,
         // Day-picker date is local, convert to UTC 00:00:00 time.
         date: new Date(`${format(values.date, 'yyyy-MM-dd')} Z`),
@@ -172,10 +153,10 @@ export default function AddEditAccountTransferTransactionDialog({
         description: values.description || null,
       };
       if (transaction) {
-        await editAccountTransferTx({
-          id: transaction.accountTransferTransaction.id,
-          ...data,
-        });
+        await editAccountTransferTx(
+          transaction.accountTransferTransaction.id,
+          data,
+        );
       } else {
         await newAccountTransferTx(data);
       }
@@ -245,7 +226,7 @@ export default function AddEditAccountTransferTransactionDialog({
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <FormField
                 control={form.control}
-                name="sourceAccountId"
+                name="sourcePortfolioAccountId"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Source Account *</FormLabel>
@@ -274,7 +255,7 @@ export default function AddEditAccountTransferTransactionDialog({
               />
               <FormField
                 control={form.control}
-                name="targetAccountId"
+                name="targetPortfolioAccountId"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Target Account *</FormLabel>

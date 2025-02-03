@@ -15,6 +15,7 @@ import { z } from 'zod';
 import { Calendar as CalendarIcon, LoaderCircle } from 'lucide-react';
 
 import { editCapitalTransaction, newCapitalTransaction } from '@/lib/actions';
+import { capitalTransactionForm } from '@/lib/forms';
 import { convertUTCDate, getCurrentDate } from '@/lib/utils';
 import { useResourceStore } from '@/providers/resource-store-provider';
 import { Button } from '@/components/ui/button';
@@ -65,19 +66,7 @@ export type Transaction = {
   asset: { id: number; ticker: string; precision: number };
 };
 
-const formSchema = z.object({
-  date: z.date({ message: 'Select a date' }),
-  portfolioAccountId: z.coerce
-    .number({ message: 'Select a portfolio account' })
-    .int(),
-  assetId: z.coerce.number({ message: 'Select an asset' }).int(),
-  amount: z.coerce
-    .number({ message: 'Amount is required' })
-    .positive('Must be a positive number'),
-  type: z.enum(['contribution', 'drawings']),
-  fee: z.coerce.number().nonnegative('Must be a non-negative number'),
-  description: z.string().trim().max(200, 'Maximum 200 characters'),
-});
+const formSchema = capitalTransactionForm.clientSchema;
 
 export default function AddEditCapitalTransactionDialog({
   transaction,
@@ -141,10 +130,7 @@ export default function AddEditCapitalTransactionDialog({
         description: values.description || null,
       };
       if (transaction) {
-        await editCapitalTransaction({
-          id: transaction.capitalTransaction.id,
-          ...data,
-        });
+        await editCapitalTransaction(transaction.capitalTransaction.id, data);
       } else {
         await newCapitalTransaction(data);
       }

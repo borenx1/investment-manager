@@ -19,6 +19,12 @@ import {
   updateCapitalTransaction,
   updatePortfolioAccount,
 } from '@/db/queries';
+import {
+  accountTransferTxForm,
+  assetForm,
+  capitalTransactionForm,
+  portfolioAccountForm,
+} from '@/lib/forms';
 
 /**
  * Create a new portfolio account for the authenticated user.
@@ -30,7 +36,8 @@ export async function newPortfolioAccount(data: { name: string }) {
   const userId = session?.user?.id;
   if (!userId) return null;
 
-  const idOrError = await createPortfolioAccount(userId, data);
+  const validatedData = portfolioAccountForm.serverSchema.parse(data);
+  const idOrError = await createPortfolioAccount(userId, validatedData);
   if (typeof idOrError === 'object') {
     return idOrError;
   }
@@ -41,15 +48,17 @@ export async function newPortfolioAccount(data: { name: string }) {
 
 /**
  * Update a portfolio account for the authenticated user.
+ * @param id The ID of the portfolio account to update.
  * @param data The account data to update.
  * @returns An error message if the account could not be updated.
  */
-export async function editPortfolioAccount(data: { id: number; name: string }) {
+export async function editPortfolioAccount(id: number, data: { name: string }) {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return null;
 
-  const error = await updatePortfolioAccount(userId, data);
+  const validatedData = portfolioAccountForm.serverSchema.parse(data);
+  const error = await updatePortfolioAccount(userId, { id, ...validatedData });
   if (error) {
     return error;
   }
@@ -83,7 +92,8 @@ export async function newAsset(data: {
   const userId = session?.user?.id;
   if (!userId) return null;
 
-  const idOrError = await createAsset(userId, data);
+  const validatedData = assetForm.serverSchema.parse(data);
+  const idOrError = await createAsset(userId, validatedData);
   if (typeof idOrError === 'object') {
     return idOrError;
   }
@@ -94,23 +104,27 @@ export async function newAsset(data: {
 
 /**
  * Update an asset for the authenticated user.
+ * @param id The ID of the asset to update.
  * @param data The asset data to update.
  * @returns An error message if the asset could not be updated.
  */
-export async function editAsset(data: {
-  id: number;
-  ticker: string;
-  name: string;
-  symbol: string | null;
-  precision: number;
-  pricePrecision: number;
-  isCurrency: boolean;
-}) {
+export async function editAsset(
+  id: number,
+  data: {
+    ticker: string;
+    name: string;
+    symbol: string | null;
+    precision: number;
+    pricePrecision: number;
+    isCurrency: boolean;
+  },
+) {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return null;
 
-  const error = await updateAsset(userId, data);
+  const validatedData = assetForm.serverSchema.parse(data);
+  const error = await updateAsset(userId, { id, ...validatedData });
   if (error) {
     return error;
   }
@@ -144,30 +158,35 @@ export async function newCapitalTransaction(data: {
   const userId = session?.user?.id;
   if (!userId) return null;
 
-  const ids = await createCapitalTransaction(userId, data);
+  const validatedData = capitalTransactionForm.serverSchema.parse(data);
+  const ids = await createCapitalTransaction(userId, validatedData);
   revalidatePath('/capital');
   return ids;
 }
 
 /**
  * Update a capital transaction for the authenticated user.
+ * @param id The ID of the capital transaction to update.
  * @param data The capital transaction data to update.
  * @returns The IDs of the updated or created rows.
  */
-export async function editCapitalTransaction(data: {
-  id: number;
-  portfolioAccountId: number;
-  assetId: number;
-  date: Date;
-  amount: number;
-  fee: number | null;
-  description: string | null;
-}) {
+export async function editCapitalTransaction(
+  id: number,
+  data: {
+    portfolioAccountId: number;
+    assetId: number;
+    date: Date;
+    amount: number;
+    fee: number | null;
+    description: string | null;
+  },
+) {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return null;
 
-  const ids = await updateCapitalTransaction(userId, data);
+  const validatedData = capitalTransactionForm.serverSchema.parse(data);
+  const ids = await updateCapitalTransaction(userId, { id, ...validatedData });
   revalidatePath('/capital');
   return ids;
 }
@@ -199,31 +218,36 @@ export async function newAccountTransferTx(data: {
   const userId = session?.user?.id;
   if (!userId) return null;
 
-  const ids = await createAccountTransferTx(userId, data);
+  const validatedData = accountTransferTxForm.serverSchema.parse(data);
+  const ids = await createAccountTransferTx(userId, validatedData);
   revalidatePath('/transfers');
   return ids;
 }
 
 /**
  * Update a account transfer transaction for the authenticated user.
+ * @param id The ID of the account transfer transaction to update.
  * @param data The account transfer transaction data to update.
  * @returns The IDs of the updated or created rows.
  */
-export async function editAccountTransferTx(data: {
-  id: number;
-  sourcePortfolioAccountId: number;
-  targetPortfolioAccountId: number;
-  assetId: number;
-  date: Date;
-  amount: number;
-  fee: number | null;
-  description: string | null;
-}) {
+export async function editAccountTransferTx(
+  id: number,
+  data: {
+    sourcePortfolioAccountId: number;
+    targetPortfolioAccountId: number;
+    assetId: number;
+    date: Date;
+    amount: number;
+    fee: number | null;
+    description: string | null;
+  },
+) {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return null;
 
-  const ids = await updateAccountTransferTx(userId, data);
+  const validatedData = accountTransferTxForm.serverSchema.parse(data);
+  const ids = await updateAccountTransferTx(userId, { id, ...validatedData });
   revalidatePath('/transfers');
   return ids;
 }

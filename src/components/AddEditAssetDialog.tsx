@@ -14,6 +14,7 @@ import { z } from 'zod';
 import { LoaderCircle } from 'lucide-react';
 
 import { editAsset, newAsset } from '@/lib/actions';
+import { assetForm } from '@/lib/forms';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -34,30 +35,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 
-const formSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .nonempty('Name is required')
-    .max(50, 'Maximum 50 characters'),
-  ticker: z
-    .string()
-    .trim()
-    .nonempty('Ticker is required')
-    .max(10, 'Maximum 10 characters'),
-  symbol: z.string().trim().max(10, 'Maximum 10 characters'),
-  precision: z.coerce
-    .number()
-    .int()
-    .nonnegative('Must be a positive number')
-    .max(20, 'Maximum 20'),
-  pricePrecision: z.coerce
-    .number()
-    .int()
-    .nonnegative('Must be a positive number')
-    .max(20, 'Maximum 20'),
-  isCurrency: z.boolean(),
-});
+const formSchema = assetForm.clientSchema;
 
 export default function AddEditAssetDialog({
   asset,
@@ -97,25 +75,18 @@ export default function AddEditAssetDialog({
   const [, onSubmit, isPending] = useActionState(
     async (previousState: null, values: z.infer<typeof formSchema>) => {
       let error: Awaited<ReturnType<typeof newAsset>> = null;
+      const data = {
+        ticker: values.ticker,
+        name: values.name,
+        symbol: values.symbol || null,
+        precision: values.precision,
+        pricePrecision: values.pricePrecision,
+        isCurrency: values.isCurrency,
+      };
       if (asset) {
-        error = await editAsset({
-          id: asset.id,
-          ticker: values.ticker,
-          name: values.name,
-          symbol: values.symbol || null,
-          precision: values.precision,
-          pricePrecision: values.pricePrecision,
-          isCurrency: values.isCurrency,
-        });
+        error = await editAsset(asset.id, data);
       } else {
-        error = await newAsset({
-          ticker: values.ticker,
-          name: values.name,
-          symbol: values.symbol || null,
-          precision: values.precision,
-          pricePrecision: values.pricePrecision,
-          isCurrency: values.isCurrency,
-        });
+        error = await newAsset(data);
       }
       if (error) {
         switch (error.message) {
