@@ -1,3 +1,4 @@
+import 'server-only';
 import { aliasedTable, and, desc, eq, ne, sql } from 'drizzle-orm';
 
 import { db } from './';
