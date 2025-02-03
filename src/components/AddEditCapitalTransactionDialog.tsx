@@ -80,6 +80,7 @@ export default function AddEditCapitalTransactionDialog({
     (state) => state.portfolioAccounts,
   );
   const assets = useResourceStore((state) => state.assets);
+  const activeAccount = useResourceStore((state) => state.activeAccount);
   const formRef = useRef<HTMLFormElement>(null);
   const defaultValues = useMemo(
     () =>
@@ -100,14 +101,14 @@ export default function AddEditCapitalTransactionDialog({
           }
         : {
             date: getCurrentDate(),
-            portfolioAccountId: portfolioAccounts[0]?.id,
+            portfolioAccountId: activeAccount?.id ?? portfolioAccounts[0]?.id,
             assetId: assets[0]?.id,
             amount: 0,
             type: 'contribution' as const,
             fee: 0,
             description: '',
           },
-    [transaction, portfolioAccounts, assets],
+    [transaction, portfolioAccounts, assets, activeAccount],
   );
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
