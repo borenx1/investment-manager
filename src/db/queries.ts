@@ -3,6 +3,7 @@ import { aliasedTable, and, desc, eq, ne, sql } from 'drizzle-orm';
 
 import { db } from './';
 import {
+  accountingCurrencies,
   accountTransferTransactions,
   assets,
   balances,
@@ -13,6 +14,7 @@ import {
   ledgerEntries,
   ledgers,
   portfolioAccounts,
+  SelectAccountingCurrency,
   SelectAccountTransferTransaction,
   SelectAsset,
   SelectCapitalTransaction,
@@ -331,6 +333,51 @@ export async function isAssetBelongToUser(
     and(eq(assets.id, assetId), eq(assets.userId, userId)),
   );
   return !!count;
+}
+
+export async function getAccountingCurrency(
+  userId: SelectAccountingCurrency['userId'],
+) {
+  const result = await db
+    .select()
+    .from(accountingCurrencies)
+    .leftJoin(assets, eq(accountingCurrencies.assetId, assets.id))
+    .where(eq(accountingCurrencies.userId, userId));
+  if (result[0]?.asset) {
+    return result[0].asset;
+  }
+  // Init `accounting_currency` if it does not exist yet.
+  if (!result.length) {
+    await db
+      .insert(accountingCurrencies)
+      .values({
+        userId,
+        assetId: null,
+      })
+      .onConflictDoNothing();
+  }
+  return null;
+}
+
+export async function updateAccountingCurrency(
+  userId: SelectAccountingCurrency['userId'],
+  assetId: SelectAccountingCurrency['assetId'],
+) {
+  // Check that the asset belongs to the user.
+  if (assetId !== null) {
+    const isAssetOwned = await isAssetBelongToUser(userId, assetId);
+    if (!isAssetOwned) {
+      throw new Error('Asset does not belong to the user');
+    }
+  }
+
+  await db
+    .insert(accountingCurrencies)
+    .values({ userId, assetId })
+    .onConflictDoUpdate({
+      target: accountingCurrencies.userId,
+      set: { assetId, updatedAt: sql`NOW()` },
+    });
 }
 
 /**

@@ -8,6 +8,8 @@ export type ResourceState = {
   isPortfolioAccountsLoaded: boolean;
   assets: SelectAsset[];
   isAssetsLoaded: boolean;
+  accountingCurrency: SelectAsset | null;
+  isAccountingCurrencyLoaded: boolean;
   activeAccountId: number | null;
   activeAccount: SelectPortfolioAccount | null;
 };
@@ -16,6 +18,7 @@ export type ResourceActions = {
   reset: () => void;
   setPortfolioAccounts: (accounts: ResourceState['portfolioAccounts']) => void;
   setAssets: (assets: ResourceState['assets']) => void;
+  setAccountingCurrency: (asset: ResourceState['accountingCurrency']) => void;
   /**
    * Set the active portfolio account. Set to `null` to select all accounts. If
    * the account ID is does not exist, the active account will be set to `null`.
@@ -33,6 +36,8 @@ function getInitialState(): ResourceState {
     isPortfolioAccountsLoaded: false,
     assets: [],
     isAssetsLoaded: false,
+    accountingCurrency: null,
+    isAccountingCurrencyLoaded: false,
     activeAccountId: null,
     activeAccount: null,
   };
@@ -48,7 +53,8 @@ export function createResourceStore() {
       set((state) => ({
         portfolioAccounts,
         isPortfolioAccountsLoaded: true,
-        isResourcesLoaded: state.isAssetsLoaded,
+        isResourcesLoaded:
+          state.isAssetsLoaded && state.isAccountingCurrencyLoaded,
       }));
       const activeAccountId = get().activeAccountId;
       if (activeAccountId !== null) {
@@ -59,7 +65,16 @@ export function createResourceStore() {
       set((state) => ({
         assets,
         isAssetsLoaded: true,
-        isResourcesLoaded: state.isPortfolioAccountsLoaded,
+        isResourcesLoaded:
+          state.isPortfolioAccountsLoaded && state.isAccountingCurrencyLoaded,
+      }));
+    },
+    setAccountingCurrency(asset) {
+      set((state) => ({
+        accountingCurrency: asset,
+        isAccountingCurrencyLoaded: true,
+        isResourcesLoaded:
+          state.isPortfolioAccountsLoaded && state.isAssetsLoaded,
       }));
     },
     setActiveAccount(accountId) {

@@ -14,12 +14,14 @@ import {
   deletePortfolioAccount,
   initBalanceAndLedgersWithAccount,
   initBalanceAndLedgersWithAsset,
+  updateAccountingCurrency,
   updateAccountTransferTx,
   updateAsset,
   updateCapitalTransaction,
   updatePortfolioAccount,
 } from '@/db/queries';
 import {
+  accountingCurrencyForm,
   accountTransferTxForm,
   assetForm,
   capitalTransactionForm,
@@ -138,6 +140,16 @@ export async function removeAsset(id: number) {
   if (!userId) return;
 
   await deleteAsset(userId, id);
+  revalidatePath('/', 'layout');
+}
+
+export async function editAccountingCurrency(data: { assetId: number }) {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return;
+
+  const validatedData = accountingCurrencyForm.serverSchema.parse(data);
+  await updateAccountingCurrency(userId, validatedData.assetId);
   revalidatePath('/', 'layout');
 }
 

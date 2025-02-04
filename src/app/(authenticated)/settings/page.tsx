@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 
 import { Separator } from '@/components/ui/separator';
-import AssetSection from './AssetSection';
 import PortfolioAccountSection from './PortfolioAccountSection';
+import AccountingCurrencySection from './AccountingCurrencySection';
+import AssetSection from './AssetSection';
 
 export const metadata: Metadata = {
   title: 'Settings',
@@ -17,6 +18,11 @@ export default function SettingsPage() {
           <h2 className="text-lg sm:text-xl">Portfolio Accounts</h2>
           <Separator className="my-2" />
           <PortfolioAccountSection />
+        </section>
+        <section>
+          <h2 className="text-lg sm:text-xl">Accounting Currency</h2>
+          <Separator className="my-2" />
+          <AccountingCurrencySection />
         </section>
         <section>
           <h2 className="text-lg sm:text-xl">Assets</h2>

@@ -37,7 +37,6 @@ export default function ActionAlertDialog({
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  // TODO Test open/close from parent.
   return (
     <AlertDialog
       open={isOpen}

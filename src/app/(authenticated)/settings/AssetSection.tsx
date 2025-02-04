@@ -32,7 +32,7 @@ export default function AssetSection() {
     <>
       {assets.length ? (
         <div className="max-w-4xl rounded-lg border">
-          <Table className="min-w-0">
+          <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="pl-4 sm:min-w-[120px]">Ticker</TableHead>

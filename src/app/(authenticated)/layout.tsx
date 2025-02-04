@@ -1,5 +1,9 @@
 import { auth } from '@/auth';
-import { getAssets, getPortfolioAccounts } from '@/db/queries';
+import {
+  getAccountingCurrency,
+  getAssets,
+  getPortfolioAccounts,
+} from '@/db/queries';
 import { ResourceStoreProvider } from '@/providers/resource-store-provider';
 import {
   SidebarInset,
@@ -22,15 +26,17 @@ export default async function AuthenticatedLayout({
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return null;
-  const [portfolioAccounts, assets] = await Promise.all([
+  const [portfolioAccounts, assets, accountingCurrency] = await Promise.all([
     getPortfolioAccounts(userId),
     getAssets(userId),
+    getAccountingCurrency(userId),
   ]);
 
   return (
     <ResourceStoreProvider
       portfolioAccounts={portfolioAccounts}
       assets={assets}
+      accountingCurrency={accountingCurrency}
     >
       <SidebarProvider>
         <AppSidebar />

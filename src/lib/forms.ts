@@ -45,6 +45,15 @@ export const assetForm = {
   }),
 } as const;
 
+const accountingCurrencyFormSchema = z.object({
+  assetId: z.coerce.number({ message: 'Select an asset' }).int(),
+});
+
+export const accountingCurrencyForm = {
+  clientSchema: accountingCurrencyFormSchema,
+  serverSchema: accountingCurrencyFormSchema,
+} as const;
+
 const capitalTransactionFormSchema = z.object({
   date: z.date({ message: 'Select a date' }),
   portfolioAccountId: z.coerce

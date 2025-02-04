@@ -125,6 +125,29 @@ export const assets = pgTable(
 export type SelectAsset = typeof assets.$inferSelect;
 export type InsertAsset = typeof assets.$inferInsert;
 
+export const accountingCurrencies = pgTable(
+  'accounting_currency',
+  {
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    assetId: integer('asset_id').references(() => assets.id, {
+      onDelete: 'set null',
+    }),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [unique().on(table.userId)],
+);
+
+export type SelectAccountingCurrency = typeof accountingCurrencies.$inferSelect;
+export type InsertAccountingCurrency = typeof accountingCurrencies.$inferInsert;
+
 export const transactions = pgTable(
   'transaction',
   {

@@ -18,10 +18,12 @@ export function ResourceStoreProvider({
   children,
   portfolioAccounts,
   assets,
+  accountingCurrency,
 }: {
   children: React.ReactNode;
   portfolioAccounts?: ResourceStore['portfolioAccounts'];
   assets?: ResourceStore['assets'];
+  accountingCurrency?: ResourceStore['accountingCurrency'];
 }) {
   const storeRef = useRef<ResourceStoreApi>(null);
   if (!storeRef.current) {
@@ -32,10 +34,17 @@ export function ResourceStoreProvider({
     if (portfolioAccounts) {
       storeRef.current?.getState().setPortfolioAccounts(portfolioAccounts);
     }
+  }, [portfolioAccounts]);
+  useEffect(() => {
     if (assets) {
       storeRef.current?.getState().setAssets(assets);
     }
-  }, [portfolioAccounts, assets]);
+  }, [assets]);
+  useEffect(() => {
+    if (accountingCurrency !== undefined) {
+      storeRef.current?.getState().setAccountingCurrency(accountingCurrency);
+    }
+  }, [accountingCurrency]);
 
   return (
     <ResourceStoreContext.Provider value={storeRef.current}>
