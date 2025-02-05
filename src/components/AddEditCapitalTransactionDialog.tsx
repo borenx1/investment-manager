@@ -92,7 +92,7 @@ export default function AddEditCapitalTransactionDialog({
             amount: Math.abs(parseFloat(transaction.assetEntry.amount)),
             type:
               parseFloat(transaction.assetEntry.amount) >= 0
-                ? ('contribution' as const)
+                ? ('contributions' as const)
                 : ('drawings' as const),
             fee: transaction.feeIncomeEntry
               ? parseFloat(transaction.feeIncomeEntry.amount)
@@ -104,7 +104,7 @@ export default function AddEditCapitalTransactionDialog({
             portfolioAccountId: activeAccount?.id ?? portfolioAccounts[0]?.id,
             assetId: assets[0]?.id,
             amount: 0,
-            type: 'contribution' as const,
+            type: 'contributions' as const,
             fee: 0,
             description: '',
           },
@@ -122,11 +122,9 @@ export default function AddEditCapitalTransactionDialog({
   const [, onSubmit, isPending] = useActionState(
     async (previousState: null, values: z.infer<typeof formSchema>) => {
       const data = {
-        portfolioAccountId: values.portfolioAccountId,
-        assetId: values.assetId,
+        ...values,
         // Day-picker date is local, convert to UTC 00:00:00 time.
         date: new Date(`${format(values.date, 'yyyy-MM-dd')} Z`),
-        amount: values.type === 'contribution' ? values.amount : -values.amount,
         fee: values.fee || null,
         description: values.description || null,
       };
@@ -304,8 +302,8 @@ export default function AddEditCapitalTransactionDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="contribution">
-                          Contribution
+                        <SelectItem value="contributions">
+                          Contributions
                         </SelectItem>
                         <SelectItem value="drawings">Drawings</SelectItem>
                       </SelectContent>

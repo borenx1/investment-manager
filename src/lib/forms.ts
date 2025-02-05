@@ -64,19 +64,17 @@ const capitalTransactionFormSchema = z.object({
   amount: z.coerce
     .number({ message: 'Amount is required' })
     .positive('Must be a positive number'),
-  type: z.enum(['contribution', 'drawings']),
+  type: z.enum(['contributions', 'drawings']),
   fee: z.coerce.number().nonnegative('Must be a non-negative number'),
   description: z.string().trim().max(200, 'Maximum 200 characters'),
 });
 
 export const capitalTransactionForm = {
   clientSchema: capitalTransactionFormSchema,
-  serverSchema: capitalTransactionFormSchema
-    .extend({
-      fee: capitalTransactionFormSchema.shape.fee.nullable(),
-      description: capitalTransactionFormSchema.shape.description.nullable(),
-    })
-    .omit({ type: true }),
+  serverSchema: capitalTransactionFormSchema.extend({
+    fee: capitalTransactionFormSchema.shape.fee.nullable(),
+    description: capitalTransactionFormSchema.shape.description.nullable(),
+  }),
 } as const;
 
 const accountTransferTxFormSchema = z.object({

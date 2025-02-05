@@ -167,6 +167,7 @@ export async function newCapitalTransaction(data: {
   assetId: number;
   date: Date;
   amount: number;
+  type: 'contributions' | 'drawings';
   fee: number | null;
   description: string | null;
 }) {
@@ -174,8 +175,15 @@ export async function newCapitalTransaction(data: {
   const userId = session?.user?.id;
   if (!userId) return null;
 
-  const validatedData = capitalTransactionForm.serverSchema.parse(data);
-  const ids = await createCapitalTransaction(userId, validatedData);
+  const {
+    amount,
+    type: capitalType,
+    ...validatedData
+  } = capitalTransactionForm.serverSchema.parse(data);
+  const ids = await createCapitalTransaction(userId, {
+    ...validatedData,
+    amount: capitalType === 'contributions' ? amount : -amount,
+  });
   revalidatePath('/capital');
   return ids;
 }
@@ -193,6 +201,7 @@ export async function editCapitalTransaction(
     assetId: number;
     date: Date;
     amount: number;
+    type: 'contributions' | 'drawings';
     fee: number | null;
     description: string | null;
   },
@@ -201,8 +210,16 @@ export async function editCapitalTransaction(
   const userId = session?.user?.id;
   if (!userId) return null;
 
-  const validatedData = capitalTransactionForm.serverSchema.parse(data);
-  const ids = await updateCapitalTransaction(userId, { id, ...validatedData });
+  const {
+    amount,
+    type: capitalType,
+    ...validatedData
+  } = capitalTransactionForm.serverSchema.parse(data);
+  const ids = await updateCapitalTransaction(userId, {
+    id,
+    ...validatedData,
+    amount: capitalType === 'contributions' ? amount : -amount,
+  });
   revalidatePath('/capital');
   return ids;
 }
@@ -298,18 +315,16 @@ export async function newTradeTransaction(data: {
   const userId = session?.user?.id;
   if (!userId) return null;
 
-  const { type: tradeType, ...validatedData } =
-    tradeTransactionForm.serverSchema.parse(data);
+  const {
+    baseAmount,
+    quoteAmount,
+    type: tradeType,
+    ...validatedData
+  } = tradeTransactionForm.serverSchema.parse(data);
   const ids = await createTradeTransaction(userId, {
     ...validatedData,
-    baseAmount:
-      tradeType === 'buy'
-        ? validatedData.baseAmount
-        : -validatedData.baseAmount,
-    quoteAmount:
-      tradeType === 'buy'
-        ? -validatedData.quoteAmount
-        : validatedData.quoteAmount,
+    baseAmount: tradeType === 'buy' ? baseAmount : -baseAmount,
+    quoteAmount: tradeType === 'buy' ? -quoteAmount : quoteAmount,
   });
   revalidatePath('/journal');
   return ids;
@@ -340,19 +355,17 @@ export async function editTradeTransaction(
   const userId = session?.user?.id;
   if (!userId) return null;
 
-  const { type: tradeType, ...validatedData } =
-    tradeTransactionForm.serverSchema.parse(data);
+  const {
+    baseAmount,
+    quoteAmount,
+    type: tradeType,
+    ...validatedData
+  } = tradeTransactionForm.serverSchema.parse(data);
   const ids = await updateTradeTransaction(userId, {
     id,
     ...validatedData,
-    baseAmount:
-      tradeType === 'buy'
-        ? validatedData.baseAmount
-        : -validatedData.baseAmount,
-    quoteAmount:
-      tradeType === 'buy'
-        ? -validatedData.quoteAmount
-        : validatedData.quoteAmount,
+    baseAmount: tradeType === 'buy' ? baseAmount : -baseAmount,
+    quoteAmount: tradeType === 'buy' ? -quoteAmount : quoteAmount,
   });
   revalidatePath('/journal');
   return ids;
