@@ -28,12 +28,12 @@ const assetFormSchema = z.object({
   symbol: z.string().trim().max(10, 'Maximum 10 characters'),
   precision: z.coerce
     .number()
-    .int()
+    .int('Must be an integer')
     .nonnegative('Must be a positive number')
     .max(20, 'Maximum 20'),
   pricePrecision: z.coerce
     .number()
-    .int()
+    .int('Must be an integer')
     .nonnegative('Must be a positive number')
     .max(20, 'Maximum 20'),
   isCurrency: z.boolean(),
@@ -63,9 +63,15 @@ const capitalTransactionFormSchema = z.object({
   assetId: z.coerce.number({ message: 'Select an asset' }).int(),
   amount: z.coerce
     .number({ message: 'Amount is required' })
-    .positive('Must be a positive number'),
+    .positive('Must be a positive number')
+    .finite()
+    .safe(),
   type: z.enum(['contributions', 'drawings']),
-  fee: z.coerce.number().nonnegative('Must be a non-negative number'),
+  fee: z.coerce
+    .number()
+    .nonnegative('Must be a non-negative number')
+    .finite()
+    .safe(),
   description: z.string().trim().max(200, 'Maximum 200 characters'),
 });
 
@@ -88,8 +94,14 @@ const accountTransferTxFormSchema = z.object({
   assetId: z.coerce.number({ message: 'Select an asset' }).int(),
   amount: z.coerce
     .number({ message: 'Amount is required' })
-    .positive('Must be a positive number'),
-  fee: z.coerce.number().nonnegative('Must be a non-negative number'),
+    .positive('Must be a positive number')
+    .finite()
+    .safe(),
+  fee: z.coerce
+    .number()
+    .nonnegative('Must be a non-negative number')
+    .finite()
+    .safe(),
   isFeeInclusive: z.boolean(),
   description: z.string().trim().max(200, 'Maximum 200 characters'),
 });
@@ -125,14 +137,22 @@ const tradeTransactionFormSchema = z.object({
   baseAssetId: z.coerce.number({ message: 'Select an asset' }).int(),
   baseAmount: z.coerce
     .number({ message: 'Amount is required' })
-    .positive('Must be a positive number'),
+    .positive('Must be a positive number')
+    .finite()
+    .safe(),
   quoteAssetId: z.coerce.number({ message: 'Select an asset' }).int(),
   quoteAmount: z.coerce
     .number({ message: 'Amount is required' })
-    .positive('Must be a positive number'),
+    .positive('Must be a positive number')
+    .finite()
+    .safe(),
   type: z.enum(['buy', 'sell']),
   feeAsset: z.enum(['base', 'quote']),
-  feeAmount: z.coerce.number().nonnegative('Must be a non-negative number'),
+  feeAmount: z.coerce
+    .number()
+    .nonnegative('Must be a non-negative number')
+    .finite()
+    .safe(),
   description: z.string().trim().max(200, 'Maximum 200 characters'),
 });
 

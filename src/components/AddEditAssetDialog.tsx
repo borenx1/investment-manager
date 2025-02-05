@@ -222,6 +222,7 @@ export default function AddEditAssetDialog({
                         type="number"
                         min="0"
                         max="20"
+                        step="1"
                         {...field}
                         disabled={isPending}
                       />
@@ -241,6 +242,7 @@ export default function AddEditAssetDialog({
                         type="number"
                         min="0"
                         max="20"
+                        step="1"
                         {...field}
                         disabled={isPending}
                       />
