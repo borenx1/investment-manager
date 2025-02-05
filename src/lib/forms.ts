@@ -23,6 +23,7 @@ const assetFormSchema = z.object({
     .string()
     .trim()
     .nonempty('Ticker is required')
+    .regex(/^[a-zA-Z0-9.]+$/, 'Only letters, numbers, and dots are allowed')
     .max(10, 'Maximum 10 characters'),
   symbol: z.string().trim().max(10, 'Maximum 10 characters'),
   precision: z.coerce
