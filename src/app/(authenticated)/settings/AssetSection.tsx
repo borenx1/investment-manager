@@ -106,7 +106,10 @@ export default function AssetSection() {
                             </DialogTrigger>
                             <AlertDialogTrigger asChild>
                               <DropdownMenuItem
-                                disabled={asset.id === accountingCurrency?.id}
+                                disabled={
+                                  assets.length <= 1 ||
+                                  asset.id === accountingCurrency?.id
+                                }
                               >
                                 <Trash2 />
                                 Delete

@@ -80,7 +80,9 @@ export default function PortfolioAccountSection() {
                               </DropdownMenuItem>
                             </DialogTrigger>
                             <AlertDialogTrigger asChild>
-                              <DropdownMenuItem>
+                              <DropdownMenuItem
+                                disabled={portfolioAccounts.length <= 1}
+                              >
                                 <Trash2 />
                                 Delete
                               </DropdownMenuItem>
