@@ -38,19 +38,12 @@ export async function createBalanceAndLedgers(
       .onConflictDoNothing(),
     db
       .insert(ledgers)
-      .values({ portfolioAccountId, assetId, type: 'asset' })
-      .onConflictDoNothing(),
-    db
-      .insert(ledgers)
-      .values({ portfolioAccountId, assetId, type: 'liability' })
-      .onConflictDoNothing(),
-    db
-      .insert(ledgers)
-      .values({ portfolioAccountId, assetId, type: 'capital' })
-      .onConflictDoNothing(),
-    db
-      .insert(ledgers)
-      .values({ portfolioAccountId, assetId, type: 'income' })
+      .values([
+        { portfolioAccountId, assetId, type: 'asset' },
+        { portfolioAccountId, assetId, type: 'liability' },
+        { portfolioAccountId, assetId, type: 'capital' },
+        { portfolioAccountId, assetId, type: 'income' },
+      ])
       .onConflictDoNothing(),
   ]);
   // TODO: Log errors.

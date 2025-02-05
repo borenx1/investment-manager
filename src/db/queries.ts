@@ -1,5 +1,5 @@
 import 'server-only';
-import { aliasedTable, and, desc, eq, ne, sql } from 'drizzle-orm';
+import { aliasedTable, and, desc, eq, ne, notExists, sql } from 'drizzle-orm';
 
 import { db } from './';
 import {
@@ -131,6 +131,8 @@ export async function deletePortfolioAccount(
     .where(
       and(eq(portfolioAccounts.id, id), eq(portfolioAccounts.userId, userId)),
     );
+
+  await deleteHangingTransactions(userId);
 }
 
 /**
@@ -319,6 +321,8 @@ export async function deleteAsset(
   await db
     .delete(assets)
     .where(and(eq(assets.id, id), eq(assets.userId, userId)));
+
+  await deleteHangingTransactions(userId);
 }
 
 /**
@@ -455,6 +459,30 @@ export async function getBalances(userId: SelectAsset['userId']) {
       portfolioAccounts.id,
       assets.ticker,
       assets.id,
+    );
+}
+
+/**
+ * Delete all transactions that do not have any ledger entries. This needs to
+ * be called after deleting a portfolio account or asset to remove transactions
+ * that are not linked to any ledger entries.
+ * @param userId The user ID.
+ */
+export async function deleteHangingTransactions(
+  userId: SelectTransaction['userId'],
+) {
+  await db
+    .delete(transactions)
+    .where(
+      and(
+        eq(transactions.userId, userId),
+        notExists(
+          db
+            .select()
+            .from(ledgerEntries)
+            .where(eq(ledgerEntries.transactionId, transactions.id)),
+        ),
+      ),
     );
 }
 
