@@ -148,15 +148,15 @@ export const columns: ColumnDef<Transaction>[] = [
   {
     id: 'actions',
     cell: ({ row }) => {
-      const transaction = row.original;
-      const date = transaction.transaction.date;
+      const tx = row.original;
+      const date = tx.transaction.date;
       const formattedAmount = formatDecimalPlaces(
-        parseFloat(transaction.targetAssetEntry.amount),
-        row.original.asset.precision,
+        parseFloat(tx.targetAssetEntry.amount),
+        tx.asset.precision,
       );
       return (
         <div className="flex items-center justify-center">
-          <AddEditAccountTransferTxDialog transaction={transaction}>
+          <AddEditAccountTransferTxDialog transaction={tx}>
             <ActionAlertDialog
               title="Delete Account Transfer"
               description={
@@ -164,15 +164,13 @@ export const columns: ColumnDef<Transaction>[] = [
                   Are you sure you want to delete this account transfer
                   transaction?
                   <br />
-                  {`${format(convertUTCDate(date), 'yyyy/MM/dd')}: ${formattedAmount} ${transaction.asset.ticker}`}
+                  {`${format(convertUTCDate(date), 'yyyy/MM/dd')}: ${formattedAmount} ${tx.asset.ticker}`}
                 </>
               }
               actionText="Delete"
               cancelText="Back"
               onAction={async () =>
-                await removeAccountTransferTx(
-                  transaction.accountTransferTransaction.id,
-                )
+                await removeAccountTransferTx(tx.accountTransferTransaction.id)
               }
             >
               <DropdownMenu>
