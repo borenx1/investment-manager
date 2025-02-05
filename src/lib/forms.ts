@@ -117,3 +117,41 @@ export const accountTransferTxForm = {
       },
     ),
 } as const;
+
+const tradeTransactionFormSchema = z.object({
+  date: z.date({ message: 'Select a date' }),
+  portfolioAccountId: z.coerce
+    .number({ message: 'Select a portfolio account' })
+    .int(),
+  baseAssetId: z.coerce.number({ message: 'Select an asset' }).int(),
+  baseAmount: z.coerce
+    .number({ message: 'Amount is required' })
+    .positive('Must be a positive number'),
+  quoteAssetId: z.coerce.number({ message: 'Select an asset' }).int(),
+  quoteAmount: z.coerce
+    .number({ message: 'Amount is required' })
+    .positive('Must be a positive number'),
+  type: z.enum(['buy', 'sell']),
+  feeAsset: z.enum(['base', 'quote']),
+  feeAmount: z.coerce.number().nonnegative('Must be a non-negative number'),
+  description: z.string().trim().max(200, 'Maximum 200 characters'),
+});
+
+export const tradeTransactionForm = {
+  clientSchema: tradeTransactionFormSchema.refine(
+    (form) => form.baseAssetId !== form.quoteAssetId,
+    {
+      message: 'Base and quote assets cannot be the same',
+      path: ['quoteAssetId'],
+    },
+  ),
+  serverSchema: tradeTransactionFormSchema
+    .extend({
+      feeAmount: tradeTransactionFormSchema.shape.feeAmount.nullable(),
+      description: tradeTransactionFormSchema.shape.description.nullable(),
+    })
+    .refine((form) => form.baseAssetId !== form.quoteAssetId, {
+      message: 'Base and quote assets cannot be the same',
+      path: ['quoteAssetId'],
+    }),
+} as const;

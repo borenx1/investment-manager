@@ -8,10 +8,12 @@ import {
   createAsset,
   createCapitalTransaction,
   createPortfolioAccount,
+  createTradeTransaction,
   deleteAccountTransferTx,
   deleteAsset,
   deleteCapitalTransaction,
   deletePortfolioAccount,
+  deleteTradeTransaction,
   initBalanceAndLedgersWithAccount,
   initBalanceAndLedgersWithAsset,
   updateAccountingCurrency,
@@ -19,6 +21,7 @@ import {
   updateAsset,
   updateCapitalTransaction,
   updatePortfolioAccount,
+  updateTradeTransaction,
 } from '@/db/queries';
 import {
   accountingCurrencyForm,
@@ -26,6 +29,7 @@ import {
   assetForm,
   capitalTransactionForm,
   portfolioAccountForm,
+  tradeTransactionForm,
 } from '@/lib/forms';
 
 /**
@@ -271,4 +275,94 @@ export async function removeAccountTransferTx(id: number) {
 
   await deleteAccountTransferTx(userId, id);
   revalidatePath('/transfers');
+}
+
+/**
+ * Create a new trade transaction for the authenticated user.
+ * @param data The new trade transaction data.
+ * @returns The IDs of the created rows.
+ */
+export async function newTradeTransaction(data: {
+  portfolioAccountId: number;
+  baseAssetId: number;
+  quoteAssetId: number;
+  date: Date;
+  baseAmount: number;
+  quoteAmount: number;
+  type: 'buy' | 'sell';
+  feeAsset: 'base' | 'quote';
+  feeAmount: number | null;
+  description: string | null;
+}) {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return null;
+
+  const { type: tradeType, ...validatedData } =
+    tradeTransactionForm.serverSchema.parse(data);
+  const ids = await createTradeTransaction(userId, {
+    ...validatedData,
+    baseAmount:
+      tradeType === 'buy'
+        ? validatedData.baseAmount
+        : -validatedData.baseAmount,
+    quoteAmount:
+      tradeType === 'buy'
+        ? -validatedData.quoteAmount
+        : validatedData.quoteAmount,
+  });
+  revalidatePath('/journal');
+  return ids;
+}
+
+/**
+ * Update a trade transaction for the authenticated user.
+ * @param id The ID of the trade transaction to update.
+ * @param data The trade transaction data to update.
+ * @returns The IDs of the updated or created rows.
+ */
+export async function editTradeTransaction(
+  id: number,
+  data: {
+    portfolioAccountId: number;
+    baseAssetId: number;
+    quoteAssetId: number;
+    date: Date;
+    baseAmount: number;
+    quoteAmount: number;
+    type: 'buy' | 'sell';
+    feeAsset: 'base' | 'quote';
+    feeAmount: number | null;
+    description: string | null;
+  },
+) {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return null;
+
+  const { type: tradeType, ...validatedData } =
+    tradeTransactionForm.serverSchema.parse(data);
+  const ids = await updateTradeTransaction(userId, {
+    id,
+    ...validatedData,
+    baseAmount:
+      tradeType === 'buy'
+        ? validatedData.baseAmount
+        : -validatedData.baseAmount,
+    quoteAmount:
+      tradeType === 'buy'
+        ? -validatedData.quoteAmount
+        : validatedData.quoteAmount,
+  });
+  revalidatePath('/journal');
+  return ids;
+}
+
+export async function removeTradeTransaction(id: number) {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return;
+
+  await deleteTradeTransaction(userId, id);
+  revalidatePath('/journal');
 }

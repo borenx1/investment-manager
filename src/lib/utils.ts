@@ -21,18 +21,34 @@ export function sumFloats(num1: number, num2: number, precision: number) {
  * @param value The number to format.
  * @param decimalPlaces The number of decimal places.
  * @param trailingZeros Whether to include trailing zeros.
+ * @param options Additional number format options.
  * @returns The formatted number.
  */
 export function formatDecimalPlaces(
   value: number,
   decimalPlaces: number,
   trailingZeros: boolean = true,
+  options?: Omit<
+    Intl.NumberFormatOptions,
+    'style' | 'minimumFractionDigits' | 'maximumFractionDigits'
+  >,
 ) {
   return new Intl.NumberFormat(undefined, {
     style: 'decimal',
     minimumFractionDigits: trailingZeros ? decimalPlaces : 0,
     maximumFractionDigits: decimalPlaces,
+    ...options,
   }).format(value);
+}
+
+/**
+ * Round a number to a fixed number of decimal places.
+ * @param value The number to round.
+ * @param decimalPlaces The number of decimal places to round to.
+ * @returns The rounded number.
+ */
+export function roundNumber(value: number, decimalPlaces: number) {
+  return Number(Number(value).toFixed(decimalPlaces));
 }
 
 /**

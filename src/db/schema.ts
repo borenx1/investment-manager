@@ -341,3 +341,51 @@ export type SelectAccountTransferTransaction =
   typeof accountTransferTransactions.$inferSelect;
 export type InsertAccountTransferTransaction =
   typeof accountTransferTransactions.$inferInsert;
+
+export const tradeTransactions = pgTable(
+  'trade_transaction',
+  {
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    transactionId: integer('transaction_id')
+      .notNull()
+      .references(() => transactions.id, { onDelete: 'cascade' }),
+    baseAssetEntryId: integer('base_asset_entry_id')
+      .notNull()
+      .references(() => ledgerEntries.id, { onDelete: 'cascade' }),
+    baseIncomeEntryId: integer('base_income_entry_id')
+      .notNull()
+      .references(() => ledgerEntries.id, { onDelete: 'cascade' }),
+    quoteAssetEntryId: integer('quote_asset_entry_id')
+      .notNull()
+      .references(() => ledgerEntries.id, { onDelete: 'cascade' }),
+    quoteIncomeEntryId: integer('quote_income_entry_id')
+      .notNull()
+      .references(() => ledgerEntries.id, { onDelete: 'cascade' }),
+    feeAssetEntryId: integer('fee_asset_entry_id').references(
+      () => ledgerEntries.id,
+      { onDelete: 'set null' },
+    ),
+    feeIncomeEntryId: integer('fee_income_entry_id').references(
+      () => ledgerEntries.id,
+      { onDelete: 'set null' },
+    ),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    unique().on(table.transactionId),
+    unique().on(table.baseAssetEntryId),
+    unique().on(table.baseIncomeEntryId),
+    unique().on(table.quoteAssetEntryId),
+    unique().on(table.quoteIncomeEntryId),
+    unique().on(table.feeAssetEntryId),
+    unique().on(table.feeIncomeEntryId),
+  ],
+);
+
+export type SelectTradeTransaction = typeof tradeTransactions.$inferSelect;
+export type InsertTradeTransaction = typeof tradeTransactions.$inferInsert;
