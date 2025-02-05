@@ -1,5 +1,15 @@
 import 'server-only';
-import { aliasedTable, and, desc, eq, ne, notExists, sql } from 'drizzle-orm';
+import {
+  aliasedTable,
+  and,
+  desc,
+  eq,
+  gte,
+  lt,
+  ne,
+  notExists,
+  sql,
+} from 'drizzle-orm';
 
 import { db } from './';
 import {
@@ -8,6 +18,7 @@ import {
   assets,
   balances,
   capitalTransactions,
+  incomeTransactions,
   InsertAsset,
   InsertPortfolioAccount,
   InsertTransaction,
@@ -18,6 +29,7 @@ import {
   SelectAccountTransferTransaction,
   SelectAsset,
   SelectCapitalTransaction,
+  SelectIncomeTransaction,
   SelectLedgerEntry,
   SelectPortfolioAccount,
   SelectTradeTransaction,
@@ -2372,5 +2384,336 @@ export async function deleteTradeTransaction(
       ],
       [result.baseLedger.assetId, result.quoteLedger.assetId],
     );
+  }
+}
+
+export async function getIncomeTransactions(
+  userId: SelectTransaction['userId'],
+  type?: 'income' | 'expense',
+) {
+  const assetEntries = aliasedTable(ledgerEntries, 'assetEntry');
+  const incomeEntries = aliasedTable(ledgerEntries, 'incomeEntry');
+
+  // Assume the ledgers all belong to the same account and asset, so only need
+  // one ledger join.
+  const result = await db
+    .select({
+      incomeTransaction: incomeTransactions,
+      transaction: transactions,
+      assetEntry: assetEntries,
+      incomeEntry: incomeEntries,
+      portfolioAccount: portfolioAccounts,
+      asset: assets,
+    })
+    .from(incomeTransactions)
+    .innerJoin(
+      transactions,
+      eq(incomeTransactions.transactionId, transactions.id),
+    )
+    .innerJoin(
+      assetEntries,
+      eq(incomeTransactions.assetEntryId, assetEntries.id),
+    )
+    .innerJoin(
+      incomeEntries,
+      eq(incomeTransactions.incomeEntryId, incomeEntries.id),
+    )
+    .innerJoin(ledgers, eq(assetEntries.ledgerId, ledgers.id))
+    .innerJoin(
+      portfolioAccounts,
+      eq(ledgers.portfolioAccountId, portfolioAccounts.id),
+    )
+    .innerJoin(assets, eq(ledgers.assetId, assets.id))
+    .where(
+      and(
+        eq(transactions.userId, userId),
+        type === 'income' ? gte(assetEntries.amount, '0') : undefined,
+        type === 'expense' ? lt(assetEntries.amount, '0') : undefined,
+      ),
+    )
+    .orderBy(desc(transactions.date), desc(incomeTransactions.id));
+  return result;
+}
+
+export async function getIncomeTransaction(
+  userId: SelectTransaction['userId'],
+  id: SelectIncomeTransaction['id'],
+) {
+  const assetEntries = aliasedTable(ledgerEntries, 'assetEntry');
+  const incomeEntries = aliasedTable(ledgerEntries, 'incomeEntry');
+
+  // Assume the ledgers all belong to the same account and asset, so only need
+  // one ledger join.
+  const result = await db
+    .select({
+      incomeTransaction: incomeTransactions,
+      transaction: transactions,
+      assetEntry: assetEntries,
+      incomeEntry: incomeEntries,
+      portfolioAccount: portfolioAccounts,
+      asset: assets,
+    })
+    .from(incomeTransactions)
+    .innerJoin(
+      transactions,
+      eq(incomeTransactions.transactionId, transactions.id),
+    )
+    .innerJoin(
+      assetEntries,
+      eq(incomeTransactions.assetEntryId, assetEntries.id),
+    )
+    .innerJoin(
+      incomeEntries,
+      eq(incomeTransactions.incomeEntryId, incomeEntries.id),
+    )
+    .innerJoin(ledgers, eq(assetEntries.ledgerId, ledgers.id))
+    .innerJoin(
+      portfolioAccounts,
+      eq(ledgers.portfolioAccountId, portfolioAccounts.id),
+    )
+    .innerJoin(assets, eq(ledgers.assetId, assets.id))
+    .where(and(eq(incomeTransactions.id, id), eq(transactions.userId, userId)))
+    .limit(1);
+  return result.length ? result[0]! : null;
+}
+
+/**
+ * Create a new income transaction in the database for the user. The amount is
+ * positive for income and negative for expenses.
+ * @param userId The user ID.
+ * @param param1 The new transaction data.
+ * @returns The IDs of the inserted rows.
+ */
+export async function createIncomeTransaction(
+  userId: SelectTransaction['userId'],
+  {
+    portfolioAccountId,
+    assetId,
+    date,
+    amount,
+    description,
+  }: {
+    portfolioAccountId: SelectPortfolioAccount['id'];
+    assetId: SelectAsset['id'];
+    date: InsertTransaction['date'];
+    amount: number;
+    description: InsertTransaction['description'];
+  },
+) {
+  const assetAmountString = String(amount);
+  const incomeAmountString = String(-amount);
+  description = description?.trim() || null;
+
+  // First check that the account and asset belong to the user.
+  const [isPortfolioAccountOwned, isAssetOwned] = await Promise.all([
+    isPortfolioAccountBelongToUser(userId, portfolioAccountId),
+    isAssetBelongToUser(userId, assetId),
+  ]);
+  if (!isPortfolioAccountOwned) {
+    throw new Error('Portfolio account does not belong to the user');
+  }
+  if (!isAssetOwned) {
+    throw new Error('Asset does not belong to the user');
+  }
+
+  const [assetLedger, incomeLedger] = await Promise.all([
+    getLedgerGuaranteed(portfolioAccountId, assetId, 'asset'),
+    getLedgerGuaranteed(portfolioAccountId, assetId, 'income'),
+  ]);
+  const result = await db.transaction(async (tx) => {
+    const transactionId = await tx
+      .insert(transactions)
+      .values({
+        userId,
+        date,
+        title: amount >= 0 ? 'Income' : 'Expense',
+        description,
+      })
+      .returning({ id: transactions.id });
+    const [assetEntryId, incomeEntryId] = await tx
+      .insert(ledgerEntries)
+      .values([
+        {
+          ledgerId: assetLedger.id,
+          transactionId: transactionId[0]!.id,
+          amount: assetAmountString,
+        },
+        {
+          ledgerId: incomeLedger.id,
+          transactionId: transactionId[0]!.id,
+          amount: incomeAmountString,
+        },
+      ])
+      .returning({ id: ledgerEntries.id });
+
+    const incomeTransactionId = await tx
+      .insert(incomeTransactions)
+      .values({
+        transactionId: transactionId[0]!.id,
+        assetEntryId: assetEntryId!.id,
+        incomeEntryId: incomeEntryId!.id,
+      })
+      .returning({ id: incomeTransactions.id });
+
+    return {
+      incomeTransactionId: incomeTransactionId[0]!.id,
+      transactionId: transactionId[0]!.id,
+      assetEntryId: assetEntryId!.id,
+      incomeEntryId: incomeEntryId!.id,
+    };
+  });
+
+  await calculateBalance(portfolioAccountId, assetId);
+
+  return result;
+}
+
+/**
+ * Update a income transaction in the database.
+ * @param userId The user ID.
+ * @param param1 The income transaction ID and data to update.
+ * @returns The IDs of the updated or inserted rows.
+ */
+export async function updateIncomeTransaction(
+  userId: SelectTransaction['userId'],
+  {
+    id,
+    portfolioAccountId,
+    assetId,
+    date,
+    amount,
+    description,
+  }: {
+    id: SelectIncomeTransaction['id'];
+    portfolioAccountId: SelectPortfolioAccount['id'];
+    assetId: SelectAsset['id'];
+    date: InsertTransaction['date'];
+    amount: number;
+    description: InsertTransaction['description'];
+  },
+) {
+  const assetAmountString = String(amount);
+  const incomeAmountString = String(-amount);
+  description = description?.trim() || null;
+
+  const original = await getIncomeTransaction(userId, id);
+  if (!original) {
+    throw new Error('Income transaction does not belong to the user');
+  }
+  // Check that the account and asset belong to the user.
+  if (
+    portfolioAccountId !== original.portfolioAccount.id ||
+    assetId !== original.asset.id
+  ) {
+    const [isPortfolioAccountOwned, isAssetOwned] = await Promise.all([
+      isPortfolioAccountBelongToUser(userId, portfolioAccountId),
+      isAssetBelongToUser(userId, assetId),
+    ]);
+    if (!isPortfolioAccountOwned) {
+      throw new Error('Portfolio account does not belong to the user');
+    }
+    if (!isAssetOwned) {
+      throw new Error('Asset does not belong to the user');
+    }
+  }
+
+  const isSameLedger =
+    original.portfolioAccount.id === portfolioAccountId &&
+    original.asset.id === assetId;
+  const assetLedgerId = isSameLedger
+    ? original.assetEntry.ledgerId
+    : (await getLedgerGuaranteed(portfolioAccountId, assetId, 'asset')).id;
+  const incomeLedgerId = isSameLedger
+    ? original.incomeEntry.ledgerId
+    : (await getLedgerGuaranteed(portfolioAccountId, assetId, 'income')).id;
+  const result = await db.transaction(async (tx) => {
+    await tx
+      .update(transactions)
+      .set({
+        date,
+        title: amount >= 0 ? 'Income' : 'Expense',
+        description,
+        updatedAt: sql`NOW()`,
+      })
+      .where(eq(transactions.id, original.transaction.id));
+    await Promise.all([
+      tx
+        .update(ledgerEntries)
+        .set({
+          ledgerId: assetLedgerId,
+          amount: assetAmountString,
+          updatedAt: sql`NOW()`,
+        })
+        .where(eq(ledgerEntries.id, original.incomeTransaction.assetEntryId)),
+      tx
+        .update(ledgerEntries)
+        .set({
+          ledgerId: incomeLedgerId,
+          amount: incomeAmountString,
+          updatedAt: sql`NOW()`,
+        })
+        .where(eq(ledgerEntries.id, original.incomeTransaction.incomeEntryId)),
+    ]);
+
+    await tx
+      .update(incomeTransactions)
+      .set({ updatedAt: sql`NOW()` })
+      .where(eq(incomeTransactions.id, id));
+
+    return {
+      incomeTransactionId: id,
+      transactionId: original.transaction.id,
+      assetEntryId: original.incomeTransaction.assetEntryId,
+      incomeEntryId: original.incomeTransaction.incomeEntryId,
+    };
+  });
+
+  await calculateBalances(
+    [portfolioAccountId, original.portfolioAccount.id],
+    [assetId, original.asset.id],
+  );
+
+  return result;
+}
+
+export async function deleteIncomeTransaction(
+  userId: SelectTransaction['userId'],
+  id: SelectIncomeTransaction['id'],
+) {
+  const result = await db.transaction(async (tx) => {
+    const result = await tx
+      .select({ transaction: transactions, ledger: ledgers })
+      .from(incomeTransactions)
+      .innerJoin(
+        transactions,
+        eq(incomeTransactions.transactionId, transactions.id),
+      )
+      .innerJoin(
+        ledgerEntries,
+        eq(incomeTransactions.assetEntryId, ledgerEntries.id),
+      )
+      .innerJoin(ledgers, eq(ledgerEntries.ledgerId, ledgers.id))
+      .where(
+        and(eq(incomeTransactions.id, id), eq(transactions.userId, userId)),
+      )
+      .limit(1);
+    if (!result.length) {
+      return;
+    }
+    const { transaction, ledger } = result[0]!;
+    // income_transaction, ledger_entry will be deleted by cascade.
+    await tx
+      .delete(transactions)
+      .where(
+        and(
+          eq(transactions.id, transaction.id),
+          eq(transactions.userId, userId),
+        ),
+      );
+    return ledger;
+  });
+
+  if (result) {
+    await calculateBalance(result.portfolioAccountId, result.assetId);
   }
 }

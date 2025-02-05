@@ -389,3 +389,33 @@ export const tradeTransactions = pgTable(
 
 export type SelectTradeTransaction = typeof tradeTransactions.$inferSelect;
 export type InsertTradeTransaction = typeof tradeTransactions.$inferInsert;
+
+export const incomeTransactions = pgTable(
+  'income_transaction',
+  {
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    transactionId: integer('transaction_id')
+      .notNull()
+      .references(() => transactions.id, { onDelete: 'cascade' }),
+    assetEntryId: integer('asset_entry_id')
+      .notNull()
+      .references(() => ledgerEntries.id, { onDelete: 'cascade' }),
+    incomeEntryId: integer('income_entry_id')
+      .notNull()
+      .references(() => ledgerEntries.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    unique().on(table.transactionId),
+    unique().on(table.assetEntryId),
+    unique().on(table.incomeEntryId),
+  ],
+);
+
+export type SelectIncomeTransaction = typeof incomeTransactions.$inferSelect;
+export type InsertIncomeTransaction = typeof incomeTransactions.$inferInsert;

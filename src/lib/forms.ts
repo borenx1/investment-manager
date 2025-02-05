@@ -174,3 +174,26 @@ export const tradeTransactionForm = {
       path: ['quoteAssetId'],
     }),
 } as const;
+
+const incomeTransactionFormSchema = z.object({
+  date: z.date({ message: 'Select a date' }),
+  portfolioAccountId: z.coerce
+    .number({ message: 'Select a portfolio account' })
+    .int(),
+  assetId: z.coerce.number({ message: 'Select an asset' }).int(),
+  amount: z.coerce
+    .number({ message: 'Amount is required' })
+    .positive('Must be a positive number')
+    .finite()
+    .safe(),
+  description: z.string().trim().max(200, 'Maximum 200 characters'),
+});
+
+export const incomeTransactionForm = {
+  clientSchema: incomeTransactionFormSchema,
+  serverSchema: incomeTransactionFormSchema.extend({
+    description: incomeTransactionFormSchema.shape.description.nullable(),
+  }),
+} as const;
+
+export const expenseTransactionForm = incomeTransactionForm;

@@ -7,11 +7,13 @@ import {
   createAccountTransferTx,
   createAsset,
   createCapitalTransaction,
+  createIncomeTransaction,
   createPortfolioAccount,
   createTradeTransaction,
   deleteAccountTransferTx,
   deleteAsset,
   deleteCapitalTransaction,
+  deleteIncomeTransaction,
   deletePortfolioAccount,
   deleteTradeTransaction,
   initBalanceAndLedgersWithAccount,
@@ -20,6 +22,7 @@ import {
   updateAccountTransferTx,
   updateAsset,
   updateCapitalTransaction,
+  updateIncomeTransaction,
   updatePortfolioAccount,
   updateTradeTransaction,
 } from '@/db/queries';
@@ -28,6 +31,7 @@ import {
   accountTransferTxForm,
   assetForm,
   capitalTransactionForm,
+  incomeTransactionForm,
   portfolioAccountForm,
   tradeTransactionForm,
 } from '@/lib/forms';
@@ -377,5 +381,62 @@ export async function removeTradeTransaction(id: number) {
   if (!userId) return;
 
   await deleteTradeTransaction(userId, id);
+  revalidatePath('/journal');
+}
+
+/**
+ * Create a new income transaction for the authenticated user.
+ * @param data The new income transaction data.
+ * @returns The IDs of the created rows.
+ */
+export async function newIncomeTransaction(data: {
+  portfolioAccountId: number;
+  assetId: number;
+  date: Date;
+  amount: number;
+  description: string | null;
+}) {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return null;
+
+  const validatedData = incomeTransactionForm.serverSchema.parse(data);
+  const ids = await createIncomeTransaction(userId, validatedData);
+  revalidatePath('/journal');
+  return ids;
+}
+
+/**
+ * Update a income transaction for the authenticated user.
+ * @param id The ID of the income transaction to update.
+ * @param data The income transaction data to update.
+ * @returns The IDs of the updated or created rows.
+ */
+export async function editIncomeTransaction(
+  id: number,
+  data: {
+    portfolioAccountId: number;
+    assetId: number;
+    date: Date;
+    amount: number;
+    description: string | null;
+  },
+) {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return null;
+
+  const validatedData = incomeTransactionForm.serverSchema.parse(data);
+  const ids = await updateIncomeTransaction(userId, { id, ...validatedData });
+  revalidatePath('/journal');
+  return ids;
+}
+
+export async function removeIncomeTransaction(id: number) {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return;
+
+  await deleteIncomeTransaction(userId, id);
   revalidatePath('/journal');
 }
