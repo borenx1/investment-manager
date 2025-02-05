@@ -177,3 +177,39 @@ export async function calculateBalance(
 
   return result[0]!;
 }
+
+/**
+ * Calculate and set the balances for a given list of portfolio accounts and
+ * assets. DOES NOT CHECK IF THE ACCOUNTS AND ASSETS BELONG TO THE SAME USER.
+ * @param portfolioAccountIds The portfolio account IDs.
+ * @param assetIds The asset IDs.
+ * @returns The balance objects.
+ * @see {@link calculateBalance}
+ */
+export async function calculateBalances(
+  portfolioAccountIds:
+    | SelectBalance['portfolioAccountId']
+    | SelectBalance['portfolioAccountId'][],
+  assetIds: SelectBalance['assetId'] | SelectBalance['assetId'][],
+) {
+  if (!Array.isArray(portfolioAccountIds)) {
+    portfolioAccountIds = [portfolioAccountIds];
+  }
+  if (!Array.isArray(assetIds)) {
+    assetIds = [assetIds];
+  }
+  if (!portfolioAccountIds.length || !assetIds.length) {
+    return [];
+  }
+  // Remove duplicate IDs.
+  portfolioAccountIds = [...new Set(portfolioAccountIds)];
+  assetIds = [...new Set(assetIds)];
+
+  return await Promise.all(
+    portfolioAccountIds
+      .map((accountId) =>
+        assetIds.map((assetId) => calculateBalance(accountId, assetId)),
+      )
+      .flat(),
+  );
+}

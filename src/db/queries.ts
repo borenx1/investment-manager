@@ -27,6 +27,7 @@ import {
 } from './schema';
 import {
   calculateBalance,
+  calculateBalances,
   createBalanceAndLedgers,
   getLedgerGuaranteed,
 } from './unsafeQueries';
@@ -767,6 +768,12 @@ export async function updateCapitalTransaction(
   const isSameLedger =
     original.portfolioAccount.id === portfolioAccountId &&
     original.asset.id === assetId;
+  const assetLedgerId = isSameLedger
+    ? original.assetEntry.ledgerId
+    : (await getLedgerGuaranteed(portfolioAccountId, assetId, 'asset')).id;
+  const capitalLedgerId = isSameLedger
+    ? original.capitalEntry.ledgerId
+    : (await getLedgerGuaranteed(portfolioAccountId, assetId, 'capital')).id;
   const result = await db.transaction(async (tx) => {
     await tx
       .update(transactions)
@@ -777,13 +784,6 @@ export async function updateCapitalTransaction(
         updatedAt: sql`NOW()`,
       })
       .where(eq(transactions.id, original.transaction.id));
-
-    const assetLedgerId = isSameLedger
-      ? original.assetEntry.ledgerId
-      : (await getLedgerGuaranteed(portfolioAccountId, assetId, 'asset')).id;
-    const capitalLedgerId = isSameLedger
-      ? original.capitalEntry.ledgerId
-      : (await getLedgerGuaranteed(portfolioAccountId, assetId, 'capital')).id;
     await Promise.all([
       tx
         .update(ledgerEntries)
@@ -903,7 +903,10 @@ export async function updateCapitalTransaction(
     };
   });
 
-  await calculateBalance(portfolioAccountId, assetId);
+  await calculateBalances(
+    [portfolioAccountId, original.portfolioAccount.id],
+    [assetId, original.asset.id],
+  );
 
   return result;
 }
@@ -1326,10 +1329,10 @@ export async function createAccountTransferTx(
     };
   });
 
-  await Promise.all([
-    calculateBalance(sourcePortfolioAccountId, assetId),
-    calculateBalance(targetPortfolioAccountId, assetId),
-  ]);
+  await calculateBalances(
+    [sourcePortfolioAccountId, targetPortfolioAccountId],
+    [assetId],
+  );
 
   return result;
 }
@@ -1405,6 +1408,22 @@ export async function updateAccountTransferTx(
   const isSameTargetLedger =
     original.targetPortfolioAccount.id === targetPortfolioAccountId &&
     original.asset.id === assetId;
+  const sourceAssetLedgerId = isSameSourceLedger
+    ? original.sourceAssetEntry.ledgerId
+    : (await getLedgerGuaranteed(sourcePortfolioAccountId, assetId, 'asset'))
+        .id;
+  const sourceCapitalLedgerId = isSameSourceLedger
+    ? original.sourceCapitalEntry.ledgerId
+    : (await getLedgerGuaranteed(sourcePortfolioAccountId, assetId, 'capital'))
+        .id;
+  const targetAssetLedgerId = isSameTargetLedger
+    ? original.targetAssetEntry.ledgerId
+    : (await getLedgerGuaranteed(targetPortfolioAccountId, assetId, 'asset'))
+        .id;
+  const targetCapitalLedgerId = isSameTargetLedger
+    ? original.targetCapitalEntry.ledgerId
+    : (await getLedgerGuaranteed(targetPortfolioAccountId, assetId, 'capital'))
+        .id;
   const result = await db.transaction(async (tx) => {
     await tx
       .update(transactions)
@@ -1414,33 +1433,6 @@ export async function updateAccountTransferTx(
         updatedAt: sql`NOW()`,
       })
       .where(eq(transactions.id, original.transaction.id));
-
-    const sourceAssetLedgerId = isSameSourceLedger
-      ? original.sourceAssetEntry.ledgerId
-      : (await getLedgerGuaranteed(sourcePortfolioAccountId, assetId, 'asset'))
-          .id;
-    const sourceCapitalLedgerId = isSameSourceLedger
-      ? original.sourceCapitalEntry.ledgerId
-      : (
-          await getLedgerGuaranteed(
-            sourcePortfolioAccountId,
-            assetId,
-            'capital',
-          )
-        ).id;
-    const targetAssetLedgerId = isSameTargetLedger
-      ? original.targetAssetEntry.ledgerId
-      : (await getLedgerGuaranteed(targetPortfolioAccountId, assetId, 'asset'))
-          .id;
-    const targetCapitalLedgerId = isSameTargetLedger
-      ? original.targetCapitalEntry.ledgerId
-      : (
-          await getLedgerGuaranteed(
-            targetPortfolioAccountId,
-            assetId,
-            'capital',
-          )
-        ).id;
     await Promise.all([
       tx
         .update(ledgerEntries)
@@ -1617,10 +1609,15 @@ export async function updateAccountTransferTx(
     };
   });
 
-  await Promise.all([
-    calculateBalance(sourcePortfolioAccountId, assetId),
-    calculateBalance(targetPortfolioAccountId, assetId),
-  ]);
+  await calculateBalances(
+    [
+      sourcePortfolioAccountId,
+      targetPortfolioAccountId,
+      original.sourcePortfolioAccount.id,
+      original.targetPortfolioAccount.id,
+    ],
+    [assetId, original.asset.id],
+  );
 
   return result;
 }
@@ -1693,16 +1690,13 @@ export async function deleteAccountTransferTx(
   });
 
   if (result) {
-    await Promise.all([
-      calculateBalance(
+    await calculateBalances(
+      [
         result.sourceLedger.portfolioAccountId,
-        result.sourceLedger.assetId,
-      ),
-      calculateBalance(
         result.targetLedger.portfolioAccountId,
-        result.targetLedger.assetId,
-      ),
-    ]);
+      ],
+      [result.sourceLedger.assetId, result.targetLedger.assetId],
+    );
   }
 }
 
@@ -2046,10 +2040,7 @@ export async function createTradeTransaction(
     };
   });
 
-  await Promise.all([
-    calculateBalance(portfolioAccountId, baseAssetId),
-    calculateBalance(portfolioAccountId, quoteAssetId),
-  ]);
+  await calculateBalances([portfolioAccountId], [baseAssetId, quoteAssetId]);
 
   return result;
 }
@@ -2289,10 +2280,10 @@ export async function updateTradeTransaction(
     };
   });
 
-  await Promise.all([
-    calculateBalance(portfolioAccountId, baseAssetId),
-    calculateBalance(portfolioAccountId, quoteAssetId),
-  ]);
+  await calculateBalances(
+    [portfolioAccountId, original.portfolioAccount.id],
+    [baseAssetId, quoteAssetId, original.baseAsset.id, original.quoteAsset.id],
+  );
 
   return result;
 }
@@ -2344,16 +2335,14 @@ export async function deleteTradeTransaction(
       );
     return { baseLedger, quoteLedger };
   });
+
   if (result) {
-    await Promise.all([
-      calculateBalance(
+    await calculateBalances(
+      [
         result.baseLedger.portfolioAccountId,
-        result.baseLedger.assetId,
-      ),
-      calculateBalance(
         result.quoteLedger.portfolioAccountId,
-        result.quoteLedger.assetId,
-      ),
-    ]);
+      ],
+      [result.baseLedger.assetId, result.quoteLedger.assetId],
+    );
   }
 }
