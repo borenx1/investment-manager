@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { Check, EllipsisVertical, Pencil, Plus, Trash2 } from 'lucide-react';
 
 import { removeAsset } from '@/lib/actions';
@@ -26,7 +27,17 @@ import AddEditAssetDialog from '@/components/AddEditAssetDialog';
 
 export default function AssetSection() {
   const assets = useResourceStore((state) => state.assets);
+  const accountingCurrency = useResourceStore(
+    (state) => state.accountingCurrency,
+  );
   const isAssetsLoaded = useResourceStore((state) => state.isAssetsLoaded);
+  const isAccountingCurrencyLoaded = useResourceStore(
+    (state) => state.isAccountingCurrencyLoaded,
+  );
+  const isResourcesLoaded = useMemo(
+    () => isAssetsLoaded && isAccountingCurrencyLoaded,
+    [isAssetsLoaded, isAccountingCurrencyLoaded],
+  );
 
   return (
     <>
@@ -94,7 +105,9 @@ export default function AssetSection() {
                               </DropdownMenuItem>
                             </DialogTrigger>
                             <AlertDialogTrigger asChild>
-                              <DropdownMenuItem>
+                              <DropdownMenuItem
+                                disabled={asset.id === accountingCurrency?.id}
+                              >
                                 <Trash2 />
                                 Delete
                               </DropdownMenuItem>
@@ -111,7 +124,7 @@ export default function AssetSection() {
         </div>
       ) : (
         <div className="italic">
-          {isAssetsLoaded
+          {isResourcesLoaded
             ? 'No assets, please create a new asset'
             : 'Loading...'}
         </div>
