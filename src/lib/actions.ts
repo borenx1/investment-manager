@@ -31,6 +31,7 @@ import {
   accountTransferTxForm,
   assetForm,
   capitalTransactionForm,
+  expenseTransactionForm,
   incomeTransactionForm,
   portfolioAccountForm,
   tradeTransactionForm,
@@ -439,4 +440,61 @@ export async function removeIncomeTransaction(id: number) {
 
   await deleteIncomeTransaction(userId, id);
   revalidatePath('/journal');
+}
+
+/**
+ * Create a new expense transaction for the authenticated user.
+ * @param data The new expense transaction data.
+ * @returns The IDs of the created rows.
+ */
+export async function newExpenseTransaction(data: {
+  portfolioAccountId: number;
+  assetId: number;
+  date: Date;
+  amount: number;
+  description: string | null;
+}) {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return null;
+
+  const { amount, ...validatedData } =
+    expenseTransactionForm.serverSchema.parse(data);
+  const ids = await createIncomeTransaction(userId, {
+    ...validatedData,
+    amount: -amount,
+  });
+  revalidatePath('/journal');
+  return ids;
+}
+
+/**
+ * Update a expense transaction for the authenticated user.
+ * @param id The ID of the expense transaction to update.
+ * @param data The expense transaction data to update.
+ * @returns The IDs of the updated or created rows.
+ */
+export async function editExpenseTransaction(
+  id: number,
+  data: {
+    portfolioAccountId: number;
+    assetId: number;
+    date: Date;
+    amount: number;
+    description: string | null;
+  },
+) {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return null;
+
+  const { amount, ...validatedData } =
+    expenseTransactionForm.serverSchema.parse(data);
+  const ids = await updateIncomeTransaction(userId, {
+    id,
+    ...validatedData,
+    amount: -amount,
+  });
+  revalidatePath('/journal');
+  return ids;
 }
