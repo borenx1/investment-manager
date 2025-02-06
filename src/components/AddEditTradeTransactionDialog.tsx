@@ -13,7 +13,7 @@ import { format } from 'date-fns';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Calendar as CalendarIcon, LoaderCircle } from 'lucide-react';
+import { LoaderCircle } from 'lucide-react';
 
 import { editTradeTransaction, newTradeTransaction } from '@/lib/actions';
 import { tradeTransactionForm } from '@/lib/forms';
@@ -25,7 +25,6 @@ import {
 } from '@/lib/utils';
 import { useResourceStore } from '@/providers/resource-store-provider';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
 import {
   Dialog,
   DialogContent,
@@ -44,11 +43,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -57,6 +52,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { DatePickerButton, DatePickerPopover } from '@/components/DatePicker';
 
 export type Transaction = {
   tradeTransaction: { id: number };
@@ -262,28 +258,21 @@ export default function AddEditTradeTransactionDialog({
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Date *</FormLabel>
-                  <Popover modal>
+                  <DatePickerPopover
+                    modal
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    required
+                  >
                     <PopoverTrigger asChild>
                       <FormControl>
-                        <Button variant="outline" disabled={isPending}>
-                          {field.value ? (
-                            format(field.value, 'yyyy/MM/dd')
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                          <CalendarIcon className="ml-auto opacity-50" />
-                        </Button>
+                        <DatePickerButton
+                          selected={field.value}
+                          disabled={isPending}
+                        />
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  </DatePickerPopover>
                   <FormMessage />
                 </FormItem>
               )}
