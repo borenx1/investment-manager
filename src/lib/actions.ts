@@ -24,6 +24,7 @@ import {
   updateCapitalTransaction,
   updateIncomeTransaction,
   updatePortfolioAccount,
+  updatePortfolioAccountOrder,
   updateTradeTransaction,
 } from '@/db/queries';
 import {
@@ -83,6 +84,19 @@ export async function removePortfolioAccount(id: number) {
   if (!userId) return;
 
   await deletePortfolioAccount(userId, id);
+  revalidatePath('/', 'layout');
+}
+
+/**
+ * Reorder the portfolio accounts for the authenticated user.
+ * @param newOrder The portfolio account IDs in the new order.
+ */
+export async function reorderPortfolioAccounts(newOrder: number[]) {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return;
+
+  await updatePortfolioAccountOrder(userId, newOrder);
   revalidatePath('/', 'layout');
 }
 

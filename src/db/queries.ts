@@ -167,6 +167,49 @@ export async function isPortfolioAccountBelongToUser(
   return !!count;
 }
 
+/**
+ * Update the order of the user's portfolio accounts.
+ * @param userId The user ID.
+ * @param order An array of the portfolio account IDs in the new order.
+ */
+export async function updatePortfolioAccountOrder(
+  userId: SelectPortfolioAccount['userId'],
+  order: SelectPortfolioAccount['id'][],
+) {
+  const current = await getPortfolioAccounts(userId);
+  if (!current.length) {
+    return;
+  }
+  const newOrder: typeof current = [];
+  for (const id of order) {
+    // Take the value out of current and put it in newOrder.
+    const index = current.findIndex((account) => account.id === id);
+    if (index !== -1) {
+      newOrder.push(current[index]!);
+      current.splice(index, 1);
+    }
+  }
+  // Append any remaining accounts in the original order.
+  newOrder.push(...current);
+
+  const sqlValues = newOrder.map(
+    (account, index) =>
+      sql`(${sql.raw(String(account.id))}, ${sql.raw(String(index))})`,
+  );
+  await db
+    .update(portfolioAccounts)
+    .set({ order: sql`ordering.new_order`, updatedAt: sql`NOW()` })
+    .from(
+      sql`(VALUES ${sql.join(sqlValues, sql.raw(','))}) AS ordering (id, new_order)`,
+    )
+    .where(
+      and(
+        eq(portfolioAccounts.id, sql`ordering.id`),
+        eq(portfolioAccounts.userId, userId),
+      ),
+    );
+}
+
 export async function getAssets(userId: SelectAsset['userId']) {
   return await db
     .select()

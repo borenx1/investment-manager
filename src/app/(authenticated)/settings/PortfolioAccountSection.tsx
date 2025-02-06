@@ -1,6 +1,12 @@
 'use client';
 
-import { EllipsisVertical, Pencil, Plus, Trash2 } from 'lucide-react';
+import {
+  EllipsisVertical,
+  ListOrdered,
+  Pencil,
+  Plus,
+  Trash2,
+} from 'lucide-react';
 
 import { removePortfolioAccount } from '@/lib/actions';
 import { useResourceStore } from '@/providers/resource-store-provider';
@@ -23,6 +29,7 @@ import {
 } from '@/components/ui/table';
 import ActionAlertDialog from '@/components/ActionAlertDialog';
 import AddEditPortfolioAccountDialog from '@/components/AddEditPortfolioAccountDialog';
+import OrderPortfolioAccountDialog from '@/components/OrderPortfolioAccountDialog';
 
 export default function PortfolioAccountSection() {
   const portfolioAccounts = useResourceStore(
@@ -40,7 +47,26 @@ export default function PortfolioAccountSection() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-full pl-4">Account name</TableHead>
-                <TableHead></TableHead>
+                <TableHead>
+                  <OrderPortfolioAccountDialog>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost">
+                          <span className="sr-only">Open menu</span>
+                          <EllipsisVertical />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DialogTrigger asChild>
+                          <DropdownMenuItem>
+                            <ListOrdered />
+                            Edit order
+                          </DropdownMenuItem>
+                        </DialogTrigger>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </OrderPortfolioAccountDialog>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
