@@ -395,12 +395,13 @@ export default function AddEditAccountTransferTransactionDialog({
               <div className="text-muted-foreground text-sm">
                 Total transferred to target account:
                 <br />
-                {selectedAsset
-                  ? formatDecimalPlaces(
-                      totalTransferred,
-                      selectedAsset.precision,
-                    )
-                  : formatDecimalPlaces(totalTransferred, 100, false)}
+                {formatDecimalPlaces(
+                  totalTransferred,
+                  selectedAsset?.precision ?? 100,
+                  {
+                    trailingZeros: !!selectedAsset,
+                  },
+                )}
               </div>
             )}
             <FormField

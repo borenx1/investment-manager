@@ -203,12 +203,10 @@ export default function AddEditTradeTransactionDialog({
       if (!baseAmount || !isFinite(baseAmount)) return;
       const newPrice = quoteAmount / baseAmount;
       setPrice(
-        formatDecimalPlaces(
-          newPrice,
-          selectedBaseAsset?.pricePrecision ?? 2,
-          false,
-          { useGrouping: false },
-        ),
+        formatDecimalPlaces(newPrice, selectedBaseAsset?.pricePrecision ?? 2, {
+          trailingZeros: false,
+          useGrouping: false,
+        }),
       );
     },
     [form, selectedBaseAsset],

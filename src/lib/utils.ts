@@ -20,18 +20,23 @@ export function sumFloats(num1: number, num2: number, precision: number) {
  * Format a number to a string with a fixed number of decimal places.
  * @param value The number to format.
  * @param decimalPlaces The number of decimal places.
- * @param trailingZeros Whether to include trailing zeros.
+ * @param trailingZeros Whether to include trailing zeros. Defaults to `true`.
  * @param options Additional number format options.
  * @returns The formatted number.
  */
 export function formatDecimalPlaces(
   value: number,
   decimalPlaces: number,
-  trailingZeros: boolean = true,
-  options?: Omit<
+  {
+    trailingZeros = true,
+    ...options
+  }: { trailingZeros?: boolean } & Omit<
     Intl.NumberFormatOptions,
-    'style' | 'minimumFractionDigits' | 'maximumFractionDigits'
-  >,
+    | 'style'
+    | 'minimumFractionDigits'
+    | 'maximumFractionDigits'
+    | 'trailingZeroDisplay'
+  > = {},
 ) {
   return new Intl.NumberFormat(undefined, {
     style: 'decimal',
