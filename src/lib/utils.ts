@@ -17,6 +17,16 @@ export function sumFloats(num1: number, num2: number, precision: number) {
 }
 
 /**
+ * Round a number to a fixed number of decimal places.
+ * @param value The number to round.
+ * @param decimalPlaces The number of decimal places to round to.
+ * @returns The rounded number.
+ */
+export function roundNumber(value: number, decimalPlaces: number) {
+  return Number(Number(value).toFixed(decimalPlaces));
+}
+
+/**
  * Format a number to a string with a fixed number of decimal places.
  * @param value The number to format.
  * @param decimalPlaces The number of decimal places.
@@ -47,13 +57,22 @@ export function formatDecimalPlaces(
 }
 
 /**
- * Round a number to a fixed number of decimal places.
- * @param value The number to round.
- * @param decimalPlaces The number of decimal places to round to.
- * @returns The rounded number.
+ * Format a number as a currency with a fixed number of decimal places.
+ * @param value The number to format.
+ * @param decimalPlaces The number of decimal places.
+ * @param symbol The currency symbol.
+ * @returns The formatted currency string.
  */
-export function roundNumber(value: number, decimalPlaces: number) {
-  return Number(Number(value).toFixed(decimalPlaces));
+export function formatCurrency(
+  value: number,
+  decimalPlaces: number,
+  symbol?: string | null,
+) {
+  if (!symbol) {
+    return formatDecimalPlaces(value, decimalPlaces);
+  }
+  const sign = value < 0 ? '-' : '';
+  return `${sign}${symbol}${formatDecimalPlaces(Math.abs(value), decimalPlaces)}`;
 }
 
 /**
