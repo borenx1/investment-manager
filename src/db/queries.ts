@@ -11,6 +11,7 @@ import {
   sql,
 } from 'drizzle-orm';
 
+import { MAX_ASSETS, MAX_PORTFOLIO_ACCOUNTS } from '@/lib/constants';
 import { db } from './';
 import {
   accountingCurrencies,
@@ -65,6 +66,14 @@ export async function createPortfolioAccount(
   userId: SelectPortfolioAccount['userId'],
   { name }: { name: InsertPortfolioAccount['name'] },
 ) {
+  // Limit maximum number of accounts.
+  const accountCount = await db.$count(
+    portfolioAccounts,
+    eq(portfolioAccounts.userId, userId),
+  );
+  if (accountCount >= MAX_PORTFOLIO_ACCOUNTS) {
+    return { message: 'Maximum number of accounts reached' } as const;
+  }
   // Check for duplicate values.
   const duplicateName = await db.$count(
     portfolioAccounts,
@@ -247,6 +256,11 @@ export async function createAsset(
   name = name.trim();
   symbol = symbol?.trim() || null;
 
+  // Limit maximum number of assets.
+  const assetCount = await db.$count(assets, eq(assets.userId, userId));
+  if (assetCount >= MAX_ASSETS) {
+    return { message: 'Maximum number of assets reached' } as const;
+  }
   // Check for duplicate values.
   const duplicateTicker = await db.$count(
     assets,

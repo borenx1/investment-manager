@@ -14,6 +14,7 @@ import { z } from 'zod';
 import { LoaderCircle } from 'lucide-react';
 
 import { editPortfolioAccount, newPortfolioAccount } from '@/lib/actions';
+import { MAX_PORTFOLIO_ACCOUNTS } from '@/lib/constants';
 import { portfolioAccountForm } from '@/lib/forms';
 import { Button } from '@/components/ui/button';
 import {
@@ -67,6 +68,16 @@ export default function AddEditPortfolioAccountDialog({
             form.setError(
               'name',
               { message: 'Name already exists' },
+              { shouldFocus: true },
+            );
+            break;
+          }
+          case 'Maximum number of accounts reached': {
+            form.setError(
+              'name',
+              {
+                message: `Maximum number of accounts reached: ${MAX_PORTFOLIO_ACCOUNTS}`,
+              },
               { shouldFocus: true },
             );
             break;

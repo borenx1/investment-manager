@@ -14,6 +14,7 @@ import { z } from 'zod';
 import { LoaderCircle } from 'lucide-react';
 
 import { editAsset, newAsset } from '@/lib/actions';
+import { MAX_ASSETS } from '@/lib/constants';
 import { assetForm } from '@/lib/forms';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -110,6 +111,16 @@ export default function AddEditAssetDialog({
             form.setError(
               'symbol',
               { message: 'Symbol already exists' },
+              { shouldFocus: true },
+            );
+            break;
+          }
+          case 'Maximum number of assets reached': {
+            form.setError(
+              'name',
+              {
+                message: `Maximum number of assets reached: ${MAX_ASSETS}`,
+              },
               { shouldFocus: true },
             );
             break;
