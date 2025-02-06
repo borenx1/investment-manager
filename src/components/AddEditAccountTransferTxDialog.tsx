@@ -43,7 +43,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { PopoverTrigger } from '@/components/ui/popover';
+import { PopoverAnchor } from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -79,6 +79,7 @@ export default function AddEditAccountTransferTransactionDialog({
   children: React.ReactNode;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isDateOpen, setIsDateOpen] = useState(false);
   const portfolioAccounts = useResourceStore(
     (state) => state.portfolioAccounts,
   );
@@ -193,21 +194,25 @@ export default function AddEditAccountTransferTransactionDialog({
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Date *</FormLabel>
-                  <DatePickerPopover
-                    modal
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    required
-                  >
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <DatePickerButton
-                          selected={field.value}
-                          disabled={isPending}
-                        />
-                      </FormControl>
-                    </PopoverTrigger>
-                  </DatePickerPopover>
+                  <FormControl>
+                    <DatePickerButton
+                      selected={field.value}
+                      disabled={isPending}
+                      onClick={() => setIsDateOpen(true)}
+                    />
+                  </FormControl>
+                  {isDateOpen && (
+                    <DatePickerPopover
+                      open={true}
+                      onOpenChange={setIsDateOpen}
+                      modal
+                      selected={field.value}
+                      onSelect={field.onChange}
+                      required
+                    >
+                      <PopoverAnchor className="-mt-2" />
+                    </DatePickerPopover>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
