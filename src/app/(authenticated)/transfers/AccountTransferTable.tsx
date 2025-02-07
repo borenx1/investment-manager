@@ -226,7 +226,10 @@ export default function AccountTransferTable({
   const columnFilters = useMemo<ColumnFiltersState>(() => {
     const filters: ColumnFiltersState = [];
     if (activeAccount) {
-      filters.push({ id: 'portfolioAccount_name', value: activeAccount.id });
+      filters.push({
+        id: 'sourcePortfolioAccount_name',
+        value: activeAccount.id,
+      });
     }
     if (dateFilter) {
       filters.push({ id: 'transaction_date', value: dateFilter });
