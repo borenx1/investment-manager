@@ -146,6 +146,26 @@ export const columns: ColumnDef<Transaction>[] = [
     minSize: 80,
   },
   {
+    id: 'price',
+    accessorFn: (row) => {
+      const baseAmount = parseFloat(row.baseAssetEntry.amount);
+      const quoteAmount = parseFloat(row.quoteAssetEntry.amount);
+      return baseAmount !== 0 ? Math.abs(quoteAmount / baseAmount) : 0;
+    },
+    header: () => <div className="text-right">Price</div>,
+    cell: ({ row }) => {
+      const baseAmount = parseFloat(row.original.baseAssetEntry.amount);
+      const quoteAmount = parseFloat(row.original.quoteAssetEntry.amount);
+      const price = baseAmount !== 0 ? Math.abs(quoteAmount / baseAmount) : 0;
+      const formatted = formatDecimalPlaces(
+        price,
+        row.original.baseAsset.pricePrecision,
+        { trailingZeros: false },
+      );
+      return <div className="text-right font-mono">{formatted}</div>;
+    },
+  },
+  {
     id: 'feeAsset_ticker',
     accessorFn: (row) => row.feeAsset?.ticker,
     header: 'Fee curr.',

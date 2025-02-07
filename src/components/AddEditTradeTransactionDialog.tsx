@@ -66,9 +66,24 @@ export type Transaction = {
   baseAssetEntry: { amount: string };
   quoteAssetEntry: { amount: string };
   feeIncomeEntry: { amount: string } | null;
-  baseAsset: { id: number; ticker: string; precision: number };
-  quoteAsset: { id: number; ticker: string; precision: number };
-  feeAsset: { id: number; ticker: string; precision: number } | null;
+  baseAsset: {
+    id: number;
+    ticker: string;
+    precision: number;
+    pricePrecision: number;
+  };
+  quoteAsset: {
+    id: number;
+    ticker: string;
+    precision: number;
+    pricePrecision: number;
+  };
+  feeAsset: {
+    id: number;
+    ticker: string;
+    precision: number;
+    pricePrecision: number;
+  } | null;
 };
 
 const formSchema = tradeTransactionForm.clientSchema;
