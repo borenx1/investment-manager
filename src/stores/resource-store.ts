@@ -1,4 +1,5 @@
 import { createStore } from 'zustand/vanilla';
+import { persist } from 'zustand/middleware';
 
 import type { SelectPortfolioAccount, SelectAsset } from '@/db/schema';
 
@@ -44,54 +45,67 @@ function getInitialState(): ResourceState {
 }
 
 export function createResourceStore() {
-  return createStore<ResourceStore>((set, get) => ({
-    ...getInitialState(),
-    reset() {
-      set(getInitialState());
-    },
-    setPortfolioAccounts(portfolioAccounts) {
-      set((state) => ({
-        portfolioAccounts,
-        isPortfolioAccountsLoaded: true,
-        isResourcesLoaded:
-          state.isAssetsLoaded && state.isAccountingCurrencyLoaded,
-      }));
-      const activeAccountId = get().activeAccountId;
-      if (activeAccountId !== null) {
-        get().setActiveAccount(activeAccountId);
-      }
-    },
-    setAssets(assets) {
-      set((state) => ({
-        assets,
-        isAssetsLoaded: true,
-        isResourcesLoaded:
-          state.isPortfolioAccountsLoaded && state.isAccountingCurrencyLoaded,
-      }));
-    },
-    setAccountingCurrency(asset) {
-      set((state) => ({
-        accountingCurrency: asset,
-        isAccountingCurrencyLoaded: true,
-        isResourcesLoaded:
-          state.isPortfolioAccountsLoaded && state.isAssetsLoaded,
-      }));
-    },
-    setActiveAccount(accountId) {
-      if (accountId === null) {
-        set({ activeAccountId: null, activeAccount: null });
-        return;
-      }
-      set((state) => {
-        const accounts = state.portfolioAccounts;
-        const activeAccount = accounts.find(
-          (account) => account.id === accountId,
-        );
-        if (activeAccount) {
-          return { activeAccountId: accountId, activeAccount };
-        }
-        return { activeAccountId: null, activeAccount: null };
-      });
-    },
-  }));
+  return createStore<ResourceStore>()(
+    persist(
+      (set, get) => ({
+        ...getInitialState(),
+        reset() {
+          set(getInitialState());
+        },
+        setPortfolioAccounts(portfolioAccounts) {
+          set((state) => ({
+            portfolioAccounts,
+            isPortfolioAccountsLoaded: true,
+            isResourcesLoaded:
+              state.isAssetsLoaded && state.isAccountingCurrencyLoaded,
+          }));
+          // Reset the active account to deselect an account that doesn't exist.
+          const activeAccountId = get().activeAccountId;
+          if (activeAccountId !== null) {
+            get().setActiveAccount(activeAccountId);
+          }
+        },
+        setAssets(assets) {
+          set((state) => ({
+            assets,
+            isAssetsLoaded: true,
+            isResourcesLoaded:
+              state.isPortfolioAccountsLoaded &&
+              state.isAccountingCurrencyLoaded,
+          }));
+        },
+        setAccountingCurrency(asset) {
+          set((state) => ({
+            accountingCurrency: asset,
+            isAccountingCurrencyLoaded: true,
+            isResourcesLoaded:
+              state.isPortfolioAccountsLoaded && state.isAssetsLoaded,
+          }));
+        },
+        setActiveAccount(accountId) {
+          if (accountId === null) {
+            set({ activeAccountId: null, activeAccount: null });
+            return;
+          }
+          set((state) => {
+            const accounts = state.portfolioAccounts;
+            const activeAccount = accounts.find(
+              (account) => account.id === accountId,
+            );
+            if (activeAccount) {
+              return { activeAccountId: accountId, activeAccount };
+            }
+            return { activeAccountId: null, activeAccount: null };
+          });
+        },
+      }),
+      {
+        name: 'resource-store',
+        partialize: (state) => ({
+          activeAccountId: state.activeAccountId,
+          activeAccount: state.activeAccount,
+        }),
+      },
+    ),
+  );
 }
