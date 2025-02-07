@@ -1,9 +1,10 @@
 'use client';
 
-import { use, useEffect, useMemo, useState } from 'react';
+import { use, useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import {
   ColumnDef,
+  type ColumnFiltersState,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
@@ -316,6 +317,31 @@ export default function TradeTable({
     [],
   );
   const [dateFilter, setDateFilter] = useState<DateFilterValue>();
+  const columnFilters = useMemo<ColumnFiltersState>(() => {
+    const filters: ColumnFiltersState = [];
+    if (activeAccount) {
+      filters.push({ id: 'portfolioAccount_name', value: activeAccount.id });
+    }
+    if (baseAssetFilter.length || quoteAssetFilter.length) {
+      filters.push({
+        id: 'asset_pair',
+        value: { base: baseAssetFilter, quote: quoteAssetFilter },
+      });
+    }
+    if (typeFilter.length) {
+      filters.push({ id: 'type', value: typeFilter });
+    }
+    if (dateFilter) {
+      filters.push({ id: 'transaction_date', value: dateFilter });
+    }
+    return filters;
+  }, [
+    activeAccount,
+    baseAssetFilter,
+    quoteAssetFilter,
+    typeFilter,
+    dateFilter,
+  ]);
   const table = useReactTable({
     data,
     columns,
@@ -323,28 +349,8 @@ export default function TradeTable({
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     initialState: { pagination: { pageSize: 20 } },
+    state: { columnFilters },
   });
-
-  useEffect(() => {
-    table.getColumn('portfolioAccount_name')?.setFilterValue(activeAccount?.id);
-  }, [table, activeAccount]);
-  useEffect(() => {
-    table
-      .getColumn('asset_pair')
-      ?.setFilterValue(
-        baseAssetFilter.length || quoteAssetFilter.length
-          ? { base: baseAssetFilter, quote: quoteAssetFilter }
-          : undefined,
-      );
-  }, [table, baseAssetFilter, quoteAssetFilter]);
-  useEffect(() => {
-    table
-      .getColumn('type')
-      ?.setFilterValue(typeFilter.length ? typeFilter : undefined);
-  }, [table, typeFilter]);
-  useEffect(() => {
-    table.getColumn('transaction_date')?.setFilterValue(dateFilter);
-  }, [table, dateFilter]);
 
   return (
     <div className="space-y-4">

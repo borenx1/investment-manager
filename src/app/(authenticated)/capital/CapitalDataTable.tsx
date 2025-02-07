@@ -1,9 +1,10 @@
 'use client';
 
-import { use, useEffect, useMemo, useState } from 'react';
+import { use, useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import {
   ColumnDef,
+  type ColumnFiltersState,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
@@ -256,6 +257,22 @@ export default function CapitalDataTable({
     [],
   );
   const [dateFilter, setDateFilter] = useState<DateFilterValue>();
+  const columnFilters = useMemo<ColumnFiltersState>(() => {
+    const filters: ColumnFiltersState = [];
+    if (activeAccount) {
+      filters.push({ id: 'portfolioAccount_name', value: activeAccount.id });
+    }
+    if (assetFilter.length) {
+      filters.push({ id: 'asset_ticker', value: assetFilter });
+    }
+    if (typeFilter.length) {
+      filters.push({ id: 'type', value: typeFilter });
+    }
+    if (dateFilter) {
+      filters.push({ id: 'transaction_date', value: dateFilter });
+    }
+    return filters;
+  }, [activeAccount, assetFilter, typeFilter, dateFilter]);
   const table = useReactTable({
     data,
     columns,
@@ -263,24 +280,8 @@ export default function CapitalDataTable({
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     initialState: { pagination: { pageSize: 20 } },
+    state: { columnFilters },
   });
-
-  useEffect(() => {
-    table.getColumn('portfolioAccount_name')?.setFilterValue(activeAccount?.id);
-  }, [table, activeAccount]);
-  useEffect(() => {
-    table
-      .getColumn('asset_ticker')
-      ?.setFilterValue(assetFilter.length ? assetFilter : undefined);
-  }, [table, assetFilter]);
-  useEffect(() => {
-    table
-      .getColumn('type')
-      ?.setFilterValue(typeFilter.length ? typeFilter : undefined);
-  }, [table, typeFilter]);
-  useEffect(() => {
-    table.getColumn('transaction_date')?.setFilterValue(dateFilter);
-  }, [table, dateFilter]);
 
   return (
     <div className="space-y-4">
