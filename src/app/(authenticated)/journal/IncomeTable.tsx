@@ -190,21 +190,21 @@ export default function IncomeTable({
       })),
     [assets],
   );
-  const [assetFilter, setAssetFilter] = useState<typeof assetOptions>([]);
   const [dateFilter, setDateFilter] = useState<DateFilterValue>();
+  const [assetFilter, setAssetFilter] = useState<typeof assetOptions>([]);
   const columnFilters = useMemo<ColumnFiltersState>(() => {
     const filters: ColumnFiltersState = [];
     if (activeAccount) {
       filters.push({ id: 'portfolioAccount_name', value: activeAccount.id });
     }
-    if (assetFilter.length) {
-      filters.push({ id: 'asset_ticker', value: assetFilter });
-    }
     if (dateFilter) {
       filters.push({ id: 'transaction_date', value: dateFilter });
     }
+    if (assetFilter.length) {
+      filters.push({ id: 'asset_ticker', value: assetFilter });
+    }
     return filters;
-  }, [activeAccount, assetFilter, dateFilter]);
+  }, [activeAccount, dateFilter, assetFilter]);
   const table = useReactTable({
     data,
     columns,
@@ -218,6 +218,7 @@ export default function IncomeTable({
   return (
     <div className="space-y-4">
       <div className="flex items-center space-x-2">
+        <DateFilter name="Date" value={dateFilter} onChange={setDateFilter} />
         <SelectFilter
           name="Asset"
           icon={CircleDollarSign}
@@ -225,13 +226,12 @@ export default function IncomeTable({
           values={assetFilter}
           onChange={setAssetFilter}
         />
-        <DateFilter name="Date" value={dateFilter} onChange={setDateFilter} />
-        {!!(assetFilter.length || dateFilter) && (
+        {!!(dateFilter || assetFilter.length) && (
           <Button
             variant="outline"
             onClick={() => {
-              setAssetFilter([]);
               setDateFilter(undefined);
+              setAssetFilter([]);
             }}
           >
             Reset

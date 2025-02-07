@@ -299,6 +299,7 @@ export default function TradeTable({
       })),
     [assets],
   );
+  const [dateFilter, setDateFilter] = useState<DateFilterValue>();
   const [baseAssetFilter, setBaseAssetFilter] = useState<typeof assetOptions>(
     [],
   );
@@ -316,11 +317,13 @@ export default function TradeTable({
   const [typeFilter, setTypeFilter] = useState<(typeof typeOptions)[number][]>(
     [],
   );
-  const [dateFilter, setDateFilter] = useState<DateFilterValue>();
   const columnFilters = useMemo<ColumnFiltersState>(() => {
     const filters: ColumnFiltersState = [];
     if (activeAccount) {
       filters.push({ id: 'portfolioAccount_name', value: activeAccount.id });
+    }
+    if (dateFilter) {
+      filters.push({ id: 'transaction_date', value: dateFilter });
     }
     if (baseAssetFilter.length || quoteAssetFilter.length) {
       filters.push({
@@ -331,16 +334,13 @@ export default function TradeTable({
     if (typeFilter.length) {
       filters.push({ id: 'type', value: typeFilter });
     }
-    if (dateFilter) {
-      filters.push({ id: 'transaction_date', value: dateFilter });
-    }
     return filters;
   }, [
     activeAccount,
+    dateFilter,
     baseAssetFilter,
     quoteAssetFilter,
     typeFilter,
-    dateFilter,
   ]);
   const table = useReactTable({
     data,
@@ -355,6 +355,7 @@ export default function TradeTable({
   return (
     <div className="space-y-4">
       <div className="flex items-center space-x-2">
+        <DateFilter name="Date" value={dateFilter} onChange={setDateFilter} />
         <SelectFilter
           name="Asset"
           icon={CircleDollarSign}
@@ -376,20 +377,19 @@ export default function TradeTable({
           values={typeFilter}
           onChange={setTypeFilter}
         />
-        <DateFilter name="Date" value={dateFilter} onChange={setDateFilter} />
         {!!(
+          dateFilter ||
           baseAssetFilter.length ||
           quoteAssetFilter.length ||
-          typeFilter.length ||
-          dateFilter
+          typeFilter.length
         ) && (
           <Button
             variant="outline"
             onClick={() => {
+              setDateFilter(undefined);
               setBaseAssetFilter([]);
               setQuoteAssetFilter([]);
               setTypeFilter([]);
-              setDateFilter(undefined);
             }}
           >
             Reset

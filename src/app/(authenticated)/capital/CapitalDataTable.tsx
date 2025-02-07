@@ -244,7 +244,6 @@ export default function CapitalDataTable({
       })),
     [assets],
   );
-  const [assetFilter, setAssetFilter] = useState<typeof assetOptions>([]);
   const typeOptions = useMemo(
     () =>
       [
@@ -253,14 +252,18 @@ export default function CapitalDataTable({
       ] as const,
     [],
   );
+  const [dateFilter, setDateFilter] = useState<DateFilterValue>();
+  const [assetFilter, setAssetFilter] = useState<typeof assetOptions>([]);
   const [typeFilter, setTypeFilter] = useState<(typeof typeOptions)[number][]>(
     [],
   );
-  const [dateFilter, setDateFilter] = useState<DateFilterValue>();
   const columnFilters = useMemo<ColumnFiltersState>(() => {
     const filters: ColumnFiltersState = [];
     if (activeAccount) {
       filters.push({ id: 'portfolioAccount_name', value: activeAccount.id });
+    }
+    if (dateFilter) {
+      filters.push({ id: 'transaction_date', value: dateFilter });
     }
     if (assetFilter.length) {
       filters.push({ id: 'asset_ticker', value: assetFilter });
@@ -268,11 +271,8 @@ export default function CapitalDataTable({
     if (typeFilter.length) {
       filters.push({ id: 'type', value: typeFilter });
     }
-    if (dateFilter) {
-      filters.push({ id: 'transaction_date', value: dateFilter });
-    }
     return filters;
-  }, [activeAccount, assetFilter, typeFilter, dateFilter]);
+  }, [activeAccount, dateFilter, assetFilter, typeFilter]);
   const table = useReactTable({
     data,
     columns,
@@ -286,6 +286,7 @@ export default function CapitalDataTable({
   return (
     <div className="space-y-4">
       <div className="flex items-center space-x-2">
+        <DateFilter name="Date" value={dateFilter} onChange={setDateFilter} />
         <SelectFilter
           name="Asset"
           icon={CircleDollarSign}
@@ -300,14 +301,13 @@ export default function CapitalDataTable({
           values={typeFilter}
           onChange={setTypeFilter}
         />
-        <DateFilter name="Date" value={dateFilter} onChange={setDateFilter} />
-        {!!(assetFilter.length || typeFilter.length || dateFilter) && (
+        {!!(dateFilter || assetFilter.length || typeFilter.length) && (
           <Button
             variant="outline"
             onClick={() => {
+              setDateFilter(undefined);
               setAssetFilter([]);
               setTypeFilter([]);
-              setDateFilter(undefined);
             }}
           >
             Reset
