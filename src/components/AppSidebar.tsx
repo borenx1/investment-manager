@@ -1,8 +1,9 @@
 import {
   ArrowLeftRight,
   Banknote,
-  CircleDollarSign,
+  ChartSpline,
   ChevronsUpDown,
+  CircleDollarSign,
   LayoutDashboard,
   LogOut,
   NotebookPen,
@@ -69,6 +70,11 @@ export default async function AppSidebar() {
                 url="/financials"
                 title="Financials"
                 icon={<CircleDollarSign />}
+              />
+              <AppSidebarLink
+                url="/prices"
+                title="Prices"
+                icon={<ChartSpline />}
               />
               <AppSidebarLink
                 url="/settings"

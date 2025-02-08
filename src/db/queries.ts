@@ -16,6 +16,7 @@ import { db } from './';
 import {
   accountingCurrencies,
   accountTransferTransactions,
+  assetPrices,
   assets,
   balances,
   capitalTransactions,
@@ -29,6 +30,7 @@ import {
   SelectAccountingCurrency,
   SelectAccountTransferTransaction,
   SelectAsset,
+  SelectAssetPrice,
   SelectCapitalTransaction,
   SelectIncomeTransaction,
   SelectLedgerEntry,
@@ -529,6 +531,94 @@ export async function getBalances(userId: SelectAsset['userId']) {
       assets.ticker,
       assets.id,
     );
+}
+
+export async function getAssetPrices(
+  userId: SelectAssetPrice['userId'],
+  {
+    assetId,
+    quoteAssetId,
+  }: {
+    assetId?: SelectAssetPrice['assetId'];
+    quoteAssetId?: SelectAssetPrice['quoteAssetId'];
+  } = {},
+) {
+  const quoteAssets = aliasedTable(assets, 'quoteAssets');
+
+  return await db
+    .select({ price: assetPrices, asset: assets, quote: quoteAssets })
+    .from(assetPrices)
+    .innerJoin(assets, eq(assetPrices.assetId, assets.id))
+    .innerJoin(quoteAssets, eq(assetPrices.quoteAssetId, quoteAssets.id))
+    .where(
+      and(
+        eq(assetPrices.userId, userId),
+        assetId ? eq(assets.id, assetId) : undefined,
+        quoteAssetId ? eq(quoteAssets.id, quoteAssetId) : undefined,
+      ),
+    )
+    .orderBy(assetPrices.date, assets.ticker, quoteAssets.ticker);
+}
+
+export async function createAssetPrice(
+  userId: SelectAssetPrice['userId'],
+  {
+    assetId,
+    quoteAssetId,
+    date,
+    price,
+    isGenerated = false,
+  }: {
+    assetId: SelectAssetPrice['assetId'];
+    quoteAssetId: SelectAssetPrice['quoteAssetId'];
+    date: SelectAssetPrice['date'];
+    price: number;
+    isGenerated?: boolean;
+  },
+) {
+  // Check that the assets belong to the user.
+  const [isAssetOwned, isQuoteAssetOwned] = await Promise.all([
+    isAssetBelongToUser(userId, assetId),
+    isAssetBelongToUser(userId, quoteAssetId),
+  ]);
+  if (!isAssetOwned) {
+    throw new Error('Asset does not belong to the user');
+  }
+  if (!isQuoteAssetOwned) {
+    throw new Error('Quote asset does not belong to the user');
+  }
+
+  const result = await db
+    .insert(assetPrices)
+    .values({
+      userId,
+      assetId,
+      quoteAssetId,
+      date,
+      price: String(price),
+      isGenerated,
+    })
+    .onConflictDoUpdate({
+      target: [
+        assetPrices.userId,
+        assetPrices.assetId,
+        assetPrices.quoteAssetId,
+        assetPrices.date,
+      ],
+      set: { price: String(price), isGenerated, updatedAt: sql`NOW()` },
+    })
+    .returning();
+
+  return result[0]!;
+}
+
+export async function deleteAssetPrice(
+  userId: SelectAssetPrice['userId'],
+  id: SelectAssetPrice['id'],
+) {
+  await db
+    .delete(assetPrices)
+    .where(and(eq(assetPrices.id, id), eq(assetPrices.userId, userId)));
 }
 
 /**

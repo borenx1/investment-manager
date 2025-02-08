@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import {
   boolean,
   check,
+  date,
   index,
   integer,
   numeric,
@@ -147,6 +148,38 @@ export const accountingCurrencies = pgTable(
 
 export type SelectAccountingCurrency = typeof accountingCurrencies.$inferSelect;
 export type InsertAccountingCurrency = typeof accountingCurrencies.$inferInsert;
+
+export const assetPrices = pgTable(
+  'asset_price',
+  {
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    assetId: integer('asset_id')
+      .notNull()
+      .references(() => assets.id, { onDelete: 'cascade' }),
+    quoteAssetId: integer('quote_asset_id')
+      .notNull()
+      .references(() => assets.id, { onDelete: 'cascade' }),
+    date: date('date').notNull(),
+    price: numeric('price', { precision: 100, scale: 20 }).notNull(),
+    isGenerated: boolean('is_generated').notNull().default(false),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    unique().on(table.userId, table.assetId, table.quoteAssetId, table.date),
+    index().on(table.date),
+  ],
+);
+
+export type SelectAssetPrice = typeof assetPrices.$inferSelect;
+export type InsertAssetPrice = typeof assetPrices.$inferInsert;
 
 export const transactions = pgTable(
   'transaction',

@@ -55,6 +55,29 @@ export const accountingCurrencyForm = {
   serverSchema: accountingCurrencyFormSchema,
 } as const;
 
+const assetPriceFormSchema = z.object({
+  date: z.date({ message: 'Select a date' }),
+  price: z.coerce
+    .number({ message: 'Price is required' })
+    .positive('Must be a positive number')
+    .finite()
+    .safe(),
+});
+
+export const assetPriceForm = {
+  clientSchema: assetPriceFormSchema,
+  serverSchema: assetPriceFormSchema
+    .extend({
+      date: z.string().date(),
+      assetId: z.coerce.number().int(),
+      quoteAssetId: z.coerce.number().int(),
+    })
+    .refine((form) => form.assetId !== form.quoteAssetId, {
+      message: 'Asset and quote asset cannot be the same',
+      path: ['assetId'],
+    }),
+} as const;
+
 const capitalTransactionFormSchema = z.object({
   date: z.date({ message: 'Select a date' }),
   portfolioAccountId: z.coerce

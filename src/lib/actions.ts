@@ -6,12 +6,14 @@ import { auth } from '@/auth';
 import {
   createAccountTransferTx,
   createAsset,
+  createAssetPrice,
   createCapitalTransaction,
   createIncomeTransaction,
   createPortfolioAccount,
   createTradeTransaction,
   deleteAccountTransferTx,
   deleteAsset,
+  deleteAssetPrice,
   deleteCapitalTransaction,
   deleteIncomeTransaction,
   deletePortfolioAccount,
@@ -31,6 +33,7 @@ import {
   accountingCurrencyForm,
   accountTransferTxForm,
   assetForm,
+  assetPriceForm,
   capitalTransactionForm,
   expenseTransactionForm,
   incomeTransactionForm,
@@ -174,6 +177,40 @@ export async function editAccountingCurrency(data: { assetId: number }) {
   const validatedData = accountingCurrencyForm.serverSchema.parse(data);
   await updateAccountingCurrency(userId, validatedData.assetId);
   revalidatePath('/', 'layout');
+}
+
+/**
+ * Create a new asset price for the authenticated user. Existing asset prices
+ * with the same date will be updated.
+ * @param data The new asset price data.
+ * @returns The new or updated asset price row.
+ */
+export async function newAssetPrice(data: {
+  assetId: number;
+  quoteAssetId: number;
+  date: string;
+  price: number;
+}) {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return null;
+
+  const validatedData = assetPriceForm.serverSchema.parse(data);
+  const assetPrice = await createAssetPrice(userId, {
+    ...validatedData,
+    isGenerated: false,
+  });
+  revalidatePath('/prices');
+  return assetPrice;
+}
+
+export async function removeAssetPrice(id: number) {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return;
+
+  await deleteAssetPrice(userId, id);
+  revalidatePath('/prices');
 }
 
 /**
