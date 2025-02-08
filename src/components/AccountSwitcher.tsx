@@ -36,8 +36,8 @@ export default function AccountSwitcher() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton
+                size="lg"
                 disabled={!isPortfolioAccountsLoaded}
-                className="py-6"
               >
                 <Landmark />
                 {isPortfolioAccountsLoaded ? (

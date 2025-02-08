@@ -90,7 +90,7 @@ export default async function AppSidebar() {
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <SidebarMenuButton>
+                <SidebarMenuButton size="lg">
                   <User />
                   <span className="truncate">{session?.user?.email}</span>
                   <ChevronsUpDown className="ml-auto" />
