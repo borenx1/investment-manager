@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import { auth } from '@/auth';
 import {
   getAccountingCurrency,
@@ -44,6 +46,9 @@ export default async function AuthenticatedLayout({
         <SidebarInset className="min-w-0">
           <header className="flex items-center border-b px-4 py-2 sm:px-16 sm:pl-4">
             <SidebarTrigger />
+            <div className="ml-4 text-lg">
+              <Link href="/">Investment Manager</Link>
+            </div>
             <NavigationMenu className="ml-auto">
               <NavigationMenuList className="ml-2">
                 <NavigationMenuItem>
