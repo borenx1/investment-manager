@@ -193,7 +193,7 @@ export default function AddEditAccountTransferTransactionDialog({
               name="date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Date *</FormLabel>
+                  <FormLabel className="w-fit">Date *</FormLabel>
                   <FormControl>
                     <DatePickerButton
                       selected={field.value}
