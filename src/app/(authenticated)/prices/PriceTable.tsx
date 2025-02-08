@@ -13,7 +13,8 @@ import { Check, EllipsisVertical, Pencil, Plus, Trash2 } from 'lucide-react';
 
 import type { SelectAsset } from '@/db/schema';
 import { removeAssetPrice } from '@/lib/actions';
-import { extractDate, formatDecimalPlaces } from '@/lib/utils';
+import { filterByDate } from '@/lib/filters';
+import { formatDecimalPlaces } from '@/lib/utils';
 import { AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
@@ -41,18 +42,7 @@ export const columns: ColumnDef<AssetPrice>[] = [
     filterFn: (row, _, filterValue: DateFilterValue) => {
       if (filterValue) {
         const date = new Date(`${row.original.price.date} 00:00:00`);
-        if (filterValue.mode === 'from') {
-          return date >= extractDate(filterValue.date);
-        } else if (filterValue.mode === 'to') {
-          return date <= extractDate(filterValue.date);
-        } else if (filterValue.mode === 'range') {
-          if (filterValue.from && filterValue.to) {
-            return (
-              date >= extractDate(filterValue.from) &&
-              date <= extractDate(filterValue.to)
-            );
-          }
-        }
+        return filterByDate(date, filterValue);
       }
       return true;
     },

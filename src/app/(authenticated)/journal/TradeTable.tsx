@@ -23,7 +23,8 @@ import {
 } from 'lucide-react';
 
 import { removeTradeTransaction } from '@/lib/actions';
-import { convertUTCDate, extractDate, formatDecimalPlaces } from '@/lib/utils';
+import { filterByDate } from '@/lib/filters';
+import { convertUTCDate, formatDecimalPlaces } from '@/lib/utils';
 import { AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useResourceStore } from '@/providers/resource-store-provider';
 import { Badge } from '@/components/ui/badge';
@@ -58,20 +59,8 @@ export const columns: ColumnDef<Transaction>[] = [
     },
     filterFn: (row, _, filterValue: DateFilterValue) => {
       if (filterValue) {
-        const date = row.original.transaction.date;
-        const localDate = convertUTCDate(date);
-        if (filterValue.mode === 'from') {
-          return localDate >= extractDate(filterValue.date);
-        } else if (filterValue.mode === 'to') {
-          return localDate <= extractDate(filterValue.date);
-        } else if (filterValue.mode === 'range') {
-          if (filterValue.from && filterValue.to) {
-            return (
-              localDate >= extractDate(filterValue.from) &&
-              localDate <= extractDate(filterValue.to)
-            );
-          }
-        }
+        const localDate = convertUTCDate(row.original.transaction.date);
+        return filterByDate(localDate, filterValue);
       }
       return true;
     },
