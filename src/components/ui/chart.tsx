@@ -2,6 +2,10 @@
 
 import * as React from 'react';
 import * as RechartsPrimitive from 'recharts';
+import type {
+  NameType,
+  ValueType,
+} from 'recharts/types/component/DefaultTooltipContent';
 
 import { cn } from '@/lib/utils';
 
@@ -111,6 +115,8 @@ const ChartTooltipContent = React.forwardRef<
       indicator?: 'line' | 'dot' | 'dashed';
       nameKey?: string;
       labelKey?: string;
+      // Custom props.
+      valueFormatter?: (value: ValueType, name?: NameType) => string;
     }
 >(
   (
@@ -128,6 +134,7 @@ const ChartTooltipContent = React.forwardRef<
       color,
       nameKey,
       labelKey,
+      valueFormatter,
     },
     ref,
   ) => {
@@ -240,7 +247,9 @@ const ChartTooltipContent = React.forwardRef<
                       </div>
                       {item.value && (
                         <span className="text-foreground font-mono font-medium tabular-nums">
-                          {item.value.toLocaleString()}
+                          {valueFormatter
+                            ? valueFormatter(item.value, item.name)
+                            : item.value.toLocaleString()}
                         </span>
                       )}
                     </div>

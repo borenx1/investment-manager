@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import DateFilter, { type DateFilterValue } from '@/components/DateFilter';
+import PriceChart from './PriceChart';
 import PriceTable from './PriceTable';
 
 export default function PriceSection({
@@ -144,11 +145,17 @@ export default function PriceSection({
               )}
             </div>
             {asset && quote ? (
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                <div className="h-[400px]">
-                  <Skeleton className="h-full" />
+              <div className="grid grid-cols-1 gap-x-4 gap-y-8 xl:grid-cols-5">
+                <div className="xl:col-span-3">
+                  <PriceChart
+                    data={filteredPrices}
+                    asset={asset}
+                    quoteAsset={quote}
+                    dateFilter={dateFilter}
+                    className="max-h-[400px] min-h-[280px] xl:max-h-none xl:min-h-[500px]"
+                  />
                 </div>
-                <div>
+                <div className="xl:col-span-2">
                   <PriceTable
                     data={filteredPrices}
                     asset={asset}
