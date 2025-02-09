@@ -15,6 +15,7 @@ import type { SelectAsset } from '@/db/schema';
 import { removeAssetPrice } from '@/lib/actions';
 import { filterByDate } from '@/lib/filters';
 import { formatDecimalPlaces } from '@/lib/utils';
+import { useResourceStore } from '@/providers/resource-store-provider';
 import { AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
@@ -149,6 +150,9 @@ export default function PriceTable({
   quoteAsset: SelectAsset;
   dateFilter?: DateFilterValue;
 }) {
+  const accountingCurrency = useResourceStore(
+    (state) => state.accountingCurrency,
+  );
   // Assume data is sorted by date increasing.
   const sortedData = useMemo(() => {
     if (asset.id === quoteAsset.id) {
@@ -179,7 +183,12 @@ export default function PriceTable({
         prices={sortedData}
       >
         <DialogTrigger asChild>
-          <Button disabled={asset.id === quoteAsset.id}>
+          <Button
+            disabled={
+              asset.id === quoteAsset.id ||
+              quoteAsset.id !== accountingCurrency?.id
+            }
+          >
             <Plus />
             Add new price
           </Button>
