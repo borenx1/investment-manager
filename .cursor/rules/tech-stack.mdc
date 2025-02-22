@@ -1,0 +1,23 @@
+---
+description: The technologies and frameworks used in this project
+globs: 
+---
+# Tech Stack
+
+This project uses the following technologies, but is limited to:
+
+- React
+  - Use the latest best practices
+- Next.js
+- TypeScript
+  - Use the latest best practices
+- TailwindCSS
+  - CSS
+- Shadcn UI
+  - UI component library
+- Zustand
+  - State management library
+- Drizzle ORM
+  - Database
+- Auth.js
+  - Auth management

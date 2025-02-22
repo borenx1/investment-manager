@@ -1,0 +1,15 @@
+---
+description: Features of this app
+globs: 
+---
+# Features
+
+This app contains features to help the user log and view their transactions, generate financial documents, and analyze their investment portfolio. This includes but is not limited to:
+
+- Have multiple portfolio accounts. Portfolio accounts contain transactions for a certain account, e.g. bank, stock broker account, cryptocurrency exchange.
+- Manage multiple assets, e.g. currencies, stocks, derivatives.
+- Record transactions, e.g. trades, income, expense, capital.
+- Calculate the total balance of their assets, current and historical.
+- Charts and tables for users to view and analyze their investment porfolio performance over time.
+- Generate financial documents base on the user's transactions, e.g. balance sheet, income statement.
+
