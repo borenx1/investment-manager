@@ -2,6 +2,7 @@ import {
   startTransition,
   useActionState,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -11,7 +12,7 @@ import { z } from 'zod';
 import { LoaderCircle } from 'lucide-react';
 
 import type { SelectAsset } from '@/db/schema';
-import { getCurrentDate } from '@/lib/utils';
+import { useCurrencyStore } from '@/providers/currency-store-provider';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -74,17 +75,23 @@ export default function GeneratePricesDialog({
 } & React.ComponentProps<typeof Dialog>) {
   const [isOpen, setIsOpen] = useState(false);
   const [isDateRangeOpen, setIsDateRangeOpen] = useState(false);
+  const latestDate = useCurrencyStore((state) => state.latestDate);
+  const fetchLatestDate = useCurrencyStore((state) => state.fetchLatestDate);
   const formRef = useRef<HTMLFormElement>(null);
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      frequency: 'month-end',
+  const defaultValues = useMemo(
+    () => ({
+      frequency: 'month-end' as const,
       dateRange: {
-        from: getCurrentDate(),
-        to: getCurrentDate(),
+        from: latestDate ? new Date(`${latestDate} 00:00:00`) : new Date(),
+        to: latestDate ? new Date(`${latestDate} 00:00:00`) : new Date(),
       },
       overrideExisting: false,
-    },
+    }),
+    [latestDate],
+  );
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues,
   });
 
   const [, onSubmit, isPending] = useActionState(
@@ -100,9 +107,14 @@ export default function GeneratePricesDialog({
 
   useEffect(() => {
     if (isOpen) {
-      form.reset();
+      form.reset(defaultValues);
     }
-  }, [isOpen, form]);
+  }, [isOpen, form, defaultValues]);
+
+  // Fetch the latest date in case it has changed..
+  useEffect(() => {
+    fetchLatestDate();
+  }, [fetchLatestDate]);
 
   return (
     <Dialog
@@ -178,7 +190,11 @@ export default function GeneratePricesDialog({
                       modal
                       selected={field.value}
                       fromDate={new Date(2000, 1, 1)}
-                      toDate={new Date()}
+                      toDate={
+                        latestDate
+                          ? new Date(`${latestDate} 00:00:00`)
+                          : new Date()
+                      }
                       onSelect={(day) => {
                         field.onChange(day);
                       }}
