@@ -8,7 +8,7 @@ export type CurrencyState = {
 export type CurrencyActions = {
   reset: () => void;
   setApiCurrencies: (currencies: CurrencyState['apiCurrencies']) => void;
-  isCurrencySupported: (ticker: string) => boolean;
+  isCurrencySupported: (ticker: string | null | undefined) => boolean;
 };
 
 export type CurrencyStore = CurrencyState & CurrencyActions;
@@ -38,6 +38,9 @@ export function createCurrencyStore() {
      * @returns The currency is supported.
      */
     isCurrencySupported(ticker) {
+      if (!ticker) {
+        return false;
+      }
       return ticker.toLowerCase() in get().apiCurrencies;
     },
   }));

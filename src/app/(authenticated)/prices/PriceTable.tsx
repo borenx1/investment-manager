@@ -9,12 +9,20 @@ import {
   getFilteredRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { Check, EllipsisVertical, Pencil, Plus, Trash2 } from 'lucide-react';
+import {
+  Check,
+  EllipsisVertical,
+  Pencil,
+  Plus,
+  Trash2,
+  WandSparkles,
+} from 'lucide-react';
 
 import type { SelectAsset } from '@/db/schema';
 import { removeAssetPrice } from '@/lib/actions';
 import { filterByDate } from '@/lib/filters';
 import { formatDecimalPlaces } from '@/lib/utils';
+import { useCurrencyStore } from '@/providers/currency-store-provider';
 import { useResourceStore } from '@/providers/resource-store-provider';
 import { AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
@@ -31,6 +39,7 @@ import AddEditAssetPriceDialog, {
   type AssetPrice,
 } from '@/components/AddEditAssetPriceDialog';
 import type { DateFilterValue } from '@/components/DateFilter';
+import GeneratePricesDialog from '@/components/GeneratePricesDialog';
 
 export const columns: ColumnDef<AssetPrice>[] = [
   {
@@ -153,6 +162,15 @@ export default function PriceTable({
   const accountingCurrency = useResourceStore(
     (state) => state.accountingCurrency,
   );
+  const isCurrencySupported = useCurrencyStore(
+    (state) => state.isCurrencySupported,
+  );
+  const canGeneratePrices = useMemo(
+    () =>
+      isCurrencySupported(asset.externalTicker) &&
+      isCurrencySupported(quoteAsset.externalTicker),
+    [asset, quoteAsset, isCurrencySupported],
+  );
   // Assume data is sorted by date increasing.
   const sortedData = useMemo(() => {
     if (asset.id === quoteAsset.id) {
@@ -177,23 +195,41 @@ export default function PriceTable({
 
   return (
     <div className="space-y-4">
-      <AddEditAssetPriceDialog
-        asset={asset}
-        quoteAsset={quoteAsset}
-        prices={sortedData}
-      >
-        <DialogTrigger asChild>
-          <Button
-            disabled={
-              asset.id === quoteAsset.id ||
-              quoteAsset.id !== accountingCurrency?.id
-            }
-          >
-            <Plus />
-            Add new price
-          </Button>
-        </DialogTrigger>
-      </AddEditAssetPriceDialog>
+      <div className="flex items-center gap-2">
+        <AddEditAssetPriceDialog
+          asset={asset}
+          quoteAsset={quoteAsset}
+          prices={sortedData}
+        >
+          <DialogTrigger asChild>
+            <Button
+              disabled={
+                asset.id === quoteAsset.id ||
+                quoteAsset.id !== accountingCurrency?.id
+              }
+            >
+              <Plus />
+              Add new price
+            </Button>
+          </DialogTrigger>
+        </AddEditAssetPriceDialog>
+
+        <GeneratePricesDialog asset={asset} quoteAsset={quoteAsset}>
+          <DialogTrigger asChild>
+            <Button
+              variant="secondary"
+              disabled={
+                !canGeneratePrices ||
+                asset.id === quoteAsset.id ||
+                quoteAsset.id !== accountingCurrency?.id
+              }
+            >
+              <WandSparkles />
+              Generate prices
+            </Button>
+          </DialogTrigger>
+        </GeneratePricesDialog>
+      </div>
 
       <div className="rounded-lg border">
         <DataTable table={table} />
