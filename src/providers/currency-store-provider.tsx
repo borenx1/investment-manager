@@ -25,6 +25,10 @@ export function CurrencyStoreProvider({
   }
 
   useEffect(() => {
+    storeRef.current?.getState().fetchLatestDate();
+  }, []);
+
+  useEffect(() => {
     if (apiCurrencies) {
       storeRef.current?.getState().setApiCurrencies(apiCurrencies);
     }
