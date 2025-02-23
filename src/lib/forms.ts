@@ -37,6 +37,7 @@ const assetFormSchema = z.object({
     .nonnegative('Must be a positive number')
     .max(20, 'Maximum 20'),
   isCurrency: z.boolean(),
+  externalTicker: z.string().trim().max(20, 'Maximum 20 characters').nullable(),
 });
 
 export const assetForm = {

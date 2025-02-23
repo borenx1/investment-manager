@@ -104,6 +104,7 @@ export const assets = pgTable(
     isCurrency: boolean('is_currency').notNull().default(false),
     precision: smallint('precision').notNull().default(0),
     pricePrecision: smallint('price_precision').notNull().default(0),
+    externalTicker: varchar('external_ticker', { length: 20 }),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),

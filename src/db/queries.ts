@@ -245,6 +245,7 @@ export async function createAsset(
     precision,
     pricePrecision,
     isCurrency,
+    externalTicker,
   }: {
     ticker: InsertAsset['ticker'];
     name: InsertAsset['name'];
@@ -252,11 +253,13 @@ export async function createAsset(
     precision: InsertAsset['precision'];
     pricePrecision: InsertAsset['pricePrecision'];
     isCurrency: InsertAsset['isCurrency'];
+    externalTicker: InsertAsset['externalTicker'];
   },
 ) {
   ticker = ticker.trim();
   name = name.trim();
   symbol = symbol?.trim() || null;
+  externalTicker = externalTicker?.trim().toLowerCase() || null;
 
   // Limit maximum number of assets.
   const assetCount = await db.$count(assets, eq(assets.userId, userId));
@@ -298,6 +301,7 @@ export async function createAsset(
       precision,
       pricePrecision,
       isCurrency,
+      externalTicker,
     })
     .returning({ id: assets.id });
   return result[0]!.id;
@@ -319,6 +323,7 @@ export async function updateAsset(
     precision,
     pricePrecision,
     isCurrency,
+    externalTicker,
   }: {
     id: SelectAsset['id'];
     ticker?: InsertAsset['ticker'];
@@ -327,11 +332,16 @@ export async function updateAsset(
     precision?: InsertAsset['precision'];
     pricePrecision?: InsertAsset['pricePrecision'];
     isCurrency?: InsertAsset['isCurrency'];
+    externalTicker?: InsertAsset['externalTicker'];
   },
 ) {
   ticker = ticker?.trim();
   name = name?.trim();
   symbol = symbol !== undefined ? symbol?.trim() || null : undefined;
+  externalTicker =
+    externalTicker !== undefined
+      ? externalTicker?.trim().toLowerCase() || null
+      : undefined;
 
   // Check for duplicate values.
   if (ticker !== undefined) {
@@ -379,6 +389,7 @@ export async function updateAsset(
       precision,
       pricePrecision,
       isCurrency,
+      externalTicker,
       updatedAt: sql`NOW()`,
     })
     .where(and(eq(assets.id, id), eq(assets.userId, userId)));

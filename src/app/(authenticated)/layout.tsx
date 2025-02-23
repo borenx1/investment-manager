@@ -35,7 +35,7 @@ export default async function AuthenticatedLayout({
     getAssets(userId),
     getAccountingCurrency(userId),
   ]);
-  const supportedCurrencies = await getSupportedCurrencies();
+  const apiCurrencies = await getSupportedCurrencies();
 
   return (
     <ResourceStoreProvider
@@ -43,7 +43,7 @@ export default async function AuthenticatedLayout({
       assets={assets}
       accountingCurrency={accountingCurrency}
     >
-      <CurrencyStoreProvider supportedCurrencies={supportedCurrencies}>
+      <CurrencyStoreProvider apiCurrencies={apiCurrencies}>
         <SidebarProvider>
           <AppSidebar />
           {/* Flex makes min width auto, must override to 0 again to preserve behaviour. */}

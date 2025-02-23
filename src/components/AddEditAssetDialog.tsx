@@ -11,13 +11,23 @@ import {
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { LoaderCircle } from 'lucide-react';
+import { Check, ChevronsUpDown, LoaderCircle } from 'lucide-react';
 
 import { editAsset, newAsset } from '@/lib/actions';
 import { MAX_ASSETS } from '@/lib/constants';
 import { assetForm } from '@/lib/forms';
+import { cn } from '@/lib/utils';
+import { useCurrencyStore } from '@/providers/currency-store-provider';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 import {
   Dialog,
   DialogContent,
@@ -29,12 +39,18 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+} from '@/components/ui/popover';
 
 const formSchema = assetForm.clientSchema;
 
@@ -50,15 +66,31 @@ export default function AddEditAssetDialog({
     precision: number;
     pricePrecision: number;
     isCurrency: boolean;
+    externalTicker: string | null;
   };
   children: React.ReactNode;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLinkRealAsset, setIsLinkRealAsset] = useState(false);
+  const [isExternalTickerOpen, setIsExternalTickerOpen] = useState(false);
+  const apiCurrencies = useCurrencyStore((state) => state.apiCurrencies);
+  const apiCurrencyOptions = useMemo(
+    () =>
+      Object.entries(apiCurrencies).map(([ticker, name]) => ({
+        value: ticker,
+        label: `${ticker.toUpperCase()} - ${name}`,
+      })),
+    [apiCurrencies],
+  );
   const formRef = useRef<HTMLFormElement>(null);
   const defaultValues = useMemo(
     () =>
       asset
-        ? { ...asset, symbol: asset.symbol ?? '' }
+        ? {
+            ...asset,
+            symbol: asset.symbol ?? '',
+            externalTicker: asset.externalTicker,
+          }
         : {
             name: '',
             ticker: '',
@@ -66,6 +98,7 @@ export default function AddEditAssetDialog({
             precision: 0,
             pricePrecision: 0,
             isCurrency: false,
+            externalTicker: null,
           },
     [asset],
   );
@@ -73,6 +106,8 @@ export default function AddEditAssetDialog({
     resolver: zodResolver(formSchema),
     defaultValues: defaultValues,
   });
+  const tickerRaw = form.watch('ticker');
+  const ticker = useMemo(() => tickerRaw.trim().toLowerCase(), [tickerRaw]);
   const [, onSubmit, isPending] = useActionState(
     async (previousState: null, values: z.infer<typeof formSchema>) => {
       let error: Awaited<ReturnType<typeof newAsset>> = null;
@@ -83,6 +118,7 @@ export default function AddEditAssetDialog({
         precision: values.precision,
         pricePrecision: values.pricePrecision,
         isCurrency: values.isCurrency,
+        externalTicker: isLinkRealAsset ? values.externalTicker || null : null,
       };
       if (asset) {
         error = await editAsset(asset.id, data);
@@ -141,6 +177,7 @@ export default function AddEditAssetDialog({
     if (isOpen) {
       // Have to pass default values in case asset changes.
       form.reset(defaultValues);
+      setIsLinkRealAsset(!!defaultValues.externalTicker);
     }
   }, [isOpen, form, defaultValues]);
 
@@ -200,7 +237,29 @@ export default function AddEditAssetDialog({
                   </FormItem>
                 )}
               />
-              <div></div>
+              <FormItem className="my-2">
+                <div className="flex items-center space-x-2">
+                  <FormControl>
+                    <Checkbox
+                      value=""
+                      checked={isLinkRealAsset}
+                      onCheckedChange={(checked) => {
+                        setIsLinkRealAsset(!!checked);
+                        if (
+                          checked &&
+                          !form.getValues('externalTicker') &&
+                          ticker in apiCurrencies
+                        ) {
+                          form.setValue('externalTicker', ticker);
+                        }
+                      }}
+                      disabled={isPending}
+                    />
+                  </FormControl>
+                  <FormLabel className="grow">Link real asset</FormLabel>
+                </div>
+                <FormMessage />
+              </FormItem>
               <FormField
                 control={form.control}
                 name="isCurrency"
@@ -222,6 +281,88 @@ export default function AddEditAssetDialog({
                   </FormItem>
                 )}
               />
+              {isLinkRealAsset && (
+                <FormField
+                  control={form.control}
+                  name="externalTicker"
+                  render={({ field }) => (
+                    <FormItem className="col-span-2 flex flex-col">
+                      <FormLabel className="w-fit">Real asset ticker</FormLabel>
+                      <FormControl>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            'justify-between',
+                            !field.value && 'text-muted-foreground',
+                          )}
+                          disabled={isPending}
+                          onClick={() => setIsExternalTickerOpen(true)}
+                        >
+                          {field.value
+                            ? (apiCurrencyOptions.find(
+                                (option) => option.value === field.value,
+                              )?.label ?? field.value.toUpperCase())
+                            : 'Select a ticker'}
+                          <ChevronsUpDown className="opacity-50" />
+                        </Button>
+                      </FormControl>
+                      {isExternalTickerOpen && (
+                        <Popover
+                          open={true}
+                          onOpenChange={setIsExternalTickerOpen}
+                          modal
+                        >
+                          <PopoverAnchor className="-mt-2" />
+                          <PopoverContent align="start" className="w-auto p-0">
+                            <Command>
+                              <CommandInput
+                                placeholder="Search ticker..."
+                                className="h-9"
+                              />
+                              <CommandList>
+                                <CommandEmpty>No results found.</CommandEmpty>
+                                <CommandGroup>
+                                  {apiCurrencyOptions.map((option) => (
+                                    <CommandItem
+                                      key={option.value}
+                                      value={option.label}
+                                      onSelect={() => {
+                                        form.setValue(
+                                          'externalTicker',
+                                          field.value !== option.value
+                                            ? option.value
+                                            : null,
+                                        );
+                                        setIsExternalTickerOpen(false);
+                                      }}
+                                    >
+                                      {option.label}
+                                      <Check
+                                        className={cn(
+                                          'ml-auto',
+                                          option.value === field.value
+                                            ? 'opacity-100'
+                                            : 'opacity-0',
+                                        )}
+                                      />
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      )}
+                      <FormDescription>
+                        Link to a real asset to automatically get prices.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               <FormField
                 control={form.control}
                 name="precision"

@@ -1,37 +1,44 @@
 import { createStore } from 'zustand/vanilla';
 
 export type CurrencyState = {
-  supportedCurrencies: Record<string, string>;
+  apiCurrencies: Record<string, string>;
   isCurrenciesLoaded: boolean;
 };
 
 export type CurrencyActions = {
   reset: () => void;
-  setSupportedCurrencies: (
-    currencies: CurrencyState['supportedCurrencies'],
-  ) => void;
+  setApiCurrencies: (currencies: CurrencyState['apiCurrencies']) => void;
+  isCurrencySupported: (ticker: string) => boolean;
 };
 
 export type CurrencyStore = CurrencyState & CurrencyActions;
 
 function getInitialState(): CurrencyState {
   return {
-    supportedCurrencies: {},
+    apiCurrencies: {},
     isCurrenciesLoaded: false,
   };
 }
 
 export function createCurrencyStore() {
-  return createStore<CurrencyStore>()((set) => ({
+  return createStore<CurrencyStore>()((set, get) => ({
     ...getInitialState(),
     reset() {
       set(getInitialState());
     },
-    setSupportedCurrencies(currencies) {
+    setApiCurrencies(currencies) {
       set({
-        supportedCurrencies: currencies,
+        apiCurrencies: currencies,
         isCurrenciesLoaded: true,
       });
+    },
+    /**
+     * Check if a currency is supported by the currency API.
+     * @param ticker The ticker of the currency to check.
+     * @returns The currency is supported.
+     */
+    isCurrencySupported(ticker) {
+      return ticker.toLowerCase() in get().apiCurrencies;
     },
   }));
 }

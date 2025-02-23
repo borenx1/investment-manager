@@ -29,6 +29,7 @@
     "@tanstack/react-table": "^8.20.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cmdk": "^1.0.4",
     "date-fns": "^3.6.0",
     "drizzle-orm": "^0.38.4",
     "lucide-react": "^0.475.0",

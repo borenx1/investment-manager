@@ -14,10 +14,10 @@ const CurrencyStoreContext = createContext<CurrencyStoreApi | null>(null);
 
 export function CurrencyStoreProvider({
   children,
-  supportedCurrencies,
+  apiCurrencies,
 }: {
   children: React.ReactNode;
-  supportedCurrencies?: CurrencyStore['supportedCurrencies'];
+  apiCurrencies?: CurrencyStore['apiCurrencies'];
 }) {
   const storeRef = useRef<CurrencyStoreApi>(null);
   if (!storeRef.current) {
@@ -25,10 +25,10 @@ export function CurrencyStoreProvider({
   }
 
   useEffect(() => {
-    if (supportedCurrencies) {
-      storeRef.current?.getState().setSupportedCurrencies(supportedCurrencies);
+    if (apiCurrencies) {
+      storeRef.current?.getState().setApiCurrencies(apiCurrencies);
     }
-  }, [supportedCurrencies]);
+  }, [apiCurrencies]);
 
   return (
     <CurrencyStoreContext.Provider value={storeRef.current}>

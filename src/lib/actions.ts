@@ -115,6 +115,7 @@ export async function newAsset(data: {
   precision: number;
   pricePrecision: number;
   isCurrency: boolean;
+  externalTicker: string | null;
 }) {
   const session = await auth();
   const userId = session?.user?.id;
@@ -145,6 +146,7 @@ export async function editAsset(
     precision: number;
     pricePrecision: number;
     isCurrency: boolean;
+    externalTicker: string | null;
   },
 ) {
   const session = await auth();
