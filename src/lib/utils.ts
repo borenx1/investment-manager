@@ -1,5 +1,13 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import {
+  addDays,
+  addMonths,
+  format,
+  isFirstDayOfMonth,
+  isLastDayOfMonth,
+  lastDayOfMonth,
+} from 'date-fns';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -42,10 +50,7 @@ export function formatDecimalPlaces(
     ...options
   }: { trailingZeros?: boolean } & Omit<
     Intl.NumberFormatOptions,
-    | 'style'
-    | 'minimumFractionDigits'
-    | 'maximumFractionDigits'
-    | 'trailingZeroDisplay'
+    'style' | 'minimumFractionDigits' | 'maximumFractionDigits' | 'trailingZeroDisplay'
   > = {},
 ) {
   return new Intl.NumberFormat(undefined, {
@@ -63,11 +68,7 @@ export function formatDecimalPlaces(
  * @param symbol The currency symbol.
  * @returns The formatted currency string.
  */
-export function formatCurrency(
-  value: number,
-  decimalPlaces: number,
-  symbol?: string | null,
-) {
+export function formatCurrency(value: number, decimalPlaces: number, symbol?: string | null) {
   if (!symbol) {
     return formatDecimalPlaces(value, decimalPlaces);
   }
@@ -101,4 +102,47 @@ export function extractDate(date: Date) {
  */
 export function convertUTCDate(date: Date) {
   return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+}
+
+/**
+ * Get a list of dates between two dates based on a selection type.
+ * @param fromDate The start date.
+ * @param toDate The end date.
+ * @param selection The selection of dates to get.
+ * @returns The list of dates in YYYY-MM-DD format.
+ */
+export function getDateList(
+  fromDate: Date,
+  toDate: Date,
+  selection: 'month-start' | 'month-end' | 'all',
+) {
+  fromDate = extractDate(fromDate);
+  toDate = extractDate(toDate);
+  if (isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
+    return [];
+  }
+
+  const dates: string[] = [];
+  let currentDate = fromDate;
+  if (selection === 'all') {
+    while (currentDate <= toDate) {
+      dates.push(format(currentDate, 'yyyy-MM-dd'));
+      currentDate = addDays(currentDate, 1);
+    }
+  } else if (selection === 'month-start') {
+    currentDate = isFirstDayOfMonth(fromDate)
+      ? fromDate
+      : new Date(fromDate.getFullYear(), fromDate.getMonth() + 1, 1);
+    while (currentDate <= toDate) {
+      dates.push(format(currentDate, 'yyyy-MM-dd'));
+      currentDate = addMonths(currentDate, 1);
+    }
+  } else if (selection === 'month-end') {
+    currentDate = isLastDayOfMonth(fromDate) ? fromDate : lastDayOfMonth(fromDate);
+    while (currentDate <= toDate) {
+      dates.push(format(currentDate, 'yyyy-MM-dd'));
+      currentDate = lastDayOfMonth(addMonths(currentDate, 1));
+    }
+  }
+  return dates;
 }
