@@ -3,10 +3,7 @@
 import { createContext, useContext, useEffect, useRef } from 'react';
 import { useStore } from 'zustand';
 
-import {
-  createCurrencyStore,
-  type CurrencyStore,
-} from '@/stores/currency-store';
+import { createCurrencyStore, type CurrencyStore } from '@/stores/currency-store';
 
 type CurrencyStoreApi = ReturnType<typeof createCurrencyStore>;
 
@@ -25,7 +22,7 @@ export function CurrencyStoreProvider({
   }
 
   useEffect(() => {
-    storeRef.current?.getState().fetchLatestDate();
+    storeRef.current?.getState().fetchApiLatestDate();
   }, []);
 
   useEffect(() => {
@@ -44,9 +41,7 @@ export function CurrencyStoreProvider({
 export function useCurrencyStore<T>(selector: (store: CurrencyStore) => T) {
   const currencyStoreContext = useContext(CurrencyStoreContext);
   if (!currencyStoreContext) {
-    throw new Error(
-      'useCurrencyStore must be used within a CurrencyStoreProvider',
-    );
+    throw new Error('useCurrencyStore must be used within a CurrencyStoreProvider');
   }
   return useStore(currencyStoreContext, selector);
 }

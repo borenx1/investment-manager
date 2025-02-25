@@ -1,11 +1,4 @@
-import {
-  startTransition,
-  useActionState,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { startTransition, useActionState, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -39,10 +32,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import {
-  DatePickerButton,
-  DatePickerRangePopover,
-} from '@/components/DatePicker';
+import { DatePickerButton, DatePickerRangePopover } from '@/components/DatePicker';
 import { PopoverAnchor } from '@/components/ui/popover';
 
 const formSchema = z.object({
@@ -75,19 +65,19 @@ export default function GeneratePricesDialog({
 } & React.ComponentProps<typeof Dialog>) {
   const [isOpen, setIsOpen] = useState(false);
   const [isDateRangeOpen, setIsDateRangeOpen] = useState(false);
-  const latestDate = useCurrencyStore((state) => state.latestDate);
-  const fetchLatestDate = useCurrencyStore((state) => state.fetchLatestDate);
+  const apiLatestDate = useCurrencyStore((state) => state.apiLatestDate);
+  const fetchApiLatestDate = useCurrencyStore((state) => state.fetchApiLatestDate);
   const formRef = useRef<HTMLFormElement>(null);
   const defaultValues = useMemo(
     () => ({
       frequency: 'month-end' as const,
       dateRange: {
-        from: latestDate ? new Date(`${latestDate} 00:00:00`) : new Date(),
-        to: latestDate ? new Date(`${latestDate} 00:00:00`) : new Date(),
+        from: apiLatestDate ? new Date(`${apiLatestDate} 00:00:00`) : new Date(),
+        to: apiLatestDate ? new Date(`${apiLatestDate} 00:00:00`) : new Date(),
       },
       overrideExisting: false,
     }),
-    [latestDate],
+    [apiLatestDate],
   );
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -111,10 +101,10 @@ export default function GeneratePricesDialog({
     }
   }, [isOpen, form, defaultValues]);
 
-  // Fetch the latest date in case it has changed..
+  // Fetch the latest date in case it has changed.
   useEffect(() => {
-    fetchLatestDate();
-  }, [fetchLatestDate]);
+    fetchApiLatestDate();
+  }, [fetchApiLatestDate]);
 
   return (
     <Dialog
@@ -130,8 +120,8 @@ export default function GeneratePricesDialog({
         <DialogHeader>
           <DialogTitle>Generate Prices</DialogTitle>
           <DialogDescription>
-            Automatically generate prices for {asset.ticker} /{' '}
-            {quoteAsset.ticker} from the internet.
+            Automatically generate prices for {asset.ticker} / {quoteAsset.ticker} from the
+            internet.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -148,11 +138,7 @@ export default function GeneratePricesDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Frequency</FormLabel>
-                  <Select
-                    {...field}
-                    onValueChange={field.onChange}
-                    disabled={isPending}
-                  >
+                  <Select {...field} onValueChange={field.onChange} disabled={isPending}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select frequency" />
@@ -190,14 +176,8 @@ export default function GeneratePricesDialog({
                       modal
                       selected={field.value}
                       fromDate={new Date(2000, 1, 1)}
-                      toDate={
-                        latestDate
-                          ? new Date(`${latestDate} 00:00:00`)
-                          : new Date()
-                      }
-                      onSelect={(day) => {
-                        field.onChange(day);
-                      }}
+                      toDate={apiLatestDate ? new Date(`${apiLatestDate} 00:00:00`) : new Date()}
+                      onSelect={field.onChange}
                     >
                       <PopoverAnchor className="-mt-2" />
                     </DatePickerRangePopover>
@@ -213,9 +193,7 @@ export default function GeneratePricesDialog({
                 <FormItem className="flex items-center justify-between rounded-lg border p-3">
                   <div>
                     <FormLabel>Update existing</FormLabel>
-                    <FormDescription>
-                      Replace existing prices in the date range
-                    </FormDescription>
+                    <FormDescription>Replace existing prices in the date range</FormDescription>
                   </div>
                   <FormControl>
                     <Switch
@@ -231,10 +209,7 @@ export default function GeneratePricesDialog({
           </form>
         </Form>
         <DialogFooter>
-          <Button
-            disabled={isPending}
-            onClick={() => formRef.current?.requestSubmit()}
-          >
+          <Button disabled={isPending} onClick={() => formRef.current?.requestSubmit()}>
             {isPending && <LoaderCircle className="animate-spin" />}
             Generate prices
           </Button>

@@ -1,7 +1,7 @@
 import { createStore } from 'zustand/vanilla';
 import { z } from 'zod';
 
-import { getLatestDate } from '@/lib/actions/api';
+import { fetchCurrencyApiLatestDate } from '@/lib/actions/api';
 
 export type CurrencyState = {
   apiCurrencies: Record<string, string>;
@@ -10,15 +10,15 @@ export type CurrencyState = {
    * The latest date of the currency exchange API, in YYYY-MM-DD format. This
    * is the empty string if not checked yet.
    */
-  latestDate: string;
+  apiLatestDate: string;
 };
 
 export type CurrencyActions = {
   reset: () => void;
   setApiCurrencies: (currencies: CurrencyState['apiCurrencies']) => void;
   isCurrencySupported: (ticker: string | null | undefined) => boolean;
-  setLatestDate: (date: string) => void;
-  fetchLatestDate: () => Promise<string>;
+  setApiLatestDate: (date: string) => void;
+  fetchApiLatestDate: () => Promise<string>;
 };
 
 export type CurrencyStore = CurrencyState & CurrencyActions;
@@ -27,7 +27,7 @@ function getInitialState(): CurrencyState {
   return {
     apiCurrencies: {},
     isCurrenciesLoaded: false,
-    latestDate: '',
+    apiLatestDate: '',
   };
 }
 
@@ -54,17 +54,17 @@ export function createCurrencyStore() {
       }
       return ticker.toLowerCase() in get().apiCurrencies;
     },
-    setLatestDate(date) {
+    setApiLatestDate(date) {
       // YYYY-MM-DD format.
       const parsedDate = z.string().date().safeParse(date);
       if (parsedDate.success) {
-        set({ latestDate: parsedDate.data });
+        set({ apiLatestDate: parsedDate.data });
       }
     },
-    async fetchLatestDate() {
-      const latestDate = await getLatestDate();
-      set({ latestDate });
-      return latestDate;
+    async fetchApiLatestDate() {
+      const apiLatestDate = await fetchCurrencyApiLatestDate();
+      set({ apiLatestDate });
+      return apiLatestDate;
     },
   }));
 }

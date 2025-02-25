@@ -77,10 +77,7 @@ function fallbackApiUrl(date: string = 'latest') {
  * @param date The date to fetch the data from.
  * @returns The fetched data.
  */
-async function fetchFromApi<T>(
-  endpoint: string,
-  date: string = 'latest',
-): Promise<T> {
+async function fetchFromApi<T>(endpoint: string, date: string = 'latest'): Promise<T> {
   try {
     const response = await fetch(new URL(endpoint, primaryApiUrl(date)));
     if (!response.ok) {
@@ -101,18 +98,13 @@ async function fetchFromApi<T>(
  * Fetches the latest date from the currency exchange API.
  * @returns The latest date in YYYY-MM-DD format.
  */
-export async function getLatestDate(): Promise<string> {
+export async function getCurrencyApiLatestDate(): Promise<string> {
   // Return cached data if it's still valid.
-  if (
-    latestDateCache &&
-    Date.now() - latestDateCache.timestamp < LATEST_DATE_CACHE_DURATION
-  ) {
+  if (latestDateCache && Date.now() - latestDateCache.timestamp < LATEST_DATE_CACHE_DURATION) {
     return latestDateCache.date;
   }
 
-  const response = await fetch(
-    new URL('currencies/nzd.min.json', fallbackApiUrl()),
-  );
+  const response = await fetch(new URL('currencies/nzd.min.json', fallbackApiUrl()));
   if (!response.ok) {
     throw new Error('Failed to fetch latest date');
   }
@@ -135,16 +127,11 @@ export async function getLatestDate(): Promise<string> {
  */
 async function getApiSupportedCurrencies(): Promise<Record<string, string>> {
   // Return cached data if it's still valid.
-  if (
-    currenciesCache &&
-    Date.now() - currenciesCache.timestamp < CURRENCIES_CACHE_DURATION
-  ) {
+  if (currenciesCache && Date.now() - currenciesCache.timestamp < CURRENCIES_CACHE_DURATION) {
     return currenciesCache.currencies;
   }
 
-  const currencies = await fetchFromApi<Record<string, string>>(
-    'currencies.min.json',
-  );
+  const currencies = await fetchFromApi<Record<string, string>>('currencies.min.json');
 
   currenciesCache = {
     currencies,
