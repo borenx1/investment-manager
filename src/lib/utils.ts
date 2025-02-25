@@ -17,11 +17,11 @@ export function cn(...inputs: ClassValue[]) {
  * Sum two floating point numbers accurately. Requires a precision.
  * @param num1 The first number to sum.
  * @param num2 The second number to sum.
- * @param precision The maximum precision required.
+ * @param decimalPlaces The number of decimal places to round to.
  * @returns The sum of the two numbers.
  */
-export function sumFloats(num1: number, num2: number, precision: number) {
-  return parseFloat(Number(num1 + num2).toFixed(precision));
+export function sumFloats(num1: number, num2: number, decimalPlaces: number) {
+  return parseFloat(Number(num1 + num2).toFixed(decimalPlaces));
 }
 
 /**
