@@ -7,11 +7,7 @@ import { Calendar as CalendarIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
@@ -64,11 +60,7 @@ export default function DateFilter({
       const oldMode = mode;
       if (newMode === '' || newMode === oldMode) {
         // Do nothing if the mode does not change.
-      } else if (
-        newMode === 'from' ||
-        newMode === 'to' ||
-        newMode === 'range'
-      ) {
+      } else if (newMode === 'from' || newMode === 'to' || newMode === 'range') {
         setMode(newMode);
         if (onChange) {
           if (newMode === 'range') {
@@ -139,12 +131,12 @@ export default function DateFilter({
             type="single"
             value={mode}
             onValueChange={handleModeChange}
-            className="grid grid-cols-3 gap-1"
+            className="w-full"
           >
             <ToggleGroupItem value="from" aria-label="Toggle from">
               From
             </ToggleGroupItem>
-            <ToggleGroupItem value="to" aria-label="Toggle to">
+            <ToggleGroupItem value="to" aria-label="Toggle up to">
               Up to
             </ToggleGroupItem>
             <ToggleGroupItem value="range" aria-label="Toggle range">
@@ -171,9 +163,7 @@ export default function DateFilter({
             selected={rangeValue}
             onSelect={(range) => {
               if (onChange && mode === 'range') {
-                onChange(
-                  range ? { mode, from: range.from, to: range.to } : undefined,
-                );
+                onChange(range ? { mode, from: range.from, to: range.to } : undefined);
               }
             }}
             initialFocus
