@@ -39,6 +39,7 @@ export function DataTable<TData>({
                 <TableHead
                   key={header.id}
                   colSpan={header.colSpan}
+                  className="whitespace-normal"
                   style={{
                     minWidth: header.column.columnDef.minSize,
                     maxWidth: header.column.columnDef.maxSize,
@@ -64,6 +65,7 @@ export function DataTable<TData>({
               {row.getVisibleCells().map((cell) => (
                 <TableCell
                   key={cell.id}
+                  className="whitespace-normal"
                   style={{
                     minWidth: cell.column.columnDef.minSize,
                     maxWidth: cell.column.columnDef.maxSize,
