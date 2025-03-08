@@ -46,41 +46,17 @@ export default async function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              <AppSidebarLink
-                url="/"
-                title="Dashboard"
-                icon={<LayoutDashboard />}
-              />
-              <AppSidebarLink
-                url="/journal"
-                title="Journal"
-                icon={<NotebookPen />}
-              />
-              <AppSidebarLink
-                url="/capital"
-                title="Capital Changes"
-                icon={<Banknote />}
-              />
+              <AppSidebarLink url="/" title="Dashboard" icon={<LayoutDashboard />} />
+              <AppSidebarLink url="/journal" title="Journal" icon={<NotebookPen />} />
+              <AppSidebarLink url="/capital" title="Capital Changes" icon={<Banknote />} />
               <AppSidebarLink
                 url="/transfers"
                 title="Account Transfers"
                 icon={<ArrowLeftRight />}
               />
-              <AppSidebarLink
-                url="/financials"
-                title="Financials"
-                icon={<CircleDollarSign />}
-              />
-              <AppSidebarLink
-                url="/prices"
-                title="Prices"
-                icon={<ChartSpline />}
-              />
-              <AppSidebarLink
-                url="/settings"
-                title="Settings"
-                icon={<Settings />}
-              />
+              <AppSidebarLink url="/financials" title="Financials" icon={<CircleDollarSign />} />
+              <AppSidebarLink url="/prices" title="Prices" icon={<ChartSpline />} />
+              <AppSidebarLink url="/settings" title="Settings" icon={<Settings />} />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

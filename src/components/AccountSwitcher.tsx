@@ -12,20 +12,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from '@/components/ui/sidebar';
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import AddEditPortfolioAccountDialog from '@/components/AddEditPortfolioAccountDialog';
 
 export default function AccountSwitcher() {
-  const portfolioAccounts = useResourceStore(
-    (state) => state.portfolioAccounts,
-  );
-  const isPortfolioAccountsLoaded = useResourceStore(
-    (state) => state.isPortfolioAccountsLoaded,
-  );
+  const portfolioAccounts = useResourceStore((state) => state.portfolioAccounts);
+  const isPortfolioAccountsLoaded = useResourceStore((state) => state.isPortfolioAccountsLoaded);
   const activeAccount = useResourceStore((state) => state.activeAccount);
   const setActiveAccount = useResourceStore((state) => state.setActiveAccount);
 
@@ -35,21 +27,14 @@ export default function AccountSwitcher() {
         <AddEditPortfolioAccountDialog>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <SidebarMenuButton
-                size="lg"
-                disabled={!isPortfolioAccountsLoaded}
-              >
+              <SidebarMenuButton size="lg" disabled={!isPortfolioAccountsLoaded}>
                 <Landmark />
                 {isPortfolioAccountsLoaded ? (
                   <>
                     <div className="grid">
-                      <span className="truncate text-xs font-bold">
-                        Account
-                      </span>
+                      <span className="truncate text-xs font-bold">Account</span>
                       {activeAccount ? (
-                        <span className="truncate italic">
-                          {activeAccount.name}
-                        </span>
+                        <span className="truncate italic">{activeAccount.name}</span>
                       ) : (
                         <span className="truncate">All</span>
                       )}
@@ -72,10 +57,7 @@ export default function AccountSwitcher() {
                   All
                 </DropdownMenuItem>
                 {portfolioAccounts.map((account) => (
-                  <DropdownMenuItem
-                    key={account.id}
-                    onClick={() => setActiveAccount(account.id)}
-                  >
+                  <DropdownMenuItem key={account.id} onClick={() => setActiveAccount(account.id)}>
                     <div className="size-4"></div>
                     {account.name}
                   </DropdownMenuItem>
