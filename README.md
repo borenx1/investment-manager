@@ -14,7 +14,15 @@ Built with:
 
 1. Have a running PostgreSQL database server and get the connection URI.
 
-2. Create a `.env` file from `.env.example` and fill in the environment variables
+2. Install [Bun](https://bun.sh/) if not installed already.
+
+3. Install dependencies with
+
+   ```bash
+   bun install
+   ```
+
+4. Create a `.env` file from `.env.example` and fill in the environment variables
 
    ```bash
    cp .env.example .env
@@ -23,19 +31,19 @@ Built with:
    Generate an auth secret with
 
    ```bash
-   npx auth secret
+   bunx auth secret
    ```
 
-3. Prepare the database schema if not done already
+5. Prepare the database schema if not done already
 
    ```bash
-   npx drizzle-kit push
+   bunx drizzle-kit push
    ```
 
-4. Run the next app
+6. Run locally with
 
    ```bash
-   npm run dev
+   bun run dev
    ```
 
    The app will be running on [http://localhost:3000](http://localhost:3000).
