@@ -50,11 +50,7 @@ export const columns: ColumnDef<Transaction>[] = [
     header: 'Date',
     cell: ({ row }) => {
       const date = row.original.transaction.date;
-      return (
-        <div className="font-mono">
-          {format(convertUTCDate(date), 'yyyy/MM/dd')}
-        </div>
-      );
+      return <div className="font-mono">{format(convertUTCDate(date), 'yyyy/MM/dd')}</div>;
     },
     filterFn: (row, _, filterValue: DateFilterValue) => {
       if (filterValue) {
@@ -96,10 +92,7 @@ export const columns: ColumnDef<Transaction>[] = [
     header: () => <div className="text-right">Amount</div>,
     cell: ({ row }) => {
       const amount = parseFloat(row.original.assetEntry.amount);
-      const formatted = formatDecimalPlaces(
-        amount,
-        row.original.asset.precision,
-      );
+      const formatted = formatDecimalPlaces(amount, row.original.asset.precision);
       return <div className="text-right font-mono">{formatted}</div>;
     },
     minSize: 80,
@@ -113,10 +106,7 @@ export const columns: ColumnDef<Transaction>[] = [
         return '';
       }
       const amount = parseFloat(row.original.feeIncomeEntry.amount);
-      const formatted = formatDecimalPlaces(
-        amount,
-        row.original.asset.precision,
-      );
+      const formatted = formatDecimalPlaces(amount, row.original.asset.precision);
       return <div className="text-right font-mono">{formatted}</div>;
     },
     minSize: 80,
@@ -129,9 +119,7 @@ export const columns: ColumnDef<Transaction>[] = [
       return (
         <div className="flex items-center justify-center">
           {amount >= 0 ? (
-            <Badge className="bg-green-700 text-green-100 hover:bg-green-700/80">
-              Contributions
-            </Badge>
+            <Badge className="bg-green-700 text-green-100">Contributions</Badge>
           ) : (
             <Badge variant="destructive">Drawings</Badge>
           )}
@@ -182,9 +170,7 @@ export const columns: ColumnDef<Transaction>[] = [
               }
               actionText="Delete"
               cancelText="Back"
-              onAction={async () =>
-                await removeCapitalTransaction(tx.capitalTransaction.id)
-              }
+              onAction={async () => await removeCapitalTransaction(tx.capitalTransaction.id)}
             >
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -216,11 +202,7 @@ export const columns: ColumnDef<Transaction>[] = [
   },
 ];
 
-export default function CapitalDataTable({
-  data: dataPromise,
-}: {
-  data: Promise<Transaction[]>;
-}) {
+export default function CapitalDataTable({ data: dataPromise }: { data: Promise<Transaction[]> }) {
   const data = use(dataPromise);
   const activeAccount = useResourceStore((state) => state.activeAccount);
   const assets = useResourceStore((state) => state.assets);
@@ -243,9 +225,7 @@ export default function CapitalDataTable({
   );
   const [dateFilter, setDateFilter] = useState<DateFilterValue>();
   const [assetFilter, setAssetFilter] = useState<typeof assetOptions>([]);
-  const [typeFilter, setTypeFilter] = useState<(typeof typeOptions)[number][]>(
-    [],
-  );
+  const [typeFilter, setTypeFilter] = useState<(typeof typeOptions)[number][]>([]);
   const columnFilters = useMemo<ColumnFiltersState>(() => {
     const filters: ColumnFiltersState = [];
     if (activeAccount) {
@@ -307,11 +287,7 @@ export default function CapitalDataTable({
       <div className="rounded-lg border">
         <DataTable table={table} gridLines />
       </div>
-      <DataTablePagination
-        table={table}
-        pageSizes={[10, 20, 50, 100]}
-        showSelected={false}
-      />
+      <DataTablePagination table={table} pageSizes={[10, 20, 50, 100]} showSelected={false} />
     </div>
   );
 }

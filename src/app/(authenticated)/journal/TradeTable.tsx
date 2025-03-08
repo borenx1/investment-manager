@@ -51,11 +51,7 @@ export const columns: ColumnDef<Transaction>[] = [
     header: 'Date',
     cell: ({ row }) => {
       const date = row.original.transaction.date;
-      return (
-        <div className="font-mono">
-          {format(convertUTCDate(date), 'yyyy/MM/dd')}
-        </div>
-      );
+      return <div className="font-mono">{format(convertUTCDate(date), 'yyyy/MM/dd')}</div>;
     },
     filterFn: (row, _, filterValue: DateFilterValue) => {
       if (filterValue) {
@@ -113,10 +109,7 @@ export const columns: ColumnDef<Transaction>[] = [
     header: () => <div className="text-right">Amount</div>,
     cell: ({ row }) => {
       const amount = Math.abs(parseFloat(row.original.baseAssetEntry.amount));
-      const formatted = formatDecimalPlaces(
-        amount,
-        row.original.baseAsset.precision,
-      );
+      const formatted = formatDecimalPlaces(amount, row.original.baseAsset.precision);
       return <div className="text-right font-mono">{formatted}</div>;
     },
     minSize: 80,
@@ -126,10 +119,7 @@ export const columns: ColumnDef<Transaction>[] = [
     header: () => <div className="text-right">Total</div>,
     cell: ({ row }) => {
       const amount = Math.abs(parseFloat(row.original.quoteAssetEntry.amount));
-      const formatted = formatDecimalPlaces(
-        amount,
-        row.original.quoteAsset.precision,
-      );
+      const formatted = formatDecimalPlaces(amount, row.original.quoteAsset.precision);
       return <div className="text-right font-mono">{formatted}</div>;
     },
     minSize: 80,
@@ -146,11 +136,9 @@ export const columns: ColumnDef<Transaction>[] = [
       const baseAmount = parseFloat(row.original.baseAssetEntry.amount);
       const quoteAmount = parseFloat(row.original.quoteAssetEntry.amount);
       const price = baseAmount !== 0 ? Math.abs(quoteAmount / baseAmount) : 0;
-      const formatted = formatDecimalPlaces(
-        price,
-        row.original.baseAsset.pricePrecision,
-        { trailingZeros: false },
-      );
+      const formatted = formatDecimalPlaces(price, row.original.baseAsset.pricePrecision, {
+        trailingZeros: false,
+      });
       return <div className="text-right font-mono">{formatted}</div>;
     },
   },
@@ -162,13 +150,7 @@ export const columns: ColumnDef<Transaction>[] = [
       if (!row.original.feeAsset) {
         return '';
       }
-      return (
-        <div>
-          {row.original.feeAsset.id === row.original.baseAsset.id
-            ? 'Base'
-            : 'Quote'}
-        </div>
-      );
+      return <div>{row.original.feeAsset.id === row.original.baseAsset.id ? 'Base' : 'Quote'}</div>;
     },
   },
   {
@@ -180,10 +162,7 @@ export const columns: ColumnDef<Transaction>[] = [
         return '';
       }
       const amount = parseFloat(row.original.feeIncomeEntry.amount);
-      const formatted = formatDecimalPlaces(
-        amount,
-        row.original.feeAsset!.precision,
-      );
+      const formatted = formatDecimalPlaces(amount, row.original.feeAsset!.precision);
       return <div className="text-right font-mono">{formatted}</div>;
     },
   },
@@ -195,9 +174,7 @@ export const columns: ColumnDef<Transaction>[] = [
       return (
         <div className="flex items-center justify-center">
           {amount >= 0 ? (
-            <Badge className="bg-green-700 text-green-100 hover:bg-green-700/80">
-              Buy
-            </Badge>
+            <Badge className="bg-green-700 text-green-100">Buy</Badge>
           ) : (
             <Badge variant="destructive">Sell</Badge>
           )}
@@ -232,10 +209,7 @@ export const columns: ColumnDef<Transaction>[] = [
       const date = tx.transaction.date;
       const baseAmount = parseFloat(tx.baseAssetEntry.amount);
       const quoteAmount = parseFloat(tx.quoteAssetEntry.amount);
-      const formattedBaseAmount = formatDecimalPlaces(
-        Math.abs(baseAmount),
-        tx.baseAsset.precision,
-      );
+      const formattedBaseAmount = formatDecimalPlaces(Math.abs(baseAmount), tx.baseAsset.precision);
       const formattedQuoteAmount = formatDecimalPlaces(
         Math.abs(quoteAmount),
         tx.quoteAsset.precision,
@@ -257,9 +231,7 @@ export const columns: ColumnDef<Transaction>[] = [
               }
               actionText="Delete"
               cancelText="Back"
-              onAction={async () =>
-                await removeTradeTransaction(tx.tradeTransaction.id)
-              }
+              onAction={async () => await removeTradeTransaction(tx.tradeTransaction.id)}
             >
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -291,11 +263,7 @@ export const columns: ColumnDef<Transaction>[] = [
   },
 ];
 
-export default function TradeTable({
-  data: dataPromise,
-}: {
-  data: Promise<Transaction[]>;
-}) {
+export default function TradeTable({ data: dataPromise }: { data: Promise<Transaction[]> }) {
   const data = use(dataPromise);
   const activeAccount = useResourceStore((state) => state.activeAccount);
   const assets = useResourceStore((state) => state.assets);
@@ -309,12 +277,8 @@ export default function TradeTable({
     [assets],
   );
   const [dateFilter, setDateFilter] = useState<DateFilterValue>();
-  const [baseAssetFilter, setBaseAssetFilter] = useState<typeof assetOptions>(
-    [],
-  );
-  const [quoteAssetFilter, setQuoteAssetFilter] = useState<typeof assetOptions>(
-    [],
-  );
+  const [baseAssetFilter, setBaseAssetFilter] = useState<typeof assetOptions>([]);
+  const [quoteAssetFilter, setQuoteAssetFilter] = useState<typeof assetOptions>([]);
   const typeOptions = useMemo(
     () =>
       [
@@ -323,9 +287,7 @@ export default function TradeTable({
       ] as const,
     [],
   );
-  const [typeFilter, setTypeFilter] = useState<(typeof typeOptions)[number][]>(
-    [],
-  );
+  const [typeFilter, setTypeFilter] = useState<(typeof typeOptions)[number][]>([]);
   const columnFilters = useMemo<ColumnFiltersState>(() => {
     const filters: ColumnFiltersState = [];
     if (activeAccount) {
@@ -344,13 +306,7 @@ export default function TradeTable({
       filters.push({ id: 'type', value: typeFilter });
     }
     return filters;
-  }, [
-    activeAccount,
-    dateFilter,
-    baseAssetFilter,
-    quoteAssetFilter,
-    typeFilter,
-  ]);
+  }, [activeAccount, dateFilter, baseAssetFilter, quoteAssetFilter, typeFilter]);
   const table = useReactTable({
     data,
     columns,
@@ -409,11 +365,7 @@ export default function TradeTable({
       <div className="rounded-lg border">
         <DataTable table={table} gridLines />
       </div>
-      <DataTablePagination
-        table={table}
-        pageSizes={[10, 20, 50, 100]}
-        showSelected={false}
-      />
+      <DataTablePagination table={table} pageSizes={[10, 20, 50, 100]} showSelected={false} />
     </div>
   );
 }
