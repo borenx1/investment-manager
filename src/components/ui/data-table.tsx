@@ -1,12 +1,7 @@
 'use client';
 
 import { flexRender, type Table as TableType } from '@tanstack/react-table';
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -38,10 +33,7 @@ export function DataTable<TData>({
     <Table>
       <TableHeader>
         {table.getHeaderGroups().map((headerGroup) => (
-          <TableRow
-            key={headerGroup.id}
-            className={gridLines ? 'divide-x' : ''}
-          >
+          <TableRow key={headerGroup.id} className={gridLines ? 'divide-x' : ''}>
             {headerGroup.headers.map((header) => {
               return (
                 <TableHead
@@ -54,10 +46,7 @@ export function DataTable<TData>({
                 >
                   {header.isPlaceholder
                     ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
+                    : flexRender(header.column.columnDef.header, header.getContext())}
                 </TableHead>
               );
             })}
@@ -87,10 +76,7 @@ export function DataTable<TData>({
           ))
         ) : (
           <TableRow>
-            <TableCell
-              colSpan={table.getAllColumns().length}
-              className="py-4 text-center"
-            >
+            <TableCell colSpan={table.getAllColumns().length} className="py-4 text-center">
               No results
             </TableCell>
           </TableRow>
@@ -110,8 +96,7 @@ export function DataTablePagination<TData>({
   showSelected?: boolean;
 }) {
   const firstRowIndex =
-    table.getState().pagination.pageIndex *
-    table.getState().pagination.pageSize;
+    table.getState().pagination.pageIndex * table.getState().pagination.pageSize;
 
   return (
     <div className="flex items-center justify-between px-2">
@@ -147,8 +132,7 @@ export function DataTablePagination<TData>({
         <div className="flex items-center justify-center text-sm font-medium">
           {table.getRowCount() ? (
             <>
-              {firstRowIndex + 1}-
-              {firstRowIndex + table.getPaginationRowModel().rows.length}
+              {firstRowIndex + 1}-{firstRowIndex + table.getPaginationRowModel().rows.length}
               {' of '}
               {table.getRowCount()}
             </>
