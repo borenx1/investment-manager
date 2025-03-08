@@ -14,7 +14,7 @@ export default function JournalPage() {
     <div className="p-4 sm:p-8">
       <h1 className="mb-8 font-bold">Journal</h1>
       <Tabs defaultValue="trade">
-        <TabsList className="grid grid-cols-3">
+        <TabsList className="w-full">
           <TabsTrigger value="trade">Trades</TabsTrigger>
           <TabsTrigger value="income">Income</TabsTrigger>
           <TabsTrigger value="expense">Expenses</TabsTrigger>
