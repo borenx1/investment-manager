@@ -86,7 +86,7 @@ export default function AccountingCurrencyDialog({
       {...props}
     >
       {children}
-      <DialogContent className="max-w-xs">
+      <DialogContent className="sm:max-w-xs">
         <DialogHeader>
           <DialogTitle>Change Accounting Currency</DialogTitle>
           <DialogDescription>

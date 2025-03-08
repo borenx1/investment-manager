@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  startTransition,
-  useActionState,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { startTransition, useActionState, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -46,10 +39,7 @@ export default function AddEditPortfolioAccountDialog({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
-  const defaultValues = useMemo(
-    () => (account ? { ...account } : { name: '' }),
-    [account],
-  );
+  const defaultValues = useMemo(() => (account ? { ...account } : { name: '' }), [account]);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: defaultValues,
@@ -65,11 +55,7 @@ export default function AddEditPortfolioAccountDialog({
       if (error) {
         switch (error.message) {
           case 'Duplicate name': {
-            form.setError(
-              'name',
-              { message: 'Name already exists' },
-              { shouldFocus: true },
-            );
+            form.setError('name', { message: 'Name already exists' }, { shouldFocus: true });
             break;
           }
           case 'Maximum number of accounts reached': {
@@ -104,7 +90,7 @@ export default function AddEditPortfolioAccountDialog({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       {children}
-      <DialogContent className="max-w-sm">
+      <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>{account ? 'Edit Account' : 'New Account'}</DialogTitle>
           <DialogDescription className="hidden" />
@@ -133,10 +119,7 @@ export default function AddEditPortfolioAccountDialog({
           </form>
         </Form>
         <DialogFooter>
-          <Button
-            disabled={isPending}
-            onClick={() => formRef.current?.requestSubmit()}
-          >
+          <Button disabled={isPending} onClick={() => formRef.current?.requestSubmit()}>
             {isPending && <LoaderCircle className="animate-spin" />}
             {account ? 'Edit account' : 'Create account'}
           </Button>

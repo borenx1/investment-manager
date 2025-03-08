@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  startTransition,
-  useActionState,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { startTransition, useActionState, useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowDown, ArrowUp, LoaderCircle } from 'lucide-react';
 
 import { reorderPortfolioAccounts } from '@/lib/actions';
@@ -30,18 +23,12 @@ export default function OrderPortfolioAccountDialog({
 }: React.ComponentProps<typeof Dialog>) {
   const [isOpen, setIsOpen] = useState(false);
   // Portfolio accounts from the resource store are already ordered.
-  const portfolioAccounts = useResourceStore(
-    (state) => state.portfolioAccounts,
-  );
-  const isPortfolioAccountsLoaded = useResourceStore(
-    (state) => state.isPortfolioAccountsLoaded,
-  );
+  const portfolioAccounts = useResourceStore((state) => state.portfolioAccounts);
+  const isPortfolioAccountsLoaded = useResourceStore((state) => state.isPortfolioAccountsLoaded);
   const [accountOrder, setAccountOrder] = useState([...portfolioAccounts]);
   const isOrderChanged = useMemo(() => {
     if (accountOrder.length !== portfolioAccounts.length) return true;
-    return accountOrder.some(
-      (account, index) => account.id !== portfolioAccounts[index]?.id,
-    );
+    return accountOrder.some((account, index) => account.id !== portfolioAccounts[index]?.id);
   }, [accountOrder, portfolioAccounts]);
 
   const moveOrderUp = useCallback(
@@ -92,7 +79,7 @@ export default function OrderPortfolioAccountDialog({
       {...props}
     >
       {children}
-      <DialogContent className="max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Edit Account Order</DialogTitle>
           <DialogDescription className="hidden" hidden />
@@ -102,11 +89,7 @@ export default function OrderPortfolioAccountDialog({
             {accountOrder.map((account, index, array) => (
               <TableRow key={account.id}>
                 <TableCell>
-                  <Button
-                    variant="ghost"
-                    disabled={index <= 0}
-                    onClick={() => moveOrderUp(index)}
-                  >
+                  <Button variant="ghost" disabled={index <= 0} onClick={() => moveOrderUp(index)}>
                     <ArrowUp />
                   </Button>
                 </TableCell>
@@ -126,9 +109,7 @@ export default function OrderPortfolioAccountDialog({
         </Table>
         <DialogFooter>
           <Button
-            disabled={
-              !isOrderChanged || isPending || !isPortfolioAccountsLoaded
-            }
+            disabled={!isOrderChanged || isPending || !isPortfolioAccountsLoaded}
             onClick={() => startTransition(() => onSubmit())}
           >
             {isPending && <LoaderCircle className="animate-spin" />}

@@ -232,7 +232,7 @@ export default function AddEditTradeTransactionDialog({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       {children}
-      <DialogContent className="max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
             {transaction ? 'Edit Trade Transaction' : 'New Trade Transaction'}

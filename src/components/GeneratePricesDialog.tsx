@@ -116,7 +116,7 @@ export default function GeneratePricesDialog({
       {...props}
     >
       {children}
-      <DialogContent className="max-w-sm">
+      <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>Generate Prices</DialogTitle>
           <DialogDescription>

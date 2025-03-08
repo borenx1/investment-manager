@@ -153,7 +153,7 @@ export default function AddEditAccountTransferTransactionDialog({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       {children}
-      <DialogContent className="max-w-sm">
+      <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>
             {transaction ? 'Edit Account Transfer' : 'New Account Transfer'}

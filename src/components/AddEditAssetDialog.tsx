@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  startTransition,
-  useActionState,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { startTransition, useActionState, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -46,11 +39,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
-} from '@/components/ui/popover';
+import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
 
 const formSchema = assetForm.clientSchema;
 
@@ -128,27 +117,15 @@ export default function AddEditAssetDialog({
       if (error) {
         switch (error.message) {
           case 'Duplicate name': {
-            form.setError(
-              'name',
-              { message: 'Name already exists' },
-              { shouldFocus: true },
-            );
+            form.setError('name', { message: 'Name already exists' }, { shouldFocus: true });
             break;
           }
           case 'Duplicate ticker': {
-            form.setError(
-              'ticker',
-              { message: 'Ticker already exists' },
-              { shouldFocus: true },
-            );
+            form.setError('ticker', { message: 'Ticker already exists' }, { shouldFocus: true });
             break;
           }
           case 'Duplicate symbol': {
-            form.setError(
-              'symbol',
-              { message: 'Symbol already exists' },
-              { shouldFocus: true },
-            );
+            form.setError('symbol', { message: 'Symbol already exists' }, { shouldFocus: true });
             break;
           }
           case 'Maximum number of assets reached': {
@@ -184,7 +161,7 @@ export default function AddEditAssetDialog({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       {children}
-      <DialogContent className="max-w-sm">
+      <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>{asset ? 'Edit Asset' : 'New Asset'}</DialogTitle>
           <DialogDescription className="hidden" />
@@ -293,34 +270,23 @@ export default function AddEditAssetDialog({
                           type="button"
                           variant="outline"
                           role="combobox"
-                          className={cn(
-                            'justify-between',
-                            !field.value && 'text-muted-foreground',
-                          )}
+                          className={cn('justify-between', !field.value && 'text-muted-foreground')}
                           disabled={isPending}
                           onClick={() => setIsExternalTickerOpen(true)}
                         >
                           {field.value
-                            ? (apiCurrencyOptions.find(
-                                (option) => option.value === field.value,
-                              )?.label ?? field.value.toUpperCase())
+                            ? (apiCurrencyOptions.find((option) => option.value === field.value)
+                                ?.label ?? field.value.toUpperCase())
                             : 'Select a ticker'}
                           <ChevronsUpDown className="opacity-50" />
                         </Button>
                       </FormControl>
                       {isExternalTickerOpen && (
-                        <Popover
-                          open={true}
-                          onOpenChange={setIsExternalTickerOpen}
-                          modal
-                        >
+                        <Popover open={true} onOpenChange={setIsExternalTickerOpen} modal>
                           <PopoverAnchor className="-mt-2" />
                           <PopoverContent align="start" className="w-auto p-0">
                             <Command>
-                              <CommandInput
-                                placeholder="Search ticker..."
-                                className="h-9"
-                              />
+                              <CommandInput placeholder="Search ticker..." />
                               <CommandList>
                                 <CommandEmpty>No results found.</CommandEmpty>
                                 <CommandGroup>
@@ -331,9 +297,7 @@ export default function AddEditAssetDialog({
                                       onSelect={() => {
                                         form.setValue(
                                           'externalTicker',
-                                          field.value !== option.value
-                                            ? option.value
-                                            : null,
+                                          field.value !== option.value ? option.value : null,
                                         );
                                         setIsExternalTickerOpen(false);
                                       }}
@@ -408,10 +372,7 @@ export default function AddEditAssetDialog({
           </form>
         </Form>
         <DialogFooter>
-          <Button
-            disabled={isPending}
-            onClick={() => formRef.current?.requestSubmit()}
-          >
+          <Button disabled={isPending} onClick={() => formRef.current?.requestSubmit()}>
             {isPending && <LoaderCircle className="animate-spin" />}
             {asset ? 'Edit asset' : 'Create asset'}
           </Button>

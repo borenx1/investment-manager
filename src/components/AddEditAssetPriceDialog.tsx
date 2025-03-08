@@ -118,7 +118,7 @@ export default function AddAssetPriceDialog({
       {...props}
     >
       {children}
-      <DialogContent className="max-w-sm">
+      <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>{date ? 'Edit Asset Price' : 'Add Asset Price'}</DialogTitle>
           <DialogDescription className="hidden" hidden />

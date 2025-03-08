@@ -126,7 +126,7 @@ export default function AddEditIncomeTransactionDialog({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       {children}
-      <DialogContent className="max-w-sm">
+      <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>
             {transaction ? 'Edit Income Transaction' : 'New Income Transaction'}
