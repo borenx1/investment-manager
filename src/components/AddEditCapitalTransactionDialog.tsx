@@ -237,7 +237,7 @@ export default function AddEditCapitalTransactionDialog({
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-x-2 gap-y-4">
               <FormField
                 control={form.control}
                 name="amount"

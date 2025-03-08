@@ -197,7 +197,7 @@ export default function AddEditAccountTransferTransactionDialog({
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-x-2 gap-y-4 sm:grid-cols-2">
               <FormField
                 control={form.control}
                 name="sourcePortfolioAccountId"
@@ -286,7 +286,7 @@ export default function AddEditAccountTransferTransactionDialog({
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-x-2 gap-y-4">
               <FormField
                 control={form.control}
                 name="amount"
