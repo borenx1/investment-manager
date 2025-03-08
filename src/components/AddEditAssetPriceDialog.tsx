@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  startTransition,
-  useActionState,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { startTransition, useActionState, useEffect, useMemo, useRef, useState } from 'react';
 import { format } from 'date-fns';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -68,10 +61,7 @@ export default function AddAssetPriceDialog({
   const pricesMap = useMemo(() => {
     if (!prices) return {};
     return prices
-      .filter(
-        ({ price }) =>
-          price.assetId === asset.id && price.quoteAssetId === quoteAsset.id,
-      )
+      .filter(({ price }) => price.assetId === asset.id && price.quoteAssetId === quoteAsset.id)
       .reduce<Record<string, AssetPrice['price']>>((acc, { price }) => {
         acc[price.date] = price;
         return acc;
@@ -130,9 +120,7 @@ export default function AddAssetPriceDialog({
       {children}
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>
-            {date ? 'Edit Asset Price' : 'Add Asset Price'}
-          </DialogTitle>
+          <DialogTitle>{date ? 'Edit Asset Price' : 'Add Asset Price'}</DialogTitle>
           <DialogDescription className="hidden" hidden />
         </DialogHeader>
         <Form {...form}>
@@ -165,8 +153,7 @@ export default function AddAssetPriceDialog({
                       onSelect={(day) => {
                         field.onChange(day);
                         if (day) {
-                          const existingPrice =
-                            pricesMap[format(day, 'yyyy-MM-dd')];
+                          const existingPrice = pricesMap[format(day, 'yyyy-MM-dd')];
                           if (existingPrice) {
                             form.setValue('price', Number(existingPrice.price));
                           }
@@ -189,7 +176,7 @@ export default function AddAssetPriceDialog({
                 <FormLabel>Asset</FormLabel>
                 <Select disabled>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder={asset.ticker} />
                     </SelectTrigger>
                   </FormControl>
@@ -199,7 +186,7 @@ export default function AddAssetPriceDialog({
                 <FormLabel>Quote</FormLabel>
                 <Select disabled>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder={quoteAsset.ticker} />
                     </SelectTrigger>
                   </FormControl>
@@ -223,9 +210,7 @@ export default function AddAssetPriceDialog({
                       autoFocus
                     />
                   </FormControl>
-                  <FormDescription>
-                    Max {asset.pricePrecision} decimal places
-                  </FormDescription>
+                  <FormDescription>Max {asset.pricePrecision} decimal places</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -234,17 +219,13 @@ export default function AddAssetPriceDialog({
               <div className="text-muted-foreground text-sm">
                 Update the existing price of{' '}
                 <strong>
-                  {formatDecimalPlaces(
-                    Number(existingPrice.price),
-                    asset.pricePrecision,
-                    { trailingZeros: true },
-                  )}
+                  {formatDecimalPlaces(Number(existingPrice.price), asset.pricePrecision, {
+                    trailingZeros: true,
+                  })}
                 </strong>{' '}
                 which was{' '}
                 <strong>
-                  {existingPrice.isGenerated
-                    ? 'automatically generated'
-                    : 'manually created'}
+                  {existingPrice.isGenerated ? 'automatically generated' : 'manually created'}
                 </strong>
               </div>
             )}
@@ -252,10 +233,7 @@ export default function AddAssetPriceDialog({
           </form>
         </Form>
         <DialogFooter>
-          <Button
-            disabled={isPending}
-            onClick={() => formRef.current?.requestSubmit()}
-          >
+          <Button disabled={isPending} onClick={() => formRef.current?.requestSubmit()}>
             {isPending && <LoaderCircle className="animate-spin" />}
             {date ? 'Edit price' : 'Add price'}
           </Button>

@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  startTransition,
-  useActionState,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { startTransition, useActionState, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -49,13 +42,9 @@ export default function AccountingCurrencyDialog({
   ...props
 }: React.ComponentProps<typeof Dialog>) {
   const [isOpen, setIsOpen] = useState(false);
-  const accountingCurrency = useResourceStore(
-    (state) => state.accountingCurrency,
-  );
+  const accountingCurrency = useResourceStore((state) => state.accountingCurrency);
   const assets = useResourceStore((state) => state.assets);
-  const isAccountingCurrencyLoaded = useResourceStore(
-    (state) => state.isAccountingCurrencyLoaded,
-  );
+  const isAccountingCurrencyLoaded = useResourceStore((state) => state.isAccountingCurrencyLoaded);
   const isAssetsLoaded = useResourceStore((state) => state.isAssetsLoaded);
   const isResourcesLoaded = useMemo(
     () => isAccountingCurrencyLoaded && isAssetsLoaded,
@@ -63,10 +52,7 @@ export default function AccountingCurrencyDialog({
   );
   const formRef = useRef<HTMLFormElement>(null);
   const defaultValues = useMemo(
-    () =>
-      accountingCurrency
-        ? { assetId: accountingCurrency.id }
-        : { assetId: assets[0]?.id },
+    () => (accountingCurrency ? { assetId: accountingCurrency.id } : { assetId: assets[0]?.id }),
     [accountingCurrency, assets],
   );
   const form = useForm<z.infer<typeof formSchema>>({
@@ -128,7 +114,7 @@ export default function AccountingCurrencyDialog({
                     disabled={isPending || !isResourcesLoaded}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select an asset" />
                       </SelectTrigger>
                     </FormControl>
@@ -144,7 +130,6 @@ export default function AccountingCurrencyDialog({
                 </FormItem>
               )}
             />
-
             <input type="submit" className="hidden" hidden />
           </form>
         </Form>

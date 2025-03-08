@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  startTransition,
-  useActionState,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { startTransition, useActionState, useEffect, useMemo, useRef, useState } from 'react';
 import { format } from 'date-fns';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -73,9 +66,7 @@ export default function AddEditCapitalTransactionDialog({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isDateOpen, setIsDateOpen] = useState(false);
-  const portfolioAccounts = useResourceStore(
-    (state) => state.portfolioAccounts,
-  );
+  const portfolioAccounts = useResourceStore((state) => state.portfolioAccounts);
   const assets = useResourceStore((state) => state.assets);
   const activeAccount = useResourceStore((state) => state.activeAccount);
   const formRef = useRef<HTMLFormElement>(null);
@@ -91,9 +82,7 @@ export default function AddEditCapitalTransactionDialog({
               parseFloat(transaction.assetEntry.amount) >= 0
                 ? ('contributions' as const)
                 : ('drawings' as const),
-            fee: transaction.feeIncomeEntry
-              ? parseFloat(transaction.feeIncomeEntry.amount)
-              : 0,
+            fee: transaction.feeIncomeEntry ? parseFloat(transaction.feeIncomeEntry.amount) : 0,
             description: transaction.transaction.description || '',
           }
         : {
@@ -149,9 +138,7 @@ export default function AddEditCapitalTransactionDialog({
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle>
-            {transaction
-              ? 'Edit Capital Transaction'
-              : 'New Capital Transaction'}
+            {transaction ? 'Edit Capital Transaction' : 'New Capital Transaction'}
           </DialogTitle>
           <DialogDescription className="hidden" />
         </DialogHeader>
@@ -205,7 +192,7 @@ export default function AddEditCapitalTransactionDialog({
                     disabled={isPending}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select a portfolio account" />
                       </SelectTrigger>
                     </FormControl>
@@ -234,7 +221,7 @@ export default function AddEditCapitalTransactionDialog({
                     disabled={isPending}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select an asset" />
                       </SelectTrigger>
                     </FormControl>
@@ -261,11 +248,7 @@ export default function AddEditCapitalTransactionDialog({
                       <Input
                         type="number"
                         min="0"
-                        step={
-                          selectedAsset
-                            ? 1 / 10 ** selectedAsset.precision
-                            : 'any'
-                        }
+                        step={selectedAsset ? 1 / 10 ** selectedAsset.precision : 'any'}
                         {...field}
                         disabled={isPending}
                       />
@@ -285,20 +268,14 @@ export default function AddEditCapitalTransactionDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Type *</FormLabel>
-                    <Select
-                      {...field}
-                      onValueChange={field.onChange}
-                      disabled={isPending}
-                    >
+                    <Select {...field} onValueChange={field.onChange} disabled={isPending}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="contributions">
-                          Contributions
-                        </SelectItem>
+                        <SelectItem value="contributions">Contributions</SelectItem>
                         <SelectItem value="drawings">Drawings</SelectItem>
                       </SelectContent>
                     </Select>
@@ -316,11 +293,7 @@ export default function AddEditCapitalTransactionDialog({
                       <Input
                         type="number"
                         min="0"
-                        step={
-                          selectedAsset
-                            ? 1 / 10 ** selectedAsset.precision
-                            : 'any'
-                        }
+                        step={selectedAsset ? 1 / 10 ** selectedAsset.precision : 'any'}
                         {...field}
                         disabled={isPending}
                       />
@@ -352,10 +325,7 @@ export default function AddEditCapitalTransactionDialog({
           </form>
         </Form>
         <DialogFooter>
-          <Button
-            disabled={isPending}
-            onClick={() => formRef.current?.requestSubmit()}
-          >
+          <Button disabled={isPending} onClick={() => formRef.current?.requestSubmit()}>
             {isPending && <LoaderCircle className="animate-spin" />}
             {transaction ? 'Edit transaction' : 'Create transaction'}
           </Button>

@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  startTransition,
-  useActionState,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { startTransition, useActionState, useEffect, useMemo, useRef, useState } from 'react';
 import { format } from 'date-fns';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -16,12 +9,7 @@ import { LoaderCircle } from 'lucide-react';
 
 import { editAccountTransferTx, newAccountTransferTx } from '@/lib/actions';
 import { accountTransferTxForm } from '@/lib/forms';
-import {
-  convertUTCDate,
-  formatDecimalPlaces,
-  getCurrentDate,
-  sumFloats,
-} from '@/lib/utils';
+import { convertUTCDate, formatDecimalPlaces, getCurrentDate, sumFloats } from '@/lib/utils';
 import { useResourceStore } from '@/providers/resource-store-provider';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -80,9 +68,7 @@ export default function AddEditAccountTransferTransactionDialog({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isDateOpen, setIsDateOpen] = useState(false);
-  const portfolioAccounts = useResourceStore(
-    (state) => state.portfolioAccounts,
-  );
+  const portfolioAccounts = useResourceStore((state) => state.portfolioAccounts);
   const assets = useResourceStore((state) => state.assets);
   const formRef = useRef<HTMLFormElement>(null);
   const defaultValues = useMemo(
@@ -94,17 +80,14 @@ export default function AddEditAccountTransferTransactionDialog({
             targetPortfolioAccountId: transaction.targetPortfolioAccount.id,
             assetId: transaction.asset.id,
             amount: parseFloat(transaction.targetAssetEntry.amount),
-            fee: transaction.feeIncomeEntry
-              ? parseFloat(transaction.feeIncomeEntry.amount)
-              : 0,
+            fee: transaction.feeIncomeEntry ? parseFloat(transaction.feeIncomeEntry.amount) : 0,
             isFeeInclusive: false,
             description: transaction.transaction.description || '',
           }
         : {
             date: getCurrentDate(),
             sourcePortfolioAccountId: portfolioAccounts[0]?.id,
-            targetPortfolioAccountId:
-              portfolioAccounts[1]?.id ?? portfolioAccounts[0]?.id,
+            targetPortfolioAccountId: portfolioAccounts[1]?.id ?? portfolioAccounts[0]?.id,
             assetId: assets[0]?.id,
             amount: 0,
             fee: 0,
@@ -150,10 +133,7 @@ export default function AddEditAccountTransferTransactionDialog({
         description: values.description || null,
       };
       if (transaction) {
-        await editAccountTransferTx(
-          transaction.accountTransferTransaction.id,
-          data,
-        );
+        await editAccountTransferTx(transaction.accountTransferTransaction.id, data);
       } else {
         await newAccountTransferTx(data);
       }
@@ -231,7 +211,7 @@ export default function AddEditAccountTransferTransactionDialog({
                       disabled={isPending}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select a portfolio account" />
                         </SelectTrigger>
                       </FormControl>
@@ -260,7 +240,7 @@ export default function AddEditAccountTransferTransactionDialog({
                       disabled={isPending}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select a portfolio account" />
                         </SelectTrigger>
                       </FormControl>
@@ -290,7 +270,7 @@ export default function AddEditAccountTransferTransactionDialog({
                     disabled={isPending}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select an asset" />
                       </SelectTrigger>
                     </FormControl>
@@ -317,11 +297,7 @@ export default function AddEditAccountTransferTransactionDialog({
                       <Input
                         type="number"
                         min="0"
-                        step={
-                          selectedAsset
-                            ? 1 / 10 ** selectedAsset.precision
-                            : 'any'
-                        }
+                        step={selectedAsset ? 1 / 10 ** selectedAsset.precision : 'any'}
                         {...field}
                         disabled={isPending}
                       />
@@ -345,11 +321,7 @@ export default function AddEditAccountTransferTransactionDialog({
                       <Input
                         type="number"
                         min="0"
-                        step={
-                          selectedAsset
-                            ? 1 / 10 ** selectedAsset.precision
-                            : 'any'
-                        }
+                        step={selectedAsset ? 1 / 10 ** selectedAsset.precision : 'any'}
                         {...field}
                         disabled={isPending}
                       />
@@ -389,13 +361,9 @@ export default function AddEditAccountTransferTransactionDialog({
               <div className="text-muted-foreground text-sm">
                 Total transferred to target account:
                 <br />
-                {formatDecimalPlaces(
-                  totalTransferred,
-                  selectedAsset?.precision ?? 100,
-                  {
-                    trailingZeros: !!selectedAsset,
-                  },
-                )}
+                {formatDecimalPlaces(totalTransferred, selectedAsset?.precision ?? 100, {
+                  trailingZeros: !!selectedAsset,
+                })}
               </div>
             )}
             <FormField
@@ -415,10 +383,7 @@ export default function AddEditAccountTransferTransactionDialog({
           </form>
         </Form>
         <DialogFooter>
-          <Button
-            disabled={isPending}
-            onClick={() => formRef.current?.requestSubmit()}
-          >
+          <Button disabled={isPending} onClick={() => formRef.current?.requestSubmit()}>
             {isPending && <LoaderCircle className="animate-spin" />}
             {transaction ? 'Edit transaction' : 'Create transaction'}
           </Button>

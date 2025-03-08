@@ -140,7 +140,7 @@ export default function GeneratePricesDialog({
                   <FormLabel>Frequency</FormLabel>
                   <Select {...field} onValueChange={field.onChange} disabled={isPending}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select frequency" />
                       </SelectTrigger>
                     </FormControl>

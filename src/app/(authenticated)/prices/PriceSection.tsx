@@ -33,40 +33,26 @@ export default function PriceSection({
 }) {
   const data = use(prices);
   const assets = useResourceStore((state) => state.assets);
-  const accountingCurrency = useResourceStore(
-    (state) => state.accountingCurrency,
-  );
+  const accountingCurrency = useResourceStore((state) => state.accountingCurrency);
   const isAssetsLoaded = useResourceStore((state) => state.isAssetsLoaded);
-  const isAccountingCurrencyLoaded = useResourceStore(
-    (state) => state.isAccountingCurrencyLoaded,
-  );
+  const isAccountingCurrencyLoaded = useResourceStore((state) => state.isAccountingCurrencyLoaded);
   const isResourcesLoaded = useMemo(
     () => isAssetsLoaded && isAccountingCurrencyLoaded,
     [isAssetsLoaded, isAccountingCurrencyLoaded],
   );
   const [assetId, setAssetId] = useState<number | undefined>(
-    assets.filter((a) => a.id !== accountingCurrency?.id)[0]?.id ??
-      assets[0]?.id,
+    assets.filter((a) => a.id !== accountingCurrency?.id)[0]?.id ?? assets[0]?.id,
   );
-  const [quoteId, setQuoteId] = useState<number | undefined>(
-    accountingCurrency?.id,
-  );
+  const [quoteId, setQuoteId] = useState<number | undefined>(accountingCurrency?.id);
   const [dateFilter, setDateFilter] = useState<DateFilterValue>();
-  const asset = useMemo(
-    () => assets.find((asset) => asset.id === assetId),
-    [assets, assetId],
-  );
-  const quote = useMemo(
-    () => assets.find((asset) => asset.id === quoteId),
-    [assets, quoteId],
-  );
+  const asset = useMemo(() => assets.find((asset) => asset.id === assetId), [assets, assetId]);
+  const quote = useMemo(() => assets.find((asset) => asset.id === quoteId), [assets, quoteId]);
   const filteredPrices = useMemo(() => {
     if (!asset || !quote || asset.id === quote.id) {
       return [];
     }
     return data.filter(
-      ({ price }) =>
-        price.assetId === asset.id && price.quoteAssetId === quote.id,
+      ({ price }) => price.assetId === asset.id && price.quoteAssetId === quote.id,
     );
   }, [data, asset, quote]);
 
@@ -74,10 +60,7 @@ export default function PriceSection({
   useEffect(() => {
     if (isResourcesLoaded) {
       if (!assetId) {
-        setAssetId(
-          assets.filter((a) => a.id !== accountingCurrency?.id)[0]?.id ??
-            assets[0]?.id,
-        );
+        setAssetId(assets.filter((a) => a.id !== accountingCurrency?.id)[0]?.id ?? assets[0]?.id);
       }
       if (!quoteId) {
         setQuoteId(accountingCurrency?.id);
@@ -92,11 +75,8 @@ export default function PriceSection({
           <>
             <div className="flex items-center gap-x-2">
               <Label htmlFor="asset">Asset</Label>
-              <Select
-                value={`${assetId}`}
-                onValueChange={(value) => setAssetId(Number(value))}
-              >
-                <SelectTrigger id="asset" className="max-w-[120px]">
+              <Select value={`${assetId}`} onValueChange={(value) => setAssetId(Number(value))}>
+                <SelectTrigger id="asset" className="w-full max-w-[7.5rem]">
                   <SelectValue placeholder="Select an asset" />
                 </SelectTrigger>
                 <SelectContent>
@@ -111,11 +91,8 @@ export default function PriceSection({
               <Label htmlFor="quote" className="ml-2">
                 Quote
               </Label>
-              <Select
-                value={`${quoteId}`}
-                onValueChange={(value) => setQuoteId(Number(value))}
-              >
-                <SelectTrigger id="quote" className="max-w-[120px]">
+              <Select value={`${quoteId}`} onValueChange={(value) => setQuoteId(Number(value))}>
+                <SelectTrigger id="quote" className="w-full max-w-[7.5rem]">
                   <SelectValue placeholder="Select an asset" />
                 </SelectTrigger>
                 <SelectContent>
@@ -127,11 +104,7 @@ export default function PriceSection({
                   ))}
                 </SelectContent>
               </Select>
-              <DateFilter
-                name="Date"
-                value={dateFilter}
-                onChange={setDateFilter}
-              />
+              <DateFilter name="Date" value={dateFilter} onChange={setDateFilter} />
               {!!dateFilter && (
                 <Button
                   variant="outline"
@@ -170,9 +143,7 @@ export default function PriceSection({
           </>
         ) : (
           <>
-            <div className="italic">
-              Please create an accounting currency in the settings
-            </div>
+            <div className="italic">Please create an accounting currency in the settings</div>
             <Button asChild>
               <Link href="/settings">Go to settings</Link>
             </Button>

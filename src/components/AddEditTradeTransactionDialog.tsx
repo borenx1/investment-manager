@@ -17,12 +17,7 @@ import { LoaderCircle } from 'lucide-react';
 
 import { editTradeTransaction, newTradeTransaction } from '@/lib/actions';
 import { tradeTransactionForm } from '@/lib/forms';
-import {
-  convertUTCDate,
-  formatDecimalPlaces,
-  getCurrentDate,
-  roundNumber,
-} from '@/lib/utils';
+import { convertUTCDate, formatDecimalPlaces, getCurrentDate, roundNumber } from '@/lib/utils';
 import { useResourceStore } from '@/providers/resource-store-provider';
 import { Button } from '@/components/ui/button';
 import {
@@ -98,13 +93,9 @@ export default function AddEditTradeTransactionDialog({
   const [isOpen, setIsOpen] = useState(false);
   const [isDateOpen, setIsDateOpen] = useState(false);
   const [price, setPrice] = useState('');
-  const portfolioAccounts = useResourceStore(
-    (state) => state.portfolioAccounts,
-  );
+  const portfolioAccounts = useResourceStore((state) => state.portfolioAccounts);
   const assets = useResourceStore((state) => state.assets);
-  const accountingCurrency = useResourceStore(
-    (state) => state.accountingCurrency,
-  );
+  const accountingCurrency = useResourceStore((state) => state.accountingCurrency);
   const activeAccount = useResourceStore((state) => state.activeAccount);
   const formRef = useRef<HTMLFormElement>(null);
   const defaultValues = useMemo(
@@ -116,9 +107,7 @@ export default function AddEditTradeTransactionDialog({
             baseAssetId: transaction.baseAsset.id,
             baseAmount: Math.abs(parseFloat(transaction.baseAssetEntry.amount)),
             quoteAssetId: transaction.quoteAsset.id,
-            quoteAmount: Math.abs(
-              parseFloat(transaction.quoteAssetEntry.amount),
-            ),
+            quoteAmount: Math.abs(parseFloat(transaction.quoteAssetEntry.amount)),
             type:
               parseFloat(transaction.baseAssetEntry.amount) >= 0
                 ? ('buy' as const)
@@ -137,8 +126,7 @@ export default function AddEditTradeTransactionDialog({
             date: getCurrentDate(),
             portfolioAccountId: activeAccount?.id ?? portfolioAccounts[0]?.id,
             baseAssetId: accountingCurrency
-              ? (assets.filter((a) => a.id !== accountingCurrency.id)[0]?.id ??
-                assets[0]?.id)
+              ? (assets.filter((a) => a.id !== accountingCurrency.id)[0]?.id ?? assets[0]?.id)
               : assets[0]?.id,
             baseAmount: 0,
             quoteAssetId: accountingCurrency?.id ?? assets[0]?.id,
@@ -166,10 +154,7 @@ export default function AddEditTradeTransactionDialog({
     [assets, selectedQuoteAssetId],
   );
   const selectedFeeAsset = useMemo(
-    () =>
-      selectedFeeAssetOption === 'base'
-        ? selectedBaseAsset
-        : selectedQuoteAsset,
+    () => (selectedFeeAssetOption === 'base' ? selectedBaseAsset : selectedQuoteAsset),
     [selectedFeeAssetOption, selectedBaseAsset, selectedQuoteAsset],
   );
   const [, onSubmit, isPending] = useActionState(
@@ -199,10 +184,7 @@ export default function AddEditTradeTransactionDialog({
       baseAmount = Math.abs(Number(baseAmount));
       if (!isFinite(baseAmount)) return;
       const newQuoteAmount = baseAmount * priceValue;
-      form.setValue(
-        'quoteAmount',
-        roundNumber(newQuoteAmount, selectedQuoteAsset?.precision ?? 2),
-      );
+      form.setValue('quoteAmount', roundNumber(newQuoteAmount, selectedQuoteAsset?.precision ?? 2));
     },
     [form, price, selectedQuoteAsset],
   );
@@ -231,10 +213,7 @@ export default function AddEditTradeTransactionDialog({
       const baseAmount = Math.abs(Number(form.getValues('baseAmount')));
       if (!isFinite(baseAmount)) return;
       const newQuoteAmount = baseAmount * newPrice;
-      form.setValue(
-        'quoteAmount',
-        roundNumber(newQuoteAmount, selectedQuoteAsset?.precision ?? 2),
-      );
+      form.setValue('quoteAmount', roundNumber(newQuoteAmount, selectedQuoteAsset?.precision ?? 2));
     },
     [form, selectedQuoteAsset],
   );
@@ -310,7 +289,7 @@ export default function AddEditTradeTransactionDialog({
                     disabled={isPending}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select a portfolio account" />
                       </SelectTrigger>
                     </FormControl>
@@ -337,11 +316,7 @@ export default function AddEditTradeTransactionDialog({
                       <Input
                         type="number"
                         min="0"
-                        step={
-                          selectedBaseAsset
-                            ? 1 / 10 ** selectedBaseAsset.precision
-                            : 'any'
-                        }
+                        step={selectedBaseAsset ? 1 / 10 ** selectedBaseAsset.precision : 'any'}
                         {...field}
                         onChange={(e) => {
                           field.onChange(e);
@@ -372,7 +347,7 @@ export default function AddEditTradeTransactionDialog({
                       disabled={isPending}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select an asset" />
                         </SelectTrigger>
                       </FormControl>
@@ -398,11 +373,7 @@ export default function AddEditTradeTransactionDialog({
                       <Input
                         type="number"
                         min="0"
-                        step={
-                          selectedQuoteAsset
-                            ? 1 / 10 ** selectedQuoteAsset.precision
-                            : 'any'
-                        }
+                        step={selectedQuoteAsset ? 1 / 10 ** selectedQuoteAsset.precision : 'any'}
                         {...field}
                         onChange={(e) => {
                           field.onChange(e);
@@ -433,7 +404,7 @@ export default function AddEditTradeTransactionDialog({
                       disabled={isPending}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select an asset" />
                         </SelectTrigger>
                       </FormControl>
@@ -456,11 +427,7 @@ export default function AddEditTradeTransactionDialog({
                     id="price"
                     type="number"
                     min="0"
-                    step={
-                      selectedBaseAsset
-                        ? 1 / 10 ** selectedBaseAsset.pricePrecision
-                        : 'any'
-                    }
+                    step={selectedBaseAsset ? 1 / 10 ** selectedBaseAsset.pricePrecision : 'any'}
                     value={price}
                     onChange={(e) => {
                       setPrice(e.target.value);
@@ -476,13 +443,9 @@ export default function AddEditTradeTransactionDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Type *</FormLabel>
-                    <Select
-                      {...field}
-                      onValueChange={field.onChange}
-                      disabled={isPending}
-                    >
+                    <Select {...field} onValueChange={field.onChange} disabled={isPending}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue />
                         </SelectTrigger>
                       </FormControl>
@@ -505,11 +468,7 @@ export default function AddEditTradeTransactionDialog({
                       <Input
                         type="number"
                         min="0"
-                        step={
-                          selectedFeeAsset
-                            ? 1 / 10 ** selectedFeeAsset.precision
-                            : 'any'
-                        }
+                        step={selectedFeeAsset ? 1 / 10 ** selectedFeeAsset.precision : 'any'}
                         {...field}
                         disabled={isPending}
                       />
@@ -529,26 +488,18 @@ export default function AddEditTradeTransactionDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Fee currency</FormLabel>
-                    <Select
-                      {...field}
-                      onValueChange={field.onChange}
-                      disabled={isPending}
-                    >
+                    <Select {...field} onValueChange={field.onChange} disabled={isPending}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="base">
-                          {selectedBaseAsset
-                            ? `Base (${selectedBaseAsset.ticker})`
-                            : 'Base'}
+                          {selectedBaseAsset ? `Base (${selectedBaseAsset.ticker})` : 'Base'}
                         </SelectItem>
                         <SelectItem value="quote">
-                          {selectedQuoteAsset
-                            ? `Quote (${selectedQuoteAsset.ticker})`
-                            : 'Quote'}
+                          {selectedQuoteAsset ? `Quote (${selectedQuoteAsset.ticker})` : 'Quote'}
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -574,10 +525,7 @@ export default function AddEditTradeTransactionDialog({
           </form>
         </Form>
         <DialogFooter>
-          <Button
-            disabled={isPending}
-            onClick={() => formRef.current?.requestSubmit()}
-          >
+          <Button disabled={isPending} onClick={() => formRef.current?.requestSubmit()}>
             {isPending && <LoaderCircle className="animate-spin" />}
             {transaction ? 'Edit transaction' : 'Create transaction'}
           </Button>
