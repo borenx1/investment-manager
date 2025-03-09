@@ -26,12 +26,8 @@ export const users = pgTable('user', {
   email: text('email').unique(),
   emailVerified: timestamp('emailVerified', { mode: 'date' }),
   image: text('image'),
-  createdAt: timestamp('created_at', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const accounts = pgTable(
@@ -50,12 +46,8 @@ export const accounts = pgTable(
     scope: text('scope'),
     id_token: text('id_token'),
     session_state: text('session_state'),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (account) => [
     {
@@ -75,12 +67,8 @@ export const portfolioAccounts = pgTable(
       .references(() => users.id, { onDelete: 'cascade' }),
     name: text('name').notNull(),
     order: integer('order').notNull().default(0),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
     check('portfolio_account_name_check', sql`LENGTH(${table.name}) > 0`),
@@ -105,12 +93,8 @@ export const assets = pgTable(
     precision: smallint('precision').notNull().default(0),
     pricePrecision: smallint('price_precision').notNull().default(0),
     externalTicker: varchar('external_ticker', { length: 20 }),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
     check('asset_ticker_check', sql`LENGTH(${table.ticker}) > 0`),
@@ -137,12 +121,8 @@ export const accountingCurrencies = pgTable(
     assetId: integer('asset_id').references(() => assets.id, {
       onDelete: 'set null',
     }),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [unique().on(table.userId)],
 );
@@ -166,12 +146,8 @@ export const assetPrices = pgTable(
     date: date('date').notNull(),
     price: numeric('price', { precision: 100, scale: 20 }).notNull(),
     isGenerated: boolean('is_generated').notNull().default(false),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
     unique().on(table.userId, table.assetId, table.quoteAssetId, table.date),
@@ -192,12 +168,8 @@ export const transactions = pgTable(
     title: text('title').notNull(),
     description: text('description'),
     date: timestamp('date', { withTimezone: false }).notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index().on(table.date)],
 );
@@ -215,15 +187,9 @@ export const balances = pgTable(
     assetId: integer('asset_id')
       .notNull()
       .references(() => assets.id, { onDelete: 'cascade' }),
-    balance: numeric('balance', { precision: 100, scale: 20 })
-      .notNull()
-      .default('0'),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    balance: numeric('balance', { precision: 100, scale: 20 }).notNull().default('0'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [unique().on(table.portfolioAccountId, table.assetId)],
 );
@@ -231,12 +197,7 @@ export const balances = pgTable(
 export type SelectBalance = typeof balances.$inferSelect;
 export type InsertBalance = typeof balances.$inferInsert;
 
-export const ledgerTypeEnum = pgEnum('ledger_type', [
-  'asset',
-  'liability',
-  'capital',
-  'income',
-]);
+export const ledgerTypeEnum = pgEnum('ledger_type', ['asset', 'liability', 'capital', 'income']);
 
 export const ledgers = pgTable(
   'ledger',
@@ -249,12 +210,8 @@ export const ledgers = pgTable(
       .notNull()
       .references(() => assets.id, { onDelete: 'cascade' }),
     type: ledgerTypeEnum('type').notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [unique().on(table.portfolioAccountId, table.assetId, table.type)],
 );
@@ -273,12 +230,8 @@ export const ledgerEntries = pgTable(
       .notNull()
       .references(() => transactions.id, { onDelete: 'cascade' }),
     amount: numeric('amount', { precision: 100, scale: 20 }).notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index().on(table.amount)],
 );
@@ -299,20 +252,14 @@ export const capitalTransactions = pgTable(
     capitalEntryId: integer('capital_entry_id')
       .notNull()
       .references(() => ledgerEntries.id, { onDelete: 'cascade' }),
-    feeAssetEntryId: integer('fee_asset_entry_id').references(
-      () => ledgerEntries.id,
-      { onDelete: 'set null' },
-    ),
-    feeIncomeEntryId: integer('fee_income_entry_id').references(
-      () => ledgerEntries.id,
-      { onDelete: 'set null' },
-    ),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    feeAssetEntryId: integer('fee_asset_entry_id').references(() => ledgerEntries.id, {
+      onDelete: 'set null',
+    }),
+    feeIncomeEntryId: integer('fee_income_entry_id').references(() => ledgerEntries.id, {
+      onDelete: 'set null',
+    }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
     unique().on(table.transactionId),
@@ -345,20 +292,14 @@ export const accountTransferTransactions = pgTable(
     targetCapitalEntryId: integer('target_capital_entry_id')
       .notNull()
       .references(() => ledgerEntries.id, { onDelete: 'cascade' }),
-    feeAssetEntryId: integer('fee_asset_entry_id').references(
-      () => ledgerEntries.id,
-      { onDelete: 'set null' },
-    ),
-    feeIncomeEntryId: integer('fee_income_entry_id').references(
-      () => ledgerEntries.id,
-      { onDelete: 'set null' },
-    ),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    feeAssetEntryId: integer('fee_asset_entry_id').references(() => ledgerEntries.id, {
+      onDelete: 'set null',
+    }),
+    feeIncomeEntryId: integer('fee_income_entry_id').references(() => ledgerEntries.id, {
+      onDelete: 'set null',
+    }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
     unique().on(table.transactionId),
@@ -371,10 +312,8 @@ export const accountTransferTransactions = pgTable(
   ],
 );
 
-export type SelectAccountTransferTransaction =
-  typeof accountTransferTransactions.$inferSelect;
-export type InsertAccountTransferTransaction =
-  typeof accountTransferTransactions.$inferInsert;
+export type SelectAccountTransferTransaction = typeof accountTransferTransactions.$inferSelect;
+export type InsertAccountTransferTransaction = typeof accountTransferTransactions.$inferInsert;
 
 export const tradeTransactions = pgTable(
   'trade_transaction',
@@ -395,20 +334,14 @@ export const tradeTransactions = pgTable(
     quoteIncomeEntryId: integer('quote_income_entry_id')
       .notNull()
       .references(() => ledgerEntries.id, { onDelete: 'cascade' }),
-    feeAssetEntryId: integer('fee_asset_entry_id').references(
-      () => ledgerEntries.id,
-      { onDelete: 'set null' },
-    ),
-    feeIncomeEntryId: integer('fee_income_entry_id').references(
-      () => ledgerEntries.id,
-      { onDelete: 'set null' },
-    ),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    feeAssetEntryId: integer('fee_asset_entry_id').references(() => ledgerEntries.id, {
+      onDelete: 'set null',
+    }),
+    feeIncomeEntryId: integer('fee_income_entry_id').references(() => ledgerEntries.id, {
+      onDelete: 'set null',
+    }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
     unique().on(table.transactionId),
@@ -437,12 +370,8 @@ export const incomeTransactions = pgTable(
     incomeEntryId: integer('income_entry_id')
       .notNull()
       .references(() => ledgerEntries.id, { onDelete: 'cascade' }),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
     unique().on(table.transactionId),

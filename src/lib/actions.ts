@@ -511,8 +511,7 @@ export async function newExpenseTransaction(data: {
   const userId = session?.user?.id;
   if (!userId) return null;
 
-  const { amount, ...validatedData } =
-    expenseTransactionForm.serverSchema.parse(data);
+  const { amount, ...validatedData } = expenseTransactionForm.serverSchema.parse(data);
   const ids = await createIncomeTransaction(userId, {
     ...validatedData,
     amount: -amount,
@@ -541,8 +540,7 @@ export async function editExpenseTransaction(
   const userId = session?.user?.id;
   if (!userId) return null;
 
-  const { amount, ...validatedData } =
-    expenseTransactionForm.serverSchema.parse(data);
+  const { amount, ...validatedData } = expenseTransactionForm.serverSchema.parse(data);
   const ids = await updateIncomeTransaction(userId, {
     id,
     ...validatedData,

@@ -8,10 +8,7 @@ import type { DateFilterValue } from '@/components/DateFilter';
  * @param filterValue The filter value
  * @returns The date passes the filter.
  */
-export function filterByDate(
-  value: Date,
-  filterValue: DateFilterValue,
-): boolean {
+export function filterByDate(value: Date, filterValue: DateFilterValue): boolean {
   if (filterValue) {
     if (filterValue.mode === 'from') {
       return value >= extractDate(filterValue.date);
@@ -19,10 +16,7 @@ export function filterByDate(
       return value <= extractDate(filterValue.date);
     } else if (filterValue.mode === 'range') {
       if (filterValue.from && filterValue.to) {
-        return (
-          value >= extractDate(filterValue.from) &&
-          value <= extractDate(filterValue.to)
-        );
+        return value >= extractDate(filterValue.from) && value <= extractDate(filterValue.to);
       }
     }
   }

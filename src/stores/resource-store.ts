@@ -56,8 +56,7 @@ export function createResourceStore() {
           set((state) => ({
             portfolioAccounts,
             isPortfolioAccountsLoaded: true,
-            isResourcesLoaded:
-              state.isAssetsLoaded && state.isAccountingCurrencyLoaded,
+            isResourcesLoaded: state.isAssetsLoaded && state.isAccountingCurrencyLoaded,
           }));
           // Reset the active account to deselect an account that doesn't exist.
           const activeAccountId = get().activeAccountId;
@@ -69,17 +68,14 @@ export function createResourceStore() {
           set((state) => ({
             assets,
             isAssetsLoaded: true,
-            isResourcesLoaded:
-              state.isPortfolioAccountsLoaded &&
-              state.isAccountingCurrencyLoaded,
+            isResourcesLoaded: state.isPortfolioAccountsLoaded && state.isAccountingCurrencyLoaded,
           }));
         },
         setAccountingCurrency(asset) {
           set((state) => ({
             accountingCurrency: asset,
             isAccountingCurrencyLoaded: true,
-            isResourcesLoaded:
-              state.isPortfolioAccountsLoaded && state.isAssetsLoaded,
+            isResourcesLoaded: state.isPortfolioAccountsLoaded && state.isAssetsLoaded,
           }));
         },
         setActiveAccount(accountId) {
@@ -89,9 +85,7 @@ export function createResourceStore() {
           }
           set((state) => {
             const accounts = state.portfolioAccounts;
-            const activeAccount = accounts.find(
-              (account) => account.id === accountId,
-            );
+            const activeAccount = accounts.find((account) => account.id === accountId);
             if (activeAccount) {
               return { activeAccountId: accountId, activeAccount };
             }

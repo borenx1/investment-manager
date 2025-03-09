@@ -3,16 +3,11 @@
 import { createContext, useContext, useEffect, useRef } from 'react';
 import { useStore } from 'zustand';
 
-import {
-  createResourceStore,
-  type ResourceStore,
-} from '@/stores/resource-store';
+import { createResourceStore, type ResourceStore } from '@/stores/resource-store';
 
 type ResourceStoreApi = ReturnType<typeof createResourceStore>;
 
-export const ResourceStoreContext = createContext<ResourceStoreApi | null>(
-  null,
-);
+export const ResourceStoreContext = createContext<ResourceStoreApi | null>(null);
 
 export function ResourceStoreProvider({
   children,
@@ -56,9 +51,7 @@ export function ResourceStoreProvider({
 export function useResourceStore<T>(selector: (store: ResourceStore) => T) {
   const resourceStoreContext = useContext(ResourceStoreContext);
   if (!resourceStoreContext) {
-    throw new Error(
-      'useResourceStore must be used within a ResourceStoreProvider',
-    );
+    throw new Error('useResourceStore must be used within a ResourceStoreProvider');
   }
   return useStore(resourceStoreContext, selector);
 }

@@ -1,11 +1,7 @@
 import { z } from 'zod';
 
 const portfolioAccountFormSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .nonempty('Account name is required')
-    .max(50, 'Maximum 50 characters'),
+  name: z.string().trim().nonempty('Account name is required').max(50, 'Maximum 50 characters'),
 });
 
 export const portfolioAccountForm = {
@@ -14,11 +10,7 @@ export const portfolioAccountForm = {
 } as const;
 
 const assetFormSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .nonempty('Name is required')
-    .max(50, 'Maximum 50 characters'),
+  name: z.string().trim().nonempty('Name is required').max(50, 'Maximum 50 characters'),
   ticker: z
     .string()
     .trim()
@@ -81,9 +73,7 @@ export const assetPriceForm = {
 
 const capitalTransactionFormSchema = z.object({
   date: z.date({ message: 'Select a date' }),
-  portfolioAccountId: z.coerce
-    .number({ message: 'Select a portfolio account' })
-    .int(),
+  portfolioAccountId: z.coerce.number({ message: 'Select a portfolio account' }).int(),
   assetId: z.coerce.number({ message: 'Select an asset' }).int(),
   amount: z.coerce
     .number({ message: 'Amount is required' })
@@ -91,11 +81,7 @@ const capitalTransactionFormSchema = z.object({
     .finite()
     .safe(),
   type: z.enum(['contributions', 'drawings']),
-  fee: z.coerce
-    .number()
-    .nonnegative('Must be a non-negative number')
-    .finite()
-    .safe(),
+  fee: z.coerce.number().nonnegative('Must be a non-negative number').finite().safe(),
   description: z.string().trim().max(200, 'Maximum 200 characters'),
 });
 
@@ -109,23 +95,15 @@ export const capitalTransactionForm = {
 
 const accountTransferTxFormSchema = z.object({
   date: z.date({ message: 'Select a date' }),
-  sourcePortfolioAccountId: z.coerce
-    .number({ message: 'Select a portfolio account' })
-    .int(),
-  targetPortfolioAccountId: z.coerce
-    .number({ message: 'Select a portfolio account' })
-    .int(),
+  sourcePortfolioAccountId: z.coerce.number({ message: 'Select a portfolio account' }).int(),
+  targetPortfolioAccountId: z.coerce.number({ message: 'Select a portfolio account' }).int(),
   assetId: z.coerce.number({ message: 'Select an asset' }).int(),
   amount: z.coerce
     .number({ message: 'Amount is required' })
     .positive('Must be a positive number')
     .finite()
     .safe(),
-  fee: z.coerce
-    .number()
-    .nonnegative('Must be a non-negative number')
-    .finite()
-    .safe(),
+  fee: z.coerce.number().nonnegative('Must be a non-negative number').finite().safe(),
   isFeeInclusive: z.boolean(),
   description: z.string().trim().max(200, 'Maximum 200 characters'),
 });
@@ -144,20 +122,15 @@ export const accountTransferTxForm = {
       description: accountTransferTxFormSchema.shape.description.nullable(),
     })
     .omit({ isFeeInclusive: true })
-    .refine(
-      (form) => form.sourcePortfolioAccountId !== form.targetPortfolioAccountId,
-      {
-        message: 'Source and target accounts cannot be the same',
-        path: ['targetPortfolioAccountId'],
-      },
-    ),
+    .refine((form) => form.sourcePortfolioAccountId !== form.targetPortfolioAccountId, {
+      message: 'Source and target accounts cannot be the same',
+      path: ['targetPortfolioAccountId'],
+    }),
 } as const;
 
 const tradeTransactionFormSchema = z.object({
   date: z.date({ message: 'Select a date' }),
-  portfolioAccountId: z.coerce
-    .number({ message: 'Select a portfolio account' })
-    .int(),
+  portfolioAccountId: z.coerce.number({ message: 'Select a portfolio account' }).int(),
   baseAssetId: z.coerce.number({ message: 'Select an asset' }).int(),
   baseAmount: z.coerce
     .number({ message: 'Amount is required' })
@@ -172,11 +145,7 @@ const tradeTransactionFormSchema = z.object({
     .safe(),
   type: z.enum(['buy', 'sell']),
   feeAsset: z.enum(['base', 'quote']),
-  feeAmount: z.coerce
-    .number()
-    .nonnegative('Must be a non-negative number')
-    .finite()
-    .safe(),
+  feeAmount: z.coerce.number().nonnegative('Must be a non-negative number').finite().safe(),
   description: z.string().trim().max(200, 'Maximum 200 characters'),
 });
 
@@ -201,9 +170,7 @@ export const tradeTransactionForm = {
 
 const incomeTransactionFormSchema = z.object({
   date: z.date({ message: 'Select a date' }),
-  portfolioAccountId: z.coerce
-    .number({ message: 'Select a portfolio account' })
-    .int(),
+  portfolioAccountId: z.coerce.number({ message: 'Select a portfolio account' }).int(),
   assetId: z.coerce.number({ message: 'Select an asset' }).int(),
   amount: z.coerce
     .number({ message: 'Amount is required' })

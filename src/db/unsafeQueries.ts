@@ -32,10 +32,7 @@ export async function createBalanceAndLedgers(
   assetId: SelectAsset['id'],
 ) {
   const results = await Promise.allSettled([
-    db
-      .insert(balances)
-      .values({ portfolioAccountId, assetId })
-      .onConflictDoNothing(),
+    db.insert(balances).values({ portfolioAccountId, assetId }).onConflictDoNothing(),
     db
       .insert(ledgers)
       .values([
@@ -71,10 +68,7 @@ export async function getBalanceGuaranteed(
       .select()
       .from(balances)
       .where(
-        and(
-          eq(balances.portfolioAccountId, portfolioAccountId),
-          eq(balances.assetId, assetId),
-        ),
+        and(eq(balances.portfolioAccountId, portfolioAccountId), eq(balances.assetId, assetId)),
       )
       .limit(1);
     if (balance.length) {
@@ -180,9 +174,7 @@ export async function calculateBalance(
  * @see {@link calculateBalance}
  */
 export async function calculateBalances(
-  portfolioAccountIds:
-    | SelectBalance['portfolioAccountId']
-    | SelectBalance['portfolioAccountId'][],
+  portfolioAccountIds: SelectBalance['portfolioAccountId'] | SelectBalance['portfolioAccountId'][],
   assetIds: SelectBalance['assetId'] | SelectBalance['assetId'][],
 ) {
   if (!Array.isArray(portfolioAccountIds)) {
@@ -200,9 +192,7 @@ export async function calculateBalances(
 
   return await Promise.all(
     portfolioAccountIds
-      .map((accountId) =>
-        assetIds.map((assetId) => calculateBalance(accountId, assetId)),
-      )
+      .map((accountId) => assetIds.map((assetId) => calculateBalance(accountId, assetId)))
       .flat(),
   );
 }
