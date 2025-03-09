@@ -30,7 +30,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { PopoverAnchor } from '@/components/ui/popover';
+import { PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -65,7 +65,6 @@ export default function AddEditCapitalTransactionDialog({
   children: React.ReactNode;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isDateOpen, setIsDateOpen] = useState(false);
   const portfolioAccounts = useResourceStore((state) => state.portfolioAccounts);
   const assets = useResourceStore((state) => state.assets);
   const activeAccount = useResourceStore((state) => state.activeAccount);
@@ -156,25 +155,18 @@ export default function AddEditCapitalTransactionDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Date *</FormLabel>
-                  <FormControl>
-                    <DatePickerButton
-                      selected={field.value}
-                      disabled={isPending}
-                      onClick={() => setIsDateOpen(true)}
-                    />
-                  </FormControl>
-                  {isDateOpen && (
-                    <DatePickerPopover
-                      open={true}
-                      onOpenChange={setIsDateOpen}
-                      modal
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      required
-                    >
-                      <PopoverAnchor className="-mt-2" />
-                    </DatePickerPopover>
-                  )}
+                  <DatePickerPopover
+                    modal
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    required
+                  >
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <DatePickerButton selected={field.value} disabled={isPending} />
+                      </FormControl>
+                    </PopoverTrigger>
+                  </DatePickerPopover>
                   <FormMessage />
                 </FormItem>
               )}

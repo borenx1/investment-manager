@@ -24,6 +24,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -33,7 +34,6 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { DatePickerButton, DatePickerRangePopover } from '@/components/DatePicker';
-import { PopoverAnchor } from '@/components/ui/popover';
 
 const formSchema = z.object({
   frequency: z.enum(['month-start', 'month-end', 'all']),
@@ -64,7 +64,6 @@ export default function GeneratePricesDialog({
   quoteAsset: SelectAsset;
 } & React.ComponentProps<typeof Dialog>) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isDateRangeOpen, setIsDateRangeOpen] = useState(false);
   const apiLatestDate = useCurrencyStore((state) => state.apiLatestDate);
   const fetchApiLatestDate = useCurrencyStore((state) => state.fetchApiLatestDate);
   const formRef = useRef<HTMLFormElement>(null);
@@ -162,26 +161,19 @@ export default function GeneratePricesDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Date Range</FormLabel>
-                  <FormControl>
-                    <DatePickerButton
-                      selected={field.value}
-                      disabled={isPending}
-                      onClick={() => setIsDateRangeOpen(true)}
-                    />
-                  </FormControl>
-                  {isDateRangeOpen && (
-                    <DatePickerRangePopover
-                      open={true}
-                      onOpenChange={setIsDateRangeOpen}
-                      modal
-                      selected={field.value}
-                      fromDate={new Date(2000, 1, 1)}
-                      toDate={apiLatestDate ? new Date(`${apiLatestDate} 00:00:00`) : new Date()}
-                      onSelect={field.onChange}
-                    >
-                      <PopoverAnchor className="-mt-2" />
-                    </DatePickerRangePopover>
-                  )}
+                  <DatePickerRangePopover
+                    modal
+                    selected={field.value}
+                    fromDate={new Date(2000, 1, 1)}
+                    toDate={apiLatestDate ? new Date(`${apiLatestDate} 00:00:00`) : new Date()}
+                    onSelect={field.onChange}
+                  >
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <DatePickerButton selected={field.value} disabled={isPending} />
+                      </FormControl>
+                    </PopoverTrigger>
+                  </DatePickerRangePopover>
                   <FormMessage />
                 </FormItem>
               )}

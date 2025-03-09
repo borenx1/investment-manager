@@ -39,7 +39,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 const formSchema = assetForm.clientSchema;
 
@@ -265,60 +265,63 @@ export default function AddEditAssetDialog({
                   render={({ field }) => (
                     <FormItem className="col-span-2">
                       <FormLabel>Real asset ticker</FormLabel>
-                      <FormControl>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          role="combobox"
-                          className={cn('justify-between', !field.value && 'text-muted-foreground')}
-                          disabled={isPending}
-                          onClick={() => setIsExternalTickerOpen(true)}
-                        >
-                          {field.value
-                            ? (apiCurrencyOptions.find((option) => option.value === field.value)
-                                ?.label ?? field.value.toUpperCase())
-                            : 'Select a ticker'}
-                          <ChevronsUpDown className="opacity-50" />
-                        </Button>
-                      </FormControl>
-                      {isExternalTickerOpen && (
-                        <Popover open={true} onOpenChange={setIsExternalTickerOpen} modal>
-                          <PopoverAnchor className="-mt-2" />
-                          <PopoverContent align="start" className="w-auto p-0">
-                            <Command>
-                              <CommandInput placeholder="Search ticker..." />
-                              <CommandList>
-                                <CommandEmpty>No results found.</CommandEmpty>
-                                <CommandGroup>
-                                  {apiCurrencyOptions.map((option) => (
-                                    <CommandItem
-                                      key={option.value}
-                                      value={option.label}
-                                      onSelect={() => {
-                                        form.setValue(
-                                          'externalTicker',
-                                          field.value !== option.value ? option.value : null,
-                                        );
-                                        setIsExternalTickerOpen(false);
-                                      }}
-                                    >
-                                      {option.label}
-                                      <Check
-                                        className={cn(
-                                          'ml-auto',
-                                          option.value === field.value
-                                            ? 'opacity-100'
-                                            : 'opacity-0',
-                                        )}
-                                      />
-                                    </CommandItem>
-                                  ))}
-                                </CommandGroup>
-                              </CommandList>
-                            </Command>
-                          </PopoverContent>
-                        </Popover>
-                      )}
+                      <Popover
+                        open={isExternalTickerOpen}
+                        onOpenChange={setIsExternalTickerOpen}
+                        modal
+                      >
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              role="combobox"
+                              className={cn(
+                                'justify-between',
+                                !field.value && 'text-muted-foreground',
+                              )}
+                              disabled={isPending}
+                            >
+                              {field.value
+                                ? (apiCurrencyOptions.find((option) => option.value === field.value)
+                                    ?.label ?? field.value.toUpperCase())
+                                : 'Select a ticker'}
+                              <ChevronsUpDown className="opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent align="start" className="w-auto p-0">
+                          <Command>
+                            <CommandInput placeholder="Search ticker..." />
+                            <CommandList>
+                              <CommandEmpty>No results found.</CommandEmpty>
+                              <CommandGroup>
+                                {apiCurrencyOptions.map((option) => (
+                                  <CommandItem
+                                    key={option.value}
+                                    value={option.label}
+                                    onSelect={() => {
+                                      form.setValue(
+                                        'externalTicker',
+                                        field.value !== option.value ? option.value : null,
+                                      );
+                                      setIsExternalTickerOpen(false);
+                                    }}
+                                  >
+                                    {option.label}
+                                    <Check
+                                      className={cn(
+                                        'ml-auto',
+                                        option.value === field.value ? 'opacity-100' : 'opacity-0',
+                                      )}
+                                    />
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                       <FormDescription>
                         Link to a real asset to automatically get prices.
                       </FormDescription>

@@ -30,7 +30,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { PopoverAnchor } from '@/components/ui/popover';
+import { PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DatePickerButton, DatePickerPopover } from '@/components/DatePicker';
 
@@ -57,7 +57,6 @@ export default function AddAssetPriceDialog({
   date?: Date;
 } & React.ComponentProps<typeof Dialog>) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isDateOpen, setIsDateOpen] = useState(false);
   const pricesMap = useMemo(() => {
     if (!prices) return {};
     return prices
@@ -137,36 +136,29 @@ export default function AddAssetPriceDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Date</FormLabel>
-                  <FormControl>
-                    <DatePickerButton
-                      selected={field.value}
-                      disabled={!!date || isPending}
-                      onClick={() => setIsDateOpen(true)}
-                    />
-                  </FormControl>
-                  {isDateOpen && (
-                    <DatePickerPopover
-                      open={true}
-                      onOpenChange={setIsDateOpen}
-                      modal
-                      selected={field.value}
-                      onSelect={(day) => {
-                        field.onChange(day);
-                        if (day) {
-                          const existingPrice = pricesMap[format(day, 'yyyy-MM-dd')];
-                          if (existingPrice) {
-                            form.setValue('price', Number(existingPrice.price));
-                          }
+                  <DatePickerPopover
+                    modal
+                    selected={field.value}
+                    onSelect={(day) => {
+                      field.onChange(day);
+                      if (day) {
+                        const existingPrice = pricesMap[format(day, 'yyyy-MM-dd')];
+                        if (existingPrice) {
+                          form.setValue('price', Number(existingPrice.price));
                         }
-                        setTimeout(() => {
-                          form.setFocus('price');
-                        }, 0);
-                      }}
-                      required
-                    >
-                      <PopoverAnchor className="-mt-2" />
-                    </DatePickerPopover>
-                  )}
+                      }
+                      setTimeout(() => {
+                        form.setFocus('price');
+                      }, 0);
+                    }}
+                    required
+                  >
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <DatePickerButton selected={field.value} disabled={!!date || isPending} />
+                      </FormControl>
+                    </PopoverTrigger>
+                  </DatePickerPopover>
                   <FormMessage />
                 </FormItem>
               )}
