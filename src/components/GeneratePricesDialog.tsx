@@ -182,8 +182,8 @@ export default function GeneratePricesDialog({
               control={form.control}
               name="overrideExisting"
               render={({ field }) => (
-                <FormItem className="flex items-center justify-between rounded-lg border p-3">
-                  <div>
+                <FormItem className="flex items-center justify-between gap-2 rounded-lg border px-3 py-4">
+                  <div className="space-y-1">
                     <FormLabel>Update existing</FormLabel>
                     <FormDescription>Replace existing prices in the date range</FormDescription>
                   </div>
