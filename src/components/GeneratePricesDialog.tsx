@@ -160,8 +160,8 @@ export default function GeneratePricesDialog({
               control={form.control}
               name="dateRange"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel className="w-fit">Date Range</FormLabel>
+                <FormItem>
+                  <FormLabel>Date Range</FormLabel>
                   <FormControl>
                     <DatePickerButton
                       selected={field.value}

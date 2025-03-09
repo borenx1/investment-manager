@@ -263,8 +263,8 @@ export default function AddEditAssetDialog({
                   control={form.control}
                   name="externalTicker"
                   render={({ field }) => (
-                    <FormItem className="col-span-2 flex flex-col">
-                      <FormLabel className="w-fit">Real asset ticker</FormLabel>
+                    <FormItem className="col-span-2">
+                      <FormLabel>Real asset ticker</FormLabel>
                       <FormControl>
                         <Button
                           type="button"

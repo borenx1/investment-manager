@@ -251,8 +251,8 @@ export default function AddEditTradeTransactionDialog({
               control={form.control}
               name="date"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel className="w-fit">Date *</FormLabel>
+                <FormItem>
+                  <FormLabel>Date *</FormLabel>
                   <FormControl>
                     <DatePickerButton
                       selected={field.value}
