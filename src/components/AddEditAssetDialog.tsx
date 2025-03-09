@@ -277,7 +277,7 @@ export default function AddEditAssetDialog({
                               variant="outline"
                               role="combobox"
                               className={cn(
-                                'justify-between',
+                                'justify-between font-normal',
                                 !field.value && 'text-muted-foreground',
                               )}
                               disabled={isPending}

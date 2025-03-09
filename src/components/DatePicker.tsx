@@ -1,12 +1,9 @@
 import { useMemo, useState } from 'react';
 import { format } from 'date-fns';
-import type {
-  DayPickerRangeProps,
-  DayPickerSingleProps,
-  DateRange,
-} from 'react-day-picker';
+import type { DayPickerRangeProps, DayPickerSingleProps, DateRange } from 'react-day-picker';
 import { Calendar as CalendarIcon } from 'lucide-react';
 
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent } from '@/components/ui/popover';
@@ -103,6 +100,7 @@ export function DatePickerRangePopover({
 
 export function DatePickerButton({
   selected,
+  className,
   ...props
 }: { selected?: Date | DateRange } & React.ComponentProps<typeof Button>) {
   const text = useMemo(() => {
@@ -116,7 +114,7 @@ export function DatePickerButton({
   }, [selected]);
 
   return (
-    <Button type="button" variant="outline" {...props}>
+    <Button type="button" variant="outline" className={cn('font-normal', className)} {...props}>
       {text}
       <CalendarIcon className="ml-auto opacity-50" />
     </Button>
