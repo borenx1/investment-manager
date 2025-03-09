@@ -63,11 +63,7 @@ export default function SelectFilter<
               <Separator orientation="vertical" />
               {values.length < 3 ? (
                 values.map((value) => (
-                  <Badge
-                    key={value.value}
-                    variant="secondary"
-                    className="font-normal"
-                  >
+                  <Badge key={value.value} variant="secondary" className="font-normal">
                     {value.label}
                   </Badge>
                 ))
@@ -92,11 +88,7 @@ export default function SelectFilter<
                 }
               }}
             >
-              <Checkbox
-                checked={
-                  values?.some((value) => value.value === opt.value) ?? false
-                }
-              />
+              <Checkbox checked={values?.some((value) => value.value === opt.value) ?? false} />
               {opt.icon && <opt.icon className="text-muted-foreground" />}
               {opt.label}
             </DropdownMenuItem>
@@ -104,10 +96,7 @@ export default function SelectFilter<
           {!!values?.length && (
             <>
               <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="justify-center"
-                onClick={() => onChange?.([])}
-              >
+              <DropdownMenuItem className="justify-center" onClick={() => onChange?.([])}>
                 Clear filters
               </DropdownMenuItem>
             </>

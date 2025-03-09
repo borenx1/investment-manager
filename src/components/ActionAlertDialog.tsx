@@ -51,9 +51,7 @@ export default function ActionAlertDialog({
         {!!(title || description) && (
           <AlertDialogHeader>
             {!!title && <AlertDialogTitle>{title}</AlertDialogTitle>}
-            {!!description && (
-              <AlertDialogDescription>{description}</AlertDialogDescription>
-            )}
+            {!!description && <AlertDialogDescription>{description}</AlertDialogDescription>}
           </AlertDialogHeader>
         )}
         <AlertDialogFooter>

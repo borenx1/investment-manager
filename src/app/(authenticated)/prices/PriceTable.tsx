@@ -9,14 +9,7 @@ import {
   getFilteredRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import {
-  Check,
-  EllipsisVertical,
-  Pencil,
-  Plus,
-  Trash2,
-  WandSparkles,
-} from 'lucide-react';
+import { Check, EllipsisVertical, Pencil, Plus, Trash2, WandSparkles } from 'lucide-react';
 
 import type { SelectAsset } from '@/db/schema';
 import { removeAssetPrice } from '@/lib/actions';
@@ -35,9 +28,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import ActionAlertDialog from '@/components/ActionAlertDialog';
-import AddEditAssetPriceDialog, {
-  type AssetPrice,
-} from '@/components/AddEditAssetPriceDialog';
+import AddEditAssetPriceDialog, { type AssetPrice } from '@/components/AddEditAssetPriceDialog';
 import type { DateFilterValue } from '@/components/DateFilter';
 import GeneratePricesDialog from '@/components/GeneratePricesDialog';
 
@@ -62,10 +53,7 @@ export const columns: ColumnDef<AssetPrice>[] = [
     header: () => <div className="text-right">Price</div>,
     cell: ({ row }) => {
       const price = parseFloat(row.original.price.price);
-      const formatted = formatDecimalPlaces(
-        price,
-        row.original.asset.pricePrecision,
-      );
+      const formatted = formatDecimalPlaces(price, row.original.asset.pricePrecision);
       return <div className="text-right font-mono">{formatted}</div>;
     },
     minSize: 100,
@@ -77,9 +65,7 @@ export const columns: ColumnDef<AssetPrice>[] = [
       return (
         <div className="text-center">
           {row.original.price.isGenerated && <Check className="size-4" />}
-          <span className="sr-only">
-            {row.original.price.isGenerated ? 'Yes' : 'No'}
-          </span>
+          <span className="sr-only">{row.original.price.isGenerated ? 'Yes' : 'No'}</span>
         </div>
       );
     },
@@ -89,10 +75,7 @@ export const columns: ColumnDef<AssetPrice>[] = [
     cell: ({ row, table }) => {
       const date = new Date(`${row.original.price.date} 00:00:00`);
       const price = parseFloat(row.original.price.price);
-      const formattedPrice = formatDecimalPlaces(
-        price,
-        row.original.asset.pricePrecision,
-      );
+      const formattedPrice = formatDecimalPlaces(price, row.original.asset.pricePrecision);
       const asset = row.original.asset;
       const quote = row.original.quote;
       return (
@@ -114,9 +97,7 @@ export const columns: ColumnDef<AssetPrice>[] = [
               }
               actionText="Delete"
               cancelText="Back"
-              onAction={async () =>
-                await removeAssetPrice(row.original.price.id)
-              }
+              onAction={async () => await removeAssetPrice(row.original.price.id)}
             >
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -159,16 +140,11 @@ export default function PriceTable({
   quoteAsset: SelectAsset;
   dateFilter?: DateFilterValue;
 }) {
-  const accountingCurrency = useResourceStore(
-    (state) => state.accountingCurrency,
-  );
-  const isCurrencySupported = useCurrencyStore(
-    (state) => state.isCurrencySupported,
-  );
+  const accountingCurrency = useResourceStore((state) => state.accountingCurrency);
+  const isCurrencySupported = useCurrencyStore((state) => state.isCurrencySupported);
   const canGeneratePrices = useMemo(
     () =>
-      isCurrencySupported(asset.externalTicker) &&
-      isCurrencySupported(quoteAsset.externalTicker),
+      isCurrencySupported(asset.externalTicker) && isCurrencySupported(quoteAsset.externalTicker),
     [asset, quoteAsset, isCurrencySupported],
   );
   // Assume data is sorted by date increasing.
@@ -196,17 +172,10 @@ export default function PriceTable({
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <AddEditAssetPriceDialog
-          asset={asset}
-          quoteAsset={quoteAsset}
-          prices={sortedData}
-        >
+        <AddEditAssetPriceDialog asset={asset} quoteAsset={quoteAsset} prices={sortedData}>
           <DialogTrigger asChild>
             <Button
-              disabled={
-                asset.id === quoteAsset.id ||
-                quoteAsset.id !== accountingCurrency?.id
-              }
+              disabled={asset.id === quoteAsset.id || quoteAsset.id !== accountingCurrency?.id}
             >
               <Plus />
               Add new price

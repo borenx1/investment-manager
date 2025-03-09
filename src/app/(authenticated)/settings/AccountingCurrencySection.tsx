@@ -25,13 +25,9 @@ import AddEditAssetDialog from '@/components/AddEditAssetDialog';
 
 export default function AccountingCurrencySection() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const accountingCurrency = useResourceStore(
-    (state) => state.accountingCurrency,
-  );
+  const accountingCurrency = useResourceStore((state) => state.accountingCurrency);
   const assets = useResourceStore((state) => state.assets);
-  const isAccountingCurrencyLoaded = useResourceStore(
-    (state) => state.isAccountingCurrencyLoaded,
-  );
+  const isAccountingCurrencyLoaded = useResourceStore((state) => state.isAccountingCurrencyLoaded);
   const isAssetsLoaded = useResourceStore((state) => state.isAssetsLoaded);
   const isResourcesLoaded = useMemo(
     () => isAccountingCurrencyLoaded && isAssetsLoaded,
@@ -46,35 +42,21 @@ export default function AccountingCurrencySection() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="pl-4 sm:min-w-[120px]">
-                    Ticker
-                  </TableHead>
-                  <TableHead className="w-full sm:min-w-[120px]">
-                    Name
-                  </TableHead>
+                  <TableHead className="pl-4 sm:min-w-[120px]">Ticker</TableHead>
+                  <TableHead className="w-full sm:min-w-[120px]">Name</TableHead>
                   <TableHead className="sm:min-w-[110px]">Precision</TableHead>
-                  <TableHead className="sm:min-w-[110px]">
-                    Price precision
-                  </TableHead>
+                  <TableHead className="sm:min-w-[110px]">Price precision</TableHead>
                   <TableHead>Symbol</TableHead>
                   <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 <TableRow>
-                  <TableCell className="pl-4">
-                    {accountingCurrency.ticker}
-                  </TableCell>
+                  <TableCell className="pl-4">{accountingCurrency.ticker}</TableCell>
                   <TableCell>{accountingCurrency.name}</TableCell>
-                  <TableCell className="text-end">
-                    {accountingCurrency.precision}
-                  </TableCell>
-                  <TableCell className="text-end">
-                    {accountingCurrency.pricePrecision}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {accountingCurrency.symbol}
-                  </TableCell>
+                  <TableCell className="text-end">{accountingCurrency.precision}</TableCell>
+                  <TableCell className="text-end">{accountingCurrency.pricePrecision}</TableCell>
+                  <TableCell className="text-center">{accountingCurrency.symbol}</TableCell>
                   <TableCell>
                     <AddEditAssetDialog asset={accountingCurrency}>
                       <DropdownMenu>
@@ -85,9 +67,7 @@ export default function AccountingCurrencySection() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => setIsDialogOpen(true)}
-                          >
+                          <DropdownMenuItem onClick={() => setIsDialogOpen(true)}>
                             <MousePointer2 />
                             Change accounting currency
                           </DropdownMenuItem>
@@ -123,10 +103,7 @@ export default function AccountingCurrencySection() {
       ) : (
         <div className="italic">Loading...</div>
       )}
-      <AccountingCurrencyDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-      />
+      <AccountingCurrencyDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
     </>
   );
 }

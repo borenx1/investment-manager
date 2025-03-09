@@ -1,12 +1,6 @@
 'use client';
 
-import {
-  EllipsisVertical,
-  ListOrdered,
-  Pencil,
-  Plus,
-  Trash2,
-} from 'lucide-react';
+import { EllipsisVertical, ListOrdered, Pencil, Plus, Trash2 } from 'lucide-react';
 
 import { removePortfolioAccount } from '@/lib/actions';
 import { useResourceStore } from '@/providers/resource-store-provider';
@@ -32,12 +26,8 @@ import AddEditPortfolioAccountDialog from '@/components/AddEditPortfolioAccountD
 import OrderPortfolioAccountDialog from '@/components/OrderPortfolioAccountDialog';
 
 export default function PortfolioAccountSection() {
-  const portfolioAccounts = useResourceStore(
-    (state) => state.portfolioAccounts,
-  );
-  const isPortfolioAccountsLoaded = useResourceStore(
-    (state) => state.isPortfolioAccountsLoaded,
-  );
+  const portfolioAccounts = useResourceStore((state) => state.portfolioAccounts);
+  const isPortfolioAccountsLoaded = useResourceStore((state) => state.isPortfolioAccountsLoaded);
 
   return (
     <>
@@ -79,17 +69,14 @@ export default function PortfolioAccountSection() {
                         title="Delete Account"
                         description={
                           <>
-                            Are you sure you want to delete this portfolio
-                            account?
+                            Are you sure you want to delete this portfolio account?
                             <br />
                             {account.name}
                           </>
                         }
                         actionText="Delete"
                         cancelText="Back"
-                        onAction={async () =>
-                          await removePortfolioAccount(account.id)
-                        }
+                        onAction={async () => await removePortfolioAccount(account.id)}
                       >
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -106,9 +93,7 @@ export default function PortfolioAccountSection() {
                               </DropdownMenuItem>
                             </DialogTrigger>
                             <AlertDialogTrigger asChild>
-                              <DropdownMenuItem
-                                disabled={portfolioAccounts.length <= 1}
-                              >
+                              <DropdownMenuItem disabled={portfolioAccounts.length <= 1}>
                                 <Trash2 />
                                 Delete
                               </DropdownMenuItem>
@@ -125,9 +110,7 @@ export default function PortfolioAccountSection() {
         </div>
       ) : (
         <div className="italic">
-          {isPortfolioAccountsLoaded
-            ? 'No accounts, please create a new account'
-            : 'Loading...'}
+          {isPortfolioAccountsLoaded ? 'No accounts, please create a new account' : 'Loading...'}
         </div>
       )}
       <AddEditPortfolioAccountDialog>

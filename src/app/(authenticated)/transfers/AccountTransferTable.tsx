@@ -10,13 +10,7 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import {
-  CircleDollarSign,
-  EllipsisVertical,
-  Pencil,
-  Trash2,
-  X,
-} from 'lucide-react';
+import { CircleDollarSign, EllipsisVertical, Pencil, Trash2, X } from 'lucide-react';
 
 import { removeAccountTransferTx } from '@/lib/actions';
 import { filterByDate } from '@/lib/filters';
@@ -46,11 +40,7 @@ export const columns: ColumnDef<Transaction>[] = [
     header: 'Date',
     cell: ({ row }) => {
       const date = row.original.transaction.date;
-      return (
-        <div className="font-mono">
-          {format(convertUTCDate(date), 'yyyy/MM/dd')}
-        </div>
-      );
+      return <div className="font-mono">{format(convertUTCDate(date), 'yyyy/MM/dd')}</div>;
     },
     filterFn: (row, _, filterValue: DateFilterValue) => {
       if (filterValue) {
@@ -104,10 +94,7 @@ export const columns: ColumnDef<Transaction>[] = [
     header: () => <div className="text-right">Amount</div>,
     cell: ({ row }) => {
       const amount = parseFloat(row.original.targetAssetEntry.amount);
-      const formatted = formatDecimalPlaces(
-        amount,
-        row.original.asset.precision,
-      );
+      const formatted = formatDecimalPlaces(amount, row.original.asset.precision);
       return <div className="text-right font-mono">{formatted}</div>;
     },
     minSize: 80,
@@ -121,10 +108,7 @@ export const columns: ColumnDef<Transaction>[] = [
         return '';
       }
       const amount = parseFloat(row.original.feeIncomeEntry.amount);
-      const formatted = formatDecimalPlaces(
-        amount,
-        row.original.asset.precision,
-      );
+      const formatted = formatDecimalPlaces(amount, row.original.asset.precision);
       return <div className="text-right font-mono">{formatted}</div>;
     },
     minSize: 80,
@@ -151,17 +135,14 @@ export const columns: ColumnDef<Transaction>[] = [
               title="Delete Account Transfer"
               description={
                 <>
-                  Are you sure you want to delete this account transfer
-                  transaction?
+                  Are you sure you want to delete this account transfer transaction?
                   <br />
                   {`${format(convertUTCDate(date), 'yyyy/MM/dd')}: ${formattedAmount} ${tx.asset.ticker}`}
                 </>
               }
               actionText="Delete"
               cancelText="Back"
-              onAction={async () =>
-                await removeAccountTransferTx(tx.accountTransferTransaction.id)
-              }
+              onAction={async () => await removeAccountTransferTx(tx.accountTransferTransaction.id)}
             >
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -265,11 +246,7 @@ export default function AccountTransferTable({
       <div className="rounded-lg border">
         <DataTable table={table} gridLines />
       </div>
-      <DataTablePagination
-        table={table}
-        pageSizes={[10, 20, 50, 100]}
-        showSelected={false}
-      />
+      <DataTablePagination table={table} pageSizes={[10, 20, 50, 100]} showSelected={false} />
     </div>
   );
 }

@@ -7,9 +7,7 @@ import { getAccountTransferTxs } from '@/db/queries';
 import { Button } from '@/components/ui/button';
 import { DialogTrigger } from '@/components/ui/dialog';
 import AddEditAccountTransferTxDialog from '@/components/AddEditAccountTransferTxDialog';
-import AccountTransferTable, {
-  AccountTransferTableSkeleton,
-} from './AccountTransferTable';
+import AccountTransferTable, { AccountTransferTableSkeleton } from './AccountTransferTable';
 
 export const metadata: Metadata = {
   title: 'Account Transfers',

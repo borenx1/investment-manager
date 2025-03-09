@@ -1,19 +1,11 @@
 import Link from 'next/link';
 
 import { auth } from '@/auth';
-import {
-  getAccountingCurrency,
-  getAssets,
-  getPortfolioAccounts,
-} from '@/db/queries';
+import { getAccountingCurrency, getAssets, getPortfolioAccounts } from '@/db/queries';
 import { getSupportedCurrencies } from '@/lib/services/currency-api';
 import { ResourceStoreProvider } from '@/providers/resource-store-provider';
 import { CurrencyStoreProvider } from '@/providers/currency-store-provider';
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from '@/components/ui/sidebar';
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import {
   NavigationMenu,
   NavigationMenuItem,

@@ -3,11 +3,7 @@
 import { use, useMemo, useState } from 'react';
 import Link from 'next/link';
 
-import type {
-  SelectAsset,
-  SelectBalance,
-  SelectPortfolioAccount,
-} from '@/db/schema';
+import type { SelectAsset, SelectBalance, SelectPortfolioAccount } from '@/db/schema';
 import { formatDecimalPlaces } from '@/lib/utils';
 import { useResourceStore } from '@/providers/resource-store-provider';
 import { Button } from '@/components/ui/button';
@@ -29,13 +25,9 @@ export default function BalanceTable({
 }) {
   const balances = use(balancesPromise);
   const [isHideZeroBalances, setIsHideZeroBalances] = useState(false);
-  const portfolioAccounts = useResourceStore(
-    (state) => state.portfolioAccounts,
-  );
+  const portfolioAccounts = useResourceStore((state) => state.portfolioAccounts);
   const assets = useResourceStore((state) => state.assets);
-  const isResourcesLoaded = useResourceStore(
-    (state) => state.isResourcesLoaded,
-  );
+  const isResourcesLoaded = useResourceStore((state) => state.isResourcesLoaded);
   const activeAccount = useResourceStore((state) => state.activeAccount);
   const balancesByAsset = useMemo(
     () =>
@@ -45,8 +37,7 @@ export default function BalanceTable({
           portfolioAccount: account,
           balance: balances.find(
             ({ balance }) =>
-              balance.portfolioAccountId === account.id &&
-              balance.assetId === asset.id,
+              balance.portfolioAccountId === account.id && balance.assetId === asset.id,
           )?.balance,
         })),
       })),
@@ -66,10 +57,7 @@ export default function BalanceTable({
     [balancesByAsset, activeAccount],
   );
   const filteredBalanceValues = useMemo(
-    () =>
-      balanceValues.filter(
-        ({ balance }) => !isHideZeroBalances || balance !== 0,
-      ),
+    () => balanceValues.filter(({ balance }) => !isHideZeroBalances || balance !== 0),
     [balanceValues, isHideZeroBalances],
   );
 

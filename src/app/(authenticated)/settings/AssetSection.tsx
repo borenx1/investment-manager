@@ -27,13 +27,9 @@ import AddEditAssetDialog from '@/components/AddEditAssetDialog';
 
 export default function AssetSection() {
   const assets = useResourceStore((state) => state.assets);
-  const accountingCurrency = useResourceStore(
-    (state) => state.accountingCurrency,
-  );
+  const accountingCurrency = useResourceStore((state) => state.accountingCurrency);
   const isAssetsLoaded = useResourceStore((state) => state.isAssetsLoaded);
-  const isAccountingCurrencyLoaded = useResourceStore(
-    (state) => state.isAccountingCurrencyLoaded,
-  );
+  const isAccountingCurrencyLoaded = useResourceStore((state) => state.isAccountingCurrencyLoaded);
   const isResourcesLoaded = useMemo(
     () => isAssetsLoaded && isAccountingCurrencyLoaded,
     [isAssetsLoaded, isAccountingCurrencyLoaded],
@@ -49,9 +45,7 @@ export default function AssetSection() {
                 <TableHead className="pl-4 sm:min-w-[120px]">Ticker</TableHead>
                 <TableHead className="w-full sm:min-w-[120px]">Name</TableHead>
                 <TableHead className="sm:min-w-[110px]">Precision</TableHead>
-                <TableHead className="sm:min-w-[110px]">
-                  Price precision
-                </TableHead>
+                <TableHead className="sm:min-w-[110px]">Price precision</TableHead>
                 <TableHead>Currency</TableHead>
                 <TableHead>Symbol</TableHead>
                 <TableHead></TableHead>
@@ -63,15 +57,11 @@ export default function AssetSection() {
                   <TableCell className="pl-4">{asset.ticker}</TableCell>
                   <TableCell>{asset.name}</TableCell>
                   <TableCell className="text-end">{asset.precision}</TableCell>
-                  <TableCell className="text-end">
-                    {asset.pricePrecision}
-                  </TableCell>
+                  <TableCell className="text-end">{asset.pricePrecision}</TableCell>
                   <TableCell>
                     <div className="flex items-center justify-center">
                       {asset.isCurrency && <Check className="size-4" />}
-                      <span className="sr-only">
-                        {asset.isCurrency ? 'Yes' : 'No'}
-                      </span>
+                      <span className="sr-only">{asset.isCurrency ? 'Yes' : 'No'}</span>
                     </div>
                   </TableCell>
                   <TableCell className="text-center">{asset.symbol}</TableCell>
@@ -106,10 +96,7 @@ export default function AssetSection() {
                             </DialogTrigger>
                             <AlertDialogTrigger asChild>
                               <DropdownMenuItem
-                                disabled={
-                                  assets.length <= 1 ||
-                                  asset.id === accountingCurrency?.id
-                                }
+                                disabled={assets.length <= 1 || asset.id === accountingCurrency?.id}
                               >
                                 <Trash2 />
                                 Delete
@@ -127,9 +114,7 @@ export default function AssetSection() {
         </div>
       ) : (
         <div className="italic">
-          {isResourcesLoaded
-            ? 'No assets, please create a new asset'
-            : 'Loading...'}
+          {isResourcesLoaded ? 'No assets, please create a new asset' : 'Loading...'}
         </div>
       )}
       <AddEditAssetDialog>

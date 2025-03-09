@@ -46,10 +46,7 @@ export default function PriceChart({
         date: new Date(`${price.date} 00:00:00`),
       }))
       .filter((price) => {
-        if (
-          price.assetId !== asset.id ||
-          price.quoteAssetId !== quoteAsset.id
-        ) {
+        if (price.assetId !== asset.id || price.quoteAssetId !== quoteAsset.id) {
           return false;
         }
         return filterByDate(price.date, dateFilter);
@@ -63,16 +60,8 @@ export default function PriceChart({
   }, [filteredData]);
 
   return chartData.length ? (
-    <ChartContainer
-      config={chartConfig}
-      className={cn('w-full', className)}
-      {...props}
-    >
-      <LineChart
-        accessibilityLayer
-        data={chartData}
-        margin={{ top: 20, right: 20 }}
-      >
+    <ChartContainer config={chartConfig} className={cn('w-full', className)} {...props}>
+      <LineChart accessibilityLayer data={chartData} margin={{ top: 20, right: 20 }}>
         <CartesianGrid />
         <XAxis
           dataKey="date"
@@ -96,12 +85,8 @@ export default function PriceChart({
           content={
             <ChartTooltipContent
               hideIndicator
-              labelFormatter={(_, payload) =>
-                format(payload[0]!.payload.date, 'yyyy/MM/dd')
-              }
-              valueFormatter={(value) =>
-                formatDecimalPlaces(Number(value), asset.pricePrecision)
-              }
+              labelFormatter={(_, payload) => format(payload[0]!.payload.date, 'yyyy/MM/dd')}
+              valueFormatter={(value) => formatDecimalPlaces(Number(value), asset.pricePrecision)}
             />
           }
         />
@@ -109,10 +94,7 @@ export default function PriceChart({
       </LineChart>
     </ChartContainer>
   ) : (
-    <div
-      className={cn('grid place-items-center rounded-lg border', className)}
-      {...props}
-    >
+    <div className={cn('grid place-items-center rounded-lg border', className)} {...props}>
       <div className="p-4 text-center sm:text-lg">
         {asset.id === quoteAsset.id
           ? 'Select a different asset and quote to see prices'
