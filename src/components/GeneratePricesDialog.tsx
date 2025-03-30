@@ -3,8 +3,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { LoaderCircle } from 'lucide-react';
+import { toast } from 'sonner';
 
 import type { SelectAsset } from '@/db/schema';
+import { generatePrices } from '@/lib/actions/api';
 import { useCurrencyStore } from '@/providers/currency-store-provider';
 import { Button } from '@/components/ui/button';
 import {
@@ -85,9 +87,44 @@ export default function GeneratePricesDialog({
 
   const [, onSubmit, isPending] = useActionState(
     async (previousState: null, values: z.infer<typeof formSchema>) => {
-      // TODO: Call API to generate prices
-      console.log('Generating prices with options:', values);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const result = await generatePrices({
+        assetId: asset.id,
+        quoteAssetId: quoteAsset.id,
+        frequency: values.frequency,
+        fromDate: values.dateRange.from,
+        toDate: values.dateRange.to || values.dateRange.from,
+        overrideExisting: values.overrideExisting,
+      });
+
+      if ('message' in result) {
+        switch (result.message) {
+          case 'No dates to generate prices for': {
+            form.setError(
+              'dateRange',
+              { message: 'No available dates to generate prices for' },
+              { shouldFocus: true },
+            );
+            break;
+          }
+          case 'No new prices to generate': {
+            form.setError(
+              'dateRange',
+              {
+                message: 'No new prices to generate, turn on "Update existing" to override prices',
+              },
+              { shouldFocus: true },
+            );
+            break;
+          }
+          default: {
+            console.error(result.message);
+            toast.error('Error generating prices', {
+              description: result.message,
+            });
+          }
+        }
+        return null;
+      }
       setIsOpen(false);
       return null;
     },

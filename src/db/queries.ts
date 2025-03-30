@@ -195,6 +195,20 @@ export async function getAssets(userId: SelectAsset['userId']) {
 }
 
 /**
+ * Get an asset from the database.
+ * @param userId The user ID.
+ * @param assetId The asset ID.
+ * @returns The asset, or null if it does not exist.
+ */
+export async function getAsset(userId: SelectAsset['userId'], assetId: SelectAsset['id']) {
+  const result = await db
+    .select()
+    .from(assets)
+    .where(and(eq(assets.id, assetId), eq(assets.userId, userId)));
+  return result[0] ?? null;
+}
+
+/**
  * Create a new asset in the database for the user.
  * @param userId The user ID.
  * @param param1 The new asset data.
@@ -500,6 +514,12 @@ export async function getAssetPrices(
     .orderBy(assetPrices.date, assets.ticker, quoteAssets.ticker);
 }
 
+/**
+ * Create or update an asset price in the database.
+ * @param userId The user ID.
+ * @param param1 The asset price data.
+ * @returns The created or updated asset price.
+ */
 export async function createAssetPrice(
   userId: SelectAssetPrice['userId'],
   {
@@ -545,6 +565,58 @@ export async function createAssetPrice(
     .returning();
 
   return result[0]!;
+}
+
+/**
+ * Create or update multiple asset prices in the database.
+ * @param userId The user ID.
+ * @param assetId The asset ID.
+ * @param quoteAssetId The quote asset ID.
+ * @param isGenerated Whether the prices are automatically generated.
+ * @param data The asset price data.
+ * @returns The created or updated asset prices.
+ */
+export async function createAssetPrices(
+  userId: SelectAssetPrice['userId'],
+  assetId: SelectAssetPrice['assetId'],
+  quoteAssetId: SelectAssetPrice['quoteAssetId'],
+  isGenerated: boolean = false,
+  data: {
+    date: SelectAssetPrice['date'];
+    price: number;
+  }[],
+) {
+  // Check that the assets belong to the user.
+  const [isAssetOwned, isQuoteAssetOwned] = await Promise.all([
+    isAssetBelongToUser(userId, assetId),
+    isAssetBelongToUser(userId, quoteAssetId),
+  ]);
+  if (!isAssetOwned) {
+    throw new Error('Asset does not belong to the user');
+  }
+  if (!isQuoteAssetOwned) {
+    throw new Error('Quote asset does not belong to the user');
+  }
+
+  const result = await db
+    .insert(assetPrices)
+    .values(
+      data.map(({ date, price }) => ({
+        userId,
+        assetId,
+        quoteAssetId,
+        date,
+        price: String(price),
+        isGenerated,
+      })),
+    )
+    .onConflictDoUpdate({
+      target: [assetPrices.userId, assetPrices.assetId, assetPrices.quoteAssetId, assetPrices.date],
+      set: { price: sql`excluded.price`, isGenerated, updatedAt: sql`NOW()` },
+    })
+    .returning();
+
+  return result;
 }
 
 export async function deleteAssetPrice(

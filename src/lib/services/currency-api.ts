@@ -156,3 +156,44 @@ export async function getSupportedCurrencies() {
   }
   return supportedCurrencies;
 }
+
+type PricesResponse<T extends string> = {
+  date: string;
+} & {
+  [K in T]: Record<string, number>;
+};
+
+/**
+ * Fetches the prices of a currency from the currency exchange API.
+ * @param base The base currency.
+ * @param quote The quote currency.
+ * @param dates The dates to fetch the prices from.
+ * @returns An object mapping dates to prices.
+ */
+export async function getApiCurrencyPrices<B extends string>(
+  base: B,
+  quote: string,
+  dates: string[],
+) {
+  const isDatesValid = z.array(z.string().date()).safeParse(dates).success;
+  if (!isDatesValid) {
+    throw new Error('Dates must be in YYYY-MM-DD format');
+  }
+  // TODO: Cache
+  const responses = await Promise.allSettled(
+    dates.map((date) => fetchFromApi<PricesResponse<B>>(`currencies/${base}.min.json`, date)),
+  );
+  return responses.reduce(
+    (acc, response) => {
+      if (response.status === 'fulfilled') {
+        if (response.value[base][quote]) {
+          acc[response.value.date] = response.value[base][quote];
+        }
+      } else {
+        console.error(response.reason);
+      }
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
+}
