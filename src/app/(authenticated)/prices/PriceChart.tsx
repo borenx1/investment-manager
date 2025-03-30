@@ -80,6 +80,11 @@ export default function PriceChart({
             const range = Math.abs(dataMax - dataMin);
             return [Math.max(dataMin - range * 0.2, 0), dataMax + range * 0.2];
           }}
+          tickFormatter={(value) =>
+            formatDecimalPlaces(Number(value), asset.pricePrecision, {
+              maximumSignificantDigits: 6,
+            })
+          }
         />
         <ChartTooltip
           content={
