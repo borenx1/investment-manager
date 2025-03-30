@@ -1,6 +1,8 @@
 import 'server-only';
 import { z } from 'zod';
 
+import { getCurrencyApiPricesFromDb, saveCurrencyApiPricesToDb } from '@/db/currencyApi';
+
 const SUPPORTED_TICKERS = new Set([
   // Currencies.
   'aud', // Australian Dollar
@@ -72,7 +74,7 @@ function fallbackApiUrl(date: string = 'latest') {
 }
 
 /**
- * Fetches data from the currency exchange API, with fallback support.
+ * Fetch data from the currency exchange API, with fallback support.
  * @param endpoint The endpoint to fetch from.
  * @param date The date to fetch the data from.
  * @returns The fetched data.
@@ -95,7 +97,7 @@ async function fetchFromApi<T>(endpoint: string, date: string = 'latest'): Promi
 }
 
 /**
- * Fetches the latest date from the currency exchange API.
+ * Fetch and cache the latest date from the currency exchange API.
  * @returns The latest date in YYYY-MM-DD format.
  */
 export async function getCurrencyApiLatestDate(): Promise<string> {
@@ -121,8 +123,7 @@ export async function getCurrencyApiLatestDate(): Promise<string> {
 }
 
 /**
- * Fetches and caches the list of supported currencies from the currency
- * exchange API.
+ * Fetch and cache the list of supported currencies from the currency exchange API.
  * @returns A record of currency tickers to names.
  */
 async function getApiSupportedCurrencies(): Promise<Record<string, string>> {
@@ -142,7 +143,7 @@ async function getApiSupportedCurrencies(): Promise<Record<string, string>> {
 }
 
 /**
- * Gets the list of supported currencies for this app. Returns a subset of the
+ * Get the list of supported currencies for this app. Return a subset of the
  * currencies supported by the currency exchange API.
  */
 export async function getSupportedCurrencies() {
@@ -164,7 +165,7 @@ type PricesResponse<T extends string> = {
 };
 
 /**
- * Fetches the prices of a currency from the currency exchange API.
+ * Fetch the prices of a currency from the currency exchange API.
  * @param base The base currency.
  * @param quote The quote currency.
  * @param dates The dates to fetch the prices from.
@@ -179,7 +180,6 @@ export async function getApiCurrencyPrices<B extends string>(
   if (!isDatesValid) {
     throw new Error('Dates must be in YYYY-MM-DD format');
   }
-  // TODO: Cache
   const responses = await Promise.allSettled(
     dates.map((date) => fetchFromApi<PricesResponse<B>>(`currencies/${base}.min.json`, date)),
   );
@@ -196,4 +196,35 @@ export async function getApiCurrencyPrices<B extends string>(
     },
     {} as Record<string, number>,
   );
+}
+
+/**
+ * Get the prices of a currency from the currency exchange API, or the database cache.
+ * @param base The base currency.
+ * @param quote The quote currency.
+ * @param dates The dates to fetch the prices from.
+ * @returns An object mapping dates to prices.
+ */
+export async function getCurrencyPrices(base: string, quote: string, dates: string[]) {
+  const isDatesValid = z.array(z.string().date()).safeParse(dates).success;
+  if (!isDatesValid) {
+    throw new Error('Dates must be in YYYY-MM-DD format');
+  }
+  // First check the database cache.
+  const cachedPrices = await getCurrencyApiPricesFromDb(base, quote, dates);
+  const remainingDates = new Set(dates);
+  const result: Record<string, number> = {};
+  for (const price of cachedPrices) {
+    result[price.date] = parseFloat(price.price);
+    remainingDates.delete(price.date);
+  }
+  if (remainingDates.size === 0) {
+    return result;
+  }
+
+  // Get the remaining prices from the API.
+  const pricesMap = await getApiCurrencyPrices(base, quote, [...remainingDates]);
+  await saveCurrencyApiPricesToDb(base, quote, pricesMap);
+
+  return { ...result, ...pricesMap };
 }

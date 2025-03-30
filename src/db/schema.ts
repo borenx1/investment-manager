@@ -382,3 +382,21 @@ export const incomeTransactions = pgTable(
 
 export type SelectIncomeTransaction = typeof incomeTransactions.$inferSelect;
 export type InsertIncomeTransaction = typeof incomeTransactions.$inferInsert;
+
+export const currencyApiPrices = pgTable(
+  'currency_api_prices',
+  {
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    baseTicker: varchar('base_ticker', { length: 20 }).notNull(),
+    quoteTicker: varchar('quote_ticker', { length: 20 }).notNull(),
+    date: date('date').notNull(),
+    // Using the same precision/scale as assetPrices for consistency.
+    price: numeric('price', { precision: 100, scale: 20 }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [unique().on(table.baseTicker, table.quoteTicker, table.date)],
+);
+
+export type SelectCurrencyApiPrices = typeof currencyApiPrices.$inferSelect;
+export type InsertCurrencyApiPrices = typeof currencyApiPrices.$inferInsert;

@@ -5,8 +5,8 @@ import { revalidatePath } from 'next/cache';
 import { auth } from '@/auth';
 import { createAssetPrices, getAsset, getAssetPrices } from '@/db/queries';
 import {
-  getApiCurrencyPrices,
   getCurrencyApiLatestDate,
+  getCurrencyPrices,
   getSupportedCurrencies,
 } from '@/lib/services/currency-api';
 import { getDateList } from '@/lib/utils';
@@ -61,38 +61,34 @@ export async function generatePrices(data: {
   const apiLatestDate = new Date(`${apiLatestDateString} 00:00:00`);
   // Cap the to date to the latest date from the API.
   const toDate = data.toDate < apiLatestDate ? data.toDate : apiLatestDate;
-  const dates = getDateList(data.fromDate, toDate, data.frequency);
+  let dates = getDateList(data.fromDate, toDate, data.frequency);
   if (dates.length === 0) {
     return { message: 'No dates to generate prices for' } as const;
   }
 
-  const pricesMap = await getApiCurrencyPrices(
-    baseAsset.externalTicker,
-    quoteAsset.externalTicker,
-    dates,
-  );
-
-  let pricesData = Object.entries(pricesMap).map(([date, price]) => ({ date, price }));
   if (!data.overwriteExisting) {
     const existingPrices = await getAssetPrices(userId, {
       assetId: data.assetId,
       quoteAssetId: data.quoteAssetId,
     });
-    pricesData = pricesData.filter(
-      ({ date }) => !existingPrices.some(({ price }) => price.date === date),
-    );
+    dates = dates.filter((date) => !existingPrices.some(({ price }) => price.date === date));
+    if (dates.length === 0) {
+      return { message: 'No new prices to generate' } as const;
+    }
   }
 
-  if (!pricesData.length) {
-    return { message: 'No new prices to generate' } as const;
-  }
+  const apiPrices = await getCurrencyPrices(
+    baseAsset.externalTicker,
+    quoteAsset.externalTicker,
+    dates,
+  );
 
   const newPrices = await createAssetPrices(
     userId,
     data.assetId,
     data.quoteAssetId,
     true,
-    pricesData,
+    Object.entries(apiPrices).map(([date, price]) => ({ date, price })),
   );
 
   revalidatePath('/prices');
