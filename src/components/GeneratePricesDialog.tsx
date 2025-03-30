@@ -46,7 +46,7 @@ const formSchema = z.object({
     },
     { message: 'Select a date range' },
   ),
-  overrideExisting: z.boolean(),
+  overwriteExisting: z.boolean(),
 });
 
 const frequencyOptions = [
@@ -76,7 +76,7 @@ export default function GeneratePricesDialog({
         from: apiLatestDate ? new Date(`${apiLatestDate} 00:00:00`) : new Date(),
         to: apiLatestDate ? new Date(`${apiLatestDate} 00:00:00`) : new Date(),
       },
-      overrideExisting: false,
+      overwriteExisting: false,
     }),
     [apiLatestDate],
   );
@@ -93,7 +93,7 @@ export default function GeneratePricesDialog({
         frequency: values.frequency,
         fromDate: values.dateRange.from,
         toDate: values.dateRange.to || values.dateRange.from,
-        overrideExisting: values.overrideExisting,
+        overwriteExisting: values.overwriteExisting,
       });
 
       if ('message' in result) {
@@ -110,7 +110,7 @@ export default function GeneratePricesDialog({
             form.setError(
               'dateRange',
               {
-                message: 'No new prices to generate, turn on "Update existing" to override prices',
+                message: 'No new prices to generate, turn on "Update existing" to overwrite prices',
               },
               { shouldFocus: true },
             );
@@ -217,7 +217,7 @@ export default function GeneratePricesDialog({
             />
             <FormField
               control={form.control}
-              name="overrideExisting"
+              name="overwriteExisting"
               render={({ field }) => (
                 <FormItem className="flex items-center justify-between gap-2 rounded-lg border px-3 py-4">
                   <div className="space-y-1">

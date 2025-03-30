@@ -30,7 +30,7 @@ export async function generatePrices(data: {
   fromDate: Date;
   toDate: Date;
   frequency: 'month-start' | 'month-end' | 'all';
-  overrideExisting: boolean;
+  overwriteExisting: boolean;
 }) {
   const session = await auth();
   const userId = session?.user?.id;
@@ -73,7 +73,7 @@ export async function generatePrices(data: {
   );
 
   let pricesData = Object.entries(pricesMap).map(([date, price]) => ({ date, price }));
-  if (!data.overrideExisting) {
+  if (!data.overwriteExisting) {
     const existingPrices = await getAssetPrices(userId, {
       assetId: data.assetId,
       quoteAssetId: data.quoteAssetId,
