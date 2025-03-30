@@ -63,7 +63,7 @@ export const columns: ColumnDef<AssetPrice>[] = [
     header: () => <div className="text-center">Generated</div>,
     cell: ({ row }) => {
       return (
-        <div className="text-center">
+        <div className="flex items-center justify-center">
           {row.original.price.isGenerated && <Check className="size-4" />}
           <span className="sr-only">{row.original.price.isGenerated ? 'Yes' : 'No'}</span>
         </div>
